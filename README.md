@@ -1,2 +1,1 @@
-  stay tuned
-  
+# Multiverse Archive - Hero Database
