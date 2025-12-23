@@ -12,6 +12,11 @@
         --stark-blue: #06b6d4;
         --canon-red: #f43f5e;
         --void-black: #0a0a0a;
+        --nav-height: 80px;
+      }
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(6, 182, 212, 0.2) transparent;
       }
       body {
         margin: 0;
@@ -19,9 +24,11 @@
         color: white;
         font-family: 'Inter', sans-serif;
         overflow-x: hidden;
+        scroll-behavior: smooth;
       }
       h1, h2, h3, h4, .font-orbitron {
         font-family: 'Orbitron', sans-serif;
+        letter-spacing: 0.05em;
       }
       .glass-panel {
         background: rgba(23, 23, 23, 0.5);
@@ -79,6 +86,9 @@
         0% { bottom: 100%; }
         100% { bottom: -100px; }
       }
+      .app-container {
+        padding-bottom: calc(var(--nav-height) + 40px);
+      }
     </style>
   <script type="importmap">
 {
@@ -88,7 +98,8 @@
     "react-router-dom": "https://esm.sh/react-router-dom@^7.11.0",
     "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
     "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "framer-motion": "https://esm.sh/framer-motion@^11.18.2"
   }
 }
 </script>
