@@ -1,8 +1,0 @@
-{
-  "name": "MARVEL NEXUS",
-  "description": "A premium J.A.R.V.I.S. style database for the Marvel Multiverse, featuring hero profiles, canon event tracking, and multiverse entity discovery.",
-  "requestFramePermissions": [
-    "camera",
-    "microphone"
-  ]
-}
