@@ -126,8 +126,13 @@ export default async function Home() {
                 <span className="hidden sm:inline">DC</span>
               </TabsTrigger>
 
-              {/* Anime Hidden for now */}
-              {/* <TabsTrigger value="anime" ... /> */}
+              <TabsTrigger
+                value="anime"
+                className="rounded-full px-4 py-2 font-orbitron text-xs sm:text-sm data-[state=active]:bg-orange-900/50 data-[state=active]:text-orange-400 transition-all"
+              >
+                <Swords className="w-4 h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Anime</span>
+              </TabsTrigger>
 
               <TabsTrigger
                 value="theboys"
@@ -163,9 +168,9 @@ export default async function Home() {
               <HeroGrid heroes={dc} />
             </TabsContent>
 
-            {/* <TabsContent value="anime" className="mt-0">
-              <AnimeGrid heroes={anime} />
-            </TabsContent> */}
+            <TabsContent value="anime" className="mt-0">
+              <HeroGrid heroes={anime} />
+            </TabsContent>
 
             <TabsContent value="theboys" className="mt-0">
               <HeroGrid heroes={theBoys} />
