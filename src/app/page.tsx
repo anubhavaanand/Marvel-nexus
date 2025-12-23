@@ -58,7 +58,7 @@ function HeroGrid({ heroes }: { heroes: Hero[] }) {
 
 export default async function Home() {
   const { mcu, xmen, spider, dc, anime, theBoys, peacemaker } = await getHeroesData()
-  const totalHeroes = mcu.length + xmen.length + spider.length + dc.length + theBoys.length + peacemaker.length
+  const totalHeroes = mcu.length + xmen.length + spider.length + dc.length + anime.length + theBoys.length + peacemaker.length
 
   return (
     <HomeClient>
@@ -90,6 +90,7 @@ export default async function Home() {
             <Stat label="Marvel" value={mcu.length + xmen.length + spider.length} icon={<Shield className="w-4 h-4" />} color="cyan" />
             <Stat label="DC" value={dc.length} icon={<Zap className="w-4 h-4" />} color="blue" />
             <Stat label="The Boys" value={theBoys.length} icon={<Skull className="w-4 h-4" />} color="red" />
+            <Stat label="Anime" value={anime.length} icon={<Swords className="w-4 h-4" />} color="orange" />
           </div>
         </header>
 
