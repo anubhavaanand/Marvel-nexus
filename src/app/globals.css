@@ -366,3 +366,347 @@ html {
   background: rgba(6, 182, 212, 0.3);
   color: #ededed;
 }
+
+/* ========================================
+   TECH-NOIR ENHANCEMENTS
+   High-end animations and effects
+   ======================================== */
+
+/* Tactical Scanning Effect - The signature "biometric scan" */
+@keyframes tactical-scan {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+.tactical-scan {
+  position: relative;
+  overflow: hidden;
+}
+
+.tactical-scan::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(6, 182, 212, 0.3),
+      rgba(6, 182, 212, 0.8),
+      rgba(6, 182, 212, 0.3),
+      transparent);
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.8),
+    0 0 20px rgba(6, 182, 212, 0.4);
+  animation: tactical-scan 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 100;
+}
+
+/* Holographic Glare - Mouse-tracking reflection effect */
+.holographic-glare {
+  position: relative;
+  overflow: hidden;
+}
+
+.holographic-glare::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(255, 255, 255, 0.15) 0%,
+      rgba(255, 255, 255, 0.05) 20%,
+      transparent 40%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.holographic-glare:hover::before {
+  opacity: 1;
+}
+
+/* 3D Tilt Container - Adds perspective for tilt effects */
+.tilt-container {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.tilt-card {
+  transform-style: preserve-3d;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Decryption Animation */
+@keyframes decrypt {
+  0% {
+    opacity: 0;
+    filter: blur(10px);
+    transform: scale(0.95);
+  }
+
+  50% {
+    opacity: 0.5;
+    filter: blur(5px);
+  }
+
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+  }
+}
+
+.decrypt-animation {
+  animation: decrypt 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* System Boot Text Effect */
+@keyframes system-boot {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.system-boot {
+  animation: system-boot 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Canon Alert / Hazard Style */
+.hazard-alert {
+  position: relative;
+  border: 2px solid #f43f5e;
+  background: rgba(244, 63, 94, 0.05);
+  box-shadow: 0 0 20px rgba(244, 63, 94, 0.2),
+    inset 0 0 20px rgba(244, 63, 94, 0.05);
+}
+
+.hazard-alert::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(45deg,
+      transparent,
+      transparent 10px,
+      rgba(244, 63, 94, 0.05) 10px,
+      rgba(244, 63, 94, 0.05) 20px);
+  pointer-events: none;
+}
+
+/* Enhanced Glass Panel with more depth */
+.glass-panel-enhanced {
+  background: rgba(23, 23, 23, 0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Pulsing Status Indicator */
+@keyframes status-pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
+.status-indicator {
+  animation: status-pulse 2s ease-in-out infinite;
+}
+
+/* Data Stream Effect */
+@keyframes data-stream {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+.data-stream {
+  position: relative;
+  overflow: hidden;
+}
+
+.data-stream::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(180deg,
+      transparent,
+      rgba(6, 182, 212, 0.1),
+      transparent);
+  animation: data-stream 3s linear infinite;
+  pointer-events: none;
+}
+
+/* Enhanced Scanlines - More subtle */
+.scanlines-enhanced::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.02) 2px,
+      rgba(255, 255, 255, 0.02) 4px);
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* Flicker Animation for system text */
+@keyframes flicker {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  41%,
+  43% {
+    opacity: 0.8;
+  }
+
+  45% {
+    opacity: 0.9;
+  }
+}
+
+.system-flicker {
+  animation: flicker 5s linear infinite;
+}
+
+/* HUD Grid Pattern */
+.hud-grid {
+  background-image:
+    linear-gradient(rgba(6, 182, 212, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6, 182, 212, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Terminal Text Style */
+.terminal-text {
+  font-family: 'Roboto Mono', 'Courier New', monospace;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #06b6d4;
+  text-shadow: 0 0 5px rgba(6, 182, 212, 0.5);
+}
+
+/* Glitch Effect - Enhanced */
+@keyframes glitch-enhanced {
+
+  0%,
+  100% {
+    text-shadow: 2px 0 #06b6d4, -2px 0 #f43f5e, 0 0 10px rgba(6, 182, 212, 0.5);
+    transform: translate(0);
+  }
+
+  20% {
+    text-shadow: -2px 0 #06b6d4, 2px 0 #f43f5e, 0 0 15px rgba(244, 63, 94, 0.5);
+    transform: translate(-2px, 1px);
+  }
+
+  40% {
+    text-shadow: 2px -2px #06b6d4, -2px 2px #f43f5e, 0 0 20px rgba(6, 182, 212, 0.7);
+    transform: translate(2px, -1px);
+  }
+
+  60% {
+    text-shadow: -2px -2px #06b6d4, 2px 2px #f43f5e, 0 0 15px rgba(244, 63, 94, 0.5);
+    transform: translate(-1px, -2px);
+  }
+
+  80% {
+    text-shadow: 2px 2px #06b6d4, -2px -2px #f43f5e, 0 0 10px rgba(6, 182, 212, 0.5);
+    transform: translate(1px, 2px);
+  }
+}
+
+.glitch-enhanced {
+  animation: glitch-enhanced 1.5s infinite;
+}
+
+/* Energy Shield Effect */
+@keyframes energy-shield {
+
+  0%,
+  100% {
+    box-shadow: 0 0 5px rgba(6, 182, 212, 0.3),
+      0 0 10px rgba(6, 182, 212, 0.2),
+      inset 0 0 5px rgba(6, 182, 212, 0.1);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.5),
+      0 0 40px rgba(6, 182, 212, 0.3),
+      inset 0 0 10px rgba(6, 182, 212, 0.2);
+  }
+}
+
+.energy-shield {
+  animation: energy-shield 2s ease-in-out infinite;
+}
+
+/* Roboto Mono Font Utility */
+.font-roboto-mono {
+  font-family: 'Roboto Mono', 'Courier New', monospace;
+}
+
+/* Spring-like hover (use with Framer Motion for best results) */
+.spring-hover {
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.spring-hover:hover {
+  transform: scale(1.05);
+}
+
+.spring-hover:active {
+  transform: scale(0.95);
+  transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}

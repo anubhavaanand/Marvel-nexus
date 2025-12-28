@@ -33,11 +33,24 @@ export default function CanonEventAlert({
 
     return (
         <motion.div
-            className={`glass-panel ${getDangerColor(glitchLevel)} p-4 rounded-xl relative overflow-hidden`}
+            className={`glass-panel ${getDangerColor(glitchLevel)} ${glitchLevel > 6 ? 'hazard-alert' : ''} ${isFixedPoint ? 'tactical-scan' : ''} p-4 rounded-xl relative overflow-hidden`}
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4, delay: index * 0.1 }}
-            whileHover={{ scale: 1.02, x: 5 }}
+            transition={{
+                type: "spring",
+                stiffness: 250,
+                damping: 25,
+                delay: index * 0.1
+            }}
+            whileHover={{
+                scale: 1.02,
+                x: 5,
+                transition: {
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 20
+                }
+            }}
         >
             {/* Scanline overlay for high glitch levels */}
             {glitchLevel > 6 && (
@@ -67,12 +80,12 @@ export default function CanonEventAlert({
                     {/* Fixed Point Warning */}
                     {isFixedPoint && (
                         <motion.div
-                            className="glitch-text text-xs flex items-center gap-2"
+                            className="glitch-enhanced text-xs flex items-center gap-2 font-roboto-mono"
                             animate={{ opacity: [1, 0.5, 1] }}
                             transition={{ duration: 0.5, repeat: Infinity }}
                         >
                             <Shield className="w-3 h-3" />
-                            ⚠️ FIXED CANON EVENT - DO NOT ALTER
+                            ⚠️ FIXED_CANON_EVENT - DO_NOT_ALTER
                         </motion.div>
                     )}
 
@@ -98,12 +111,12 @@ export default function CanonEventAlert({
                                 <motion.div
                                     key={i}
                                     className={`w-2 h-1 rounded-full ${i < glitchLevel
-                                            ? glitchLevel > 6
-                                                ? 'bg-red-500'
-                                                : glitchLevel > 3
-                                                    ? 'bg-orange-500'
-                                                    : 'bg-yellow-500'
-                                            : 'bg-neutral-700'
+                                        ? glitchLevel > 6
+                                            ? 'bg-red-500'
+                                            : glitchLevel > 3
+                                                ? 'bg-orange-500'
+                                                : 'bg-yellow-500'
+                                        : 'bg-neutral-700'
                                         }`}
                                     initial={{ scaleX: 0 }}
                                     animate={{ scaleX: 1 }}
@@ -112,7 +125,7 @@ export default function CanonEventAlert({
                             ))}
                         </div>
                         <span className={`text-xs font-mono ${glitchLevel > 6 ? 'text-red-400' :
-                                glitchLevel > 3 ? 'text-orange-400' : 'text-yellow-400'
+                            glitchLevel > 3 ? 'text-orange-400' : 'text-yellow-400'
                             }`}>
                             {glitchLevel}/10
                         </span>

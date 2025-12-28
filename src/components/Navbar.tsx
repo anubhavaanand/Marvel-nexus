@@ -18,22 +18,34 @@ export default function Navbar() {
 
     return (
         <motion.nav
-            className="fixed bottom-4 left-1/2 z-50 glass-panel rounded-full px-6 py-3"
+            className="fixed bottom-4 left-1/2 z-50 glass-panel-enhanced rounded-full px-6 py-3 scanlines-enhanced"
             initial={{ y: 100, opacity: 0, x: '-50%' }}
             animate={{ y: 0, opacity: 1, x: '-50%' }}
-            transition={{ delay: 0.5, type: 'spring', stiffness: 100 }}
+            transition={{
+                delay: 0.5,
+                type: 'spring',
+                stiffness: 250,
+                damping: 25
+            }}
         >
             {/* Background glow effect */}
             <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cyan-500/10 via-transparent to-cyan-500/10 blur-xl -z-10" />
 
             <div className="flex gap-6 items-center">
-                {/* Logo */}
+                {/* Logo with System Status */}
                 <motion.div
                     className="hidden sm:flex items-center gap-2 pr-4 border-r border-white/10"
                     whileHover={{ scale: 1.05 }}
                 >
-                    <Sparkles className="w-5 h-5 text-cyan-400" />
-                    <span className="text-sm font-orbitron text-cyan-400 tracking-wider">ARCHIVE</span>
+                    <div className="relative">
+                        <Sparkles className="w-5 h-5 text-cyan-400" />
+                        {/* Status pulse indicator */}
+                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full status-indicator" />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-sm font-orbitron text-cyan-400 tracking-wider">ARCHIVE</span>
+                        <span className="text-[8px] font-roboto-mono text-green-400 tracking-wide">SYSTEM_STABLE</span>
+                    </div>
                 </motion.div>
 
                 {/* Nav Items */}
@@ -45,8 +57,14 @@ export default function Navbar() {
                             <motion.div
                                 className={`relative flex flex-col items-center gap-1 cursor-pointer px-2 py-1 rounded-lg transition-colors ${isActive ? 'text-cyan-400' : 'text-neutral-400 hover:text-cyan-300'
                                     }`}
-                                whileHover={{ scale: 1.15 }}
-                                whileTap={{ scale: 0.9 }}
+                                whileHover={{
+                                    scale: 1.15,
+                                    transition: { type: "spring", stiffness: 300, damping: 20 }
+                                }}
+                                whileTap={{
+                                    scale: 0.95,
+                                    transition: { type: "spring", stiffness: 400, damping: 17 }
+                                }}
                             >
                                 {/* Active indicator */}
                                 {isActive && (

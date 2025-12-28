@@ -5,31 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Search, X, Loader2, Sparkles, Filter } from 'lucide-react'
 import HeroCard from '@/components/HeroCard'
 import { Badge } from '@/components/ui/badge'
-import type { Hero } from '@/lib/supabase'
+import { getAllHeroes, type Hero } from '@/lib/supabase'
 
-// Mock heroes for client-side search
-const allMockHeroes: Hero[] = [
-    { id: '1', name: 'Tony Stark', alias: 'Iron Man', franchise: 'MCU', origin_world: 'Earth-616', powers: ['Powered Armor', 'Genius Intellect'], weaknesses: ['Arc Reactor Dependency'], image_url: 'https://image.tmdb.org/t/p/w500/eIqJpr4e48LNiI5vhz9gLIB8S7a.jpg', is_locked_content: false },
-    { id: '2', name: 'Steve Rogers', alias: 'Captain America', franchise: 'MCU', origin_world: 'Earth-616', powers: ['Super Soldier Serum', 'Vibranium Shield'], weaknesses: ['Idealism'], image_url: 'https://image.tmdb.org/t/p/w500/5VJ3P2yyBzEy7uQwBWlVBNlc4A7.jpg', is_locked_content: false },
-    { id: '3', name: 'Thor Odinson', alias: 'Thor', franchise: 'MCU', origin_world: 'Asgard', powers: ['Lightning Manipulation', 'Mjolnir'], weaknesses: ['Arrogance'], image_url: 'https://image.tmdb.org/t/p/w500/qrTpXWuJsJsHQCaWiG0C8pRpFqB.jpg', is_locked_content: false },
-    { id: '4', name: 'Bruce Banner', alias: 'Hulk', franchise: 'MCU', origin_world: 'Earth-616', powers: ['Superhuman Strength', 'Healing Factor'], weaknesses: ['Anger Control'], image_url: 'https://image.tmdb.org/t/p/w500/5dPHlXC5mE5skzpABDa3RJSF7L6.jpg', is_locked_content: false },
-    { id: '5', name: 'Natasha Romanoff', alias: 'Black Widow', franchise: 'MCU', origin_world: 'Earth-616', powers: ['Master Spy', 'Combat Expert'], weaknesses: ['Human Physiology'], image_url: 'https://image.tmdb.org/t/p/w500/qLPRvIBgTqTNkzk3vBMkQPT1qvV.jpg', is_locked_content: false },
-    { id: '6', name: 'Wanda Maximoff', alias: 'Scarlet Witch', franchise: 'MCU', origin_world: 'Earth-616', powers: ['Reality Warping', 'Chaos Magic'], weaknesses: ['Mental Instability'], image_url: 'https://image.tmdb.org/t/p/w500/9IkTRvdXDe7IXuuH4rYDBQdaT0x.jpg', is_locked_content: false },
-    { id: '7', name: "T'Challa", alias: 'Black Panther', franchise: 'MCU', origin_world: 'Earth-616', powers: ['Vibranium Suit', 'Enhanced Strength'], weaknesses: ['Sonic Attacks'], image_url: 'https://image.tmdb.org/t/p/w500/kfLqxkDmBLvqJfVpVDvj7mR4RZj.jpg', is_locked_content: false },
-    { id: '8', name: 'Peter Parker', alias: 'Spider-Man', franchise: 'MCU', origin_world: 'Earth-616', powers: ['Spider-Sense', 'Wall-Crawling'], weaknesses: ['Ethyl Chloride'], image_url: 'https://image.tmdb.org/t/p/w500/1bH7kAoUDc9BNvaVbMSPo9dKdNm.jpg', is_locked_content: false },
-    { id: '9', name: 'Logan', alias: 'Wolverine', franchise: 'X-Men', origin_world: 'Earth-10005', powers: ['Adamantium Claws', 'Healing Factor'], weaknesses: ['Muramasa Blade'], image_url: 'https://image.tmdb.org/t/p/w500/cZk2w6gVfLj7NeQrcKwBFVQdg1m.jpg', is_locked_content: false },
-    { id: '10', name: 'Charles Xavier', alias: 'Professor X', franchise: 'X-Men', origin_world: 'Earth-10005', powers: ['Telepathy', 'Mind Control'], weaknesses: ['Paralysis'], image_url: 'https://image.tmdb.org/t/p/w500/p0v1jtXxMXn3DexHnJz8LXUhMDd.jpg', is_locked_content: false },
-    { id: '11', name: 'Erik Lehnsherr', alias: 'Magneto', franchise: 'X-Men', origin_world: 'Earth-10005', powers: ['Magnetism Control'], weaknesses: ['Non-Metallic Materials'], image_url: 'https://image.tmdb.org/t/p/w500/qW0UJlw4wZH5IHkPjRfN9l5KIZd.jpg', is_locked_content: false },
-    { id: '12', name: 'Wade Wilson', alias: 'Deadpool', franchise: 'X-Men', origin_world: 'Earth-TRN414', powers: ['Healing Factor', '4th Wall Awareness'], weaknesses: ['Carbonadium'], image_url: 'https://image.tmdb.org/t/p/w500/or06FN3Dka5tukK1e9sl16pB3iy.jpg', is_locked_content: false },
-    { id: '13', name: 'Miles Morales', alias: 'Spider-Man (Miles)', franchise: 'Spider-Verse', origin_world: 'Earth-1610', powers: ['Venom Strike', 'Invisibility'], weaknesses: ['Inexperience'], image_url: 'https://image.tmdb.org/t/p/w500/iiZZdoQBEYhV2r9XBqf4dD4sdQn.jpg', is_locked_content: false },
-    { id: '14', name: 'Gwen Stacy', alias: 'Spider-Woman', franchise: 'Spider-Verse', origin_world: 'Earth-65', powers: ['Spider-Sense', 'Acrobatics'], weaknesses: ['Emotional Burden'], image_url: 'https://image.tmdb.org/t/p/w500/eBNFByPNXVBi9cCrCZPDdMRzEEm.jpg', is_locked_content: false },
-    { id: '15', name: "Miguel O'Hara", alias: 'Spider-Man 2099', franchise: 'Spider-Verse', origin_world: 'Earth-928', powers: ['Talons', 'Accelerated Vision'], weaknesses: ['Light Sensitivity'], image_url: 'https://image.tmdb.org/t/p/w500/bLMYU3aEXBWI4HvVhwPi6lxGDgL.jpg', is_locked_content: false },
-    { id: '16', name: 'Stephen Strange', alias: 'Doctor Strange', franchise: 'MCU', origin_world: 'Earth-616', powers: ['Mystic Arts', 'Time Stone'], weaknesses: ['Arrogance'], image_url: 'https://image.tmdb.org/t/p/w500/4D4qMxS8AjrbcVqcR5y2ubuU7oP.jpg', is_locked_content: false },
-    { id: '17', name: 'Scott Lang', alias: 'Ant-Man', franchise: 'MCU', origin_world: 'Earth-616', powers: ['Size Manipulation', 'Ant Communication'], weaknesses: ['Pym Particles Dependency'], image_url: 'https://image.tmdb.org/t/p/w500/lXMyvUz2MqVumVMIMpvNXjSJhXe.jpg', is_locked_content: false },
-    { id: '18', name: 'Carol Danvers', alias: 'Captain Marvel', franchise: 'MCU', origin_world: 'Earth-616', powers: ['Energy Absorption', 'Flight', 'Superhuman Strength'], weaknesses: ['Power Overload'], image_url: 'https://image.tmdb.org/t/p/w500/AtsgWhDnHTq68L0lLsUrCnM7TjG.jpg', is_locked_content: false },
-]
-
-const franchises = ['All', 'MCU', 'X-Men', 'Spider-Verse']
+const franchises = ['All', 'MCU', 'X-Men', 'Spider-Verse', 'DC', 'Anime', 'The Boys']
 
 export default function SearchPage() {
     const [query, setQuery] = useState('')
@@ -37,14 +15,29 @@ export default function SearchPage() {
     const [isSearching, setIsSearching] = useState(false)
     const [selectedFranchise, setSelectedFranchise] = useState('All')
     const [hasSearched, setHasSearched] = useState(false)
+    const [allHeroes, setAllHeroes] = useState<Hero[]>([])
+
+    // Load all heroes from database on mount
+    useEffect(() => {
+        async function loadHeroes() {
+            try {
+                const heroes = await getAllHeroes()
+                setAllHeroes(heroes || [])
+            } catch (error) {
+                console.error('Failed to load heroes:', error)
+                setAllHeroes([])
+            }
+        }
+        loadHeroes()
+    }, [])
 
     const performSearch = useCallback((searchQuery: string, franchise: string) => {
         setIsSearching(true)
         setHasSearched(true)
 
-        // Simulate API delay
+        // Simulate slight delay for better UX
         setTimeout(() => {
-            let filtered = allMockHeroes
+            let filtered = allHeroes
 
             // Filter by franchise
             if (franchise !== 'All') {
@@ -64,8 +57,8 @@ export default function SearchPage() {
 
             setResults(filtered)
             setIsSearching(false)
-        }, 300)
-    }, [])
+        }, 150)
+    }, [allHeroes])
 
     // Debounced search
     useEffect(() => {
@@ -146,8 +139,8 @@ export default function SearchPage() {
                                 key={franchise}
                                 onClick={() => setSelectedFranchise(franchise)}
                                 className={`px-4 py-2 rounded-full text-sm font-orbitron transition-all ${selectedFranchise === franchise
-                                        ? 'bg-cyan-900/50 text-cyan-400 border border-cyan-500/50'
-                                        : 'glass-panel text-neutral-400 hover:text-white'
+                                    ? 'bg-cyan-900/50 text-cyan-400 border border-cyan-500/50'
+                                    : 'glass-panel text-neutral-400 hover:text-white'
                                     }`}
                             >
                                 {franchise}

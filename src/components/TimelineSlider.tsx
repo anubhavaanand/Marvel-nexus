@@ -79,11 +79,17 @@ export default function TimelineSlider({ movies, title = 'MCU Timeline' }: Timel
                         onClick={() => scroll('left')}
                         disabled={!canScrollLeft}
                         className={`p-2 rounded-lg glass-panel transition-all ${canScrollLeft
-                                ? 'hover:border-cyan-500/50 cursor-pointer'
-                                : 'opacity-30 cursor-not-allowed'
+                            ? 'hover:border-cyan-500/50 cursor-pointer'
+                            : 'opacity-30 cursor-not-allowed'
                             }`}
-                        whileHover={canScrollLeft ? { scale: 1.1 } : {}}
-                        whileTap={canScrollLeft ? { scale: 0.9 } : {}}
+                        whileHover={canScrollLeft ? {
+                            scale: 1.1,
+                            transition: { type: "spring", stiffness: 300, damping: 20 }
+                        } : {}}
+                        whileTap={canScrollLeft ? {
+                            scale: 0.9,
+                            transition: { type: "spring", stiffness: 400, damping: 17 }
+                        } : {}}
                     >
                         <ChevronLeft className="w-5 h-5 text-cyan-400" />
                     </motion.button>
@@ -91,11 +97,17 @@ export default function TimelineSlider({ movies, title = 'MCU Timeline' }: Timel
                         onClick={() => scroll('right')}
                         disabled={!canScrollRight}
                         className={`p-2 rounded-lg glass-panel transition-all ${canScrollRight
-                                ? 'hover:border-cyan-500/50 cursor-pointer'
-                                : 'opacity-30 cursor-not-allowed'
+                            ? 'hover:border-cyan-500/50 cursor-pointer'
+                            : 'opacity-30 cursor-not-allowed'
                             }`}
-                        whileHover={canScrollRight ? { scale: 1.1 } : {}}
-                        whileTap={canScrollRight ? { scale: 0.9 } : {}}
+                        whileHover={canScrollRight ? {
+                            scale: 1.1,
+                            transition: { type: "spring", stiffness: 300, damping: 20 }
+                        } : {}}
+                        whileTap={canScrollRight ? {
+                            scale: 0.9,
+                            transition: { type: "spring", stiffness: 400, damping: 17 }
+                        } : {}}
                     >
                         <ChevronRight className="w-5 h-5 text-cyan-400" />
                     </motion.button>
@@ -122,9 +134,15 @@ export default function TimelineSlider({ movies, title = 'MCU Timeline' }: Timel
                     >
                         {/* Movie Card */}
                         <motion.div
-                            className="glass-panel glass-card-hover rounded-xl overflow-hidden cursor-pointer"
-                            whileHover={{ y: -8 }}
-                            transition={{ duration: 0.2 }}
+                            className="glass-panel glass-card-hover holographic-glare rounded-xl overflow-hidden cursor-pointer"
+                            whileHover={{
+                                y: -8,
+                                transition: {
+                                    type: "spring",
+                                    stiffness: 300,
+                                    damping: 20
+                                }
+                            }}
                         >
                             {/* Poster */}
                             <div className="relative h-80">

@@ -28,41 +28,81 @@ const franchiseColors: Record<string, { bg: string; border: string; text: string
 export default function HeroCard({ hero, index = 0 }: HeroCardProps) {
     const colors = franchiseColors[hero.franchise] || franchiseColors['MCU']
     const slug = hero.alias.toLowerCase().replace(/\s+/g, '-').replace(/[()]/g, '')
-    const ref = useRef(null)
+    const ref = useRef<HTMLDivElement>(null)
     const isInView = useInView(ref, { once: true, margin: "-50px" })
 
     const [isAdmin, setIsAdmin] = useState(false)
+    const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 })
+    const [isHovering, setIsHovering] = useState(false)
 
     useEffect(() => {
         setIsAdmin(sessionStorage.getItem('admin_auth') === 'true')
     }, [])
 
+    // 3D Tilt Effect - Track mouse position for parallax
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (!ref.current) return
+        const rect = ref.current.getBoundingClientRect()
+        const x = ((e.clientX - rect.left) / rect.width) * 100
+        const y = ((e.clientY - rect.top) / rect.height) * 100
+        setMousePosition({ x, y })
+    }
+
+    const handleMouseEnter = () => setIsHovering(true)
+    const handleMouseLeave = () => {
+        setIsHovering(false)
+        setMousePosition({ x: 50, y: 50 })
+    }
+
+    // Calculate tilt based on mouse position
+    const tiltX = isHovering ? (mousePosition.y - 50) / 4 : 0 // ±12.5 degrees max
+    const tiltY = isHovering ? -(mousePosition.x - 50) / 4 : 0
+
     return (
         <Link href={hero.is_locked_content && !isAdmin ? '#' : `/hero/${slug}`}>
             <motion.div
                 ref={ref}
-                className={`relative group h-[420px] rounded-2xl overflow-hidden ${hero.is_locked_content && !isAdmin ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                className={`relative group h-[420px] rounded-2xl overflow-hidden tactical-scan holographic-glare ${hero.is_locked_content && !isAdmin ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                 initial={{ opacity: 0, y: 80, rotateX: -15, scale: 0.9 }}
                 animate={isInView ? {
                     opacity: 1,
                     y: 0,
-                    rotateX: 0,
+                    rotateX: tiltX,
+                    rotateY: tiltY,
                     scale: 1
                 } : {}}
                 transition={{
                     duration: 0.7,
                     delay: index * 0.1,
-                    ease: [0.22, 1, 0.36, 1]
+                    type: "spring",
+                    stiffness: 250,
+                    damping: 25
                 }}
                 whileHover={hero.is_locked_content && !isAdmin ? {} : {
                     scale: 1.05,
                     y: -10,
-                    transition: { duration: 0.3 }
+                    rotateX: tiltX,
+                    rotateY: tiltY,
+                    transition: {
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 20
+                    }
                 }}
-                whileTap={hero.is_locked_content && !isAdmin ? {} : { scale: 0.98 }}
+                whileTap={hero.is_locked_content && !isAdmin ? {} : {
+                    scale: 0.95,
+                    transition: { duration: 0.1 }
+                }}
+                onMouseMove={handleMouseMove}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
                 style={{
                     boxShadow: `0 20px 40px -15px ${colors.shadowColor}`,
                     transformStyle: 'preserve-3d',
+                    perspective: 1200,
+                    // @ts-ignore - CSS custom properties
+                    '--mouse-x': `${mousePosition.x}%`,
+                    '--mouse-y': `${mousePosition.y}%`,
                 }}
             >
                 {/* Border glow on hover */}

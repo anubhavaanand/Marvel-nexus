@@ -11,7 +11,7 @@ Vercel is the easiest way to deploy Next.js applications and is made by the crea
 
 ### Step-by-Step Deployment
 
-#### 1. Push Code to GitHub
+#### 1. Push Code 
 ```bash
 git init
 git add .

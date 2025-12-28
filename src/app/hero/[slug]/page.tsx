@@ -7,6 +7,7 @@ import PowerRadarChart from '@/components/PowerRadarChart'
 import CanonEventAlert from '@/components/CanonEventAlert'
 import { HeroProfileSkeleton } from '@/components/Skeleton'
 import LockedContentGuard from '@/components/LockedContentGuard'
+import HeroImage from '@/components/HeroImage'
 import { getHeroBySlug, type HeroWithRelations } from '@/lib/supabase'
 import {
     ArrowLeft,
@@ -72,21 +73,11 @@ export default async function HeroPage({ params }: PageProps) {
                         <div className="flex flex-col lg:flex-row gap-8 mb-12">
                             {/* Hero Image */}
                             <div className="relative w-full lg:w-96 aspect-[3/4] rounded-2xl overflow-hidden glass-panel flex-shrink-0">
-                                {hero.image_url ? (
-                                    <img
-                                        src={hero.image_url}
-                                        alt={hero.alias}
-                                        className="absolute inset-0 w-full h-full object-cover"
-                                        onError={(e) => {
-                                            const target = e.target as HTMLImageElement;
-                                            target.style.display = 'none';
-                                        }}
-                                    />
-                                ) : (
-                                    <div className="w-full h-full skeleton flex items-center justify-center">
-                                        <span className="text-8xl opacity-30">🦸</span>
-                                    </div>
-                                )}
+                                <HeroImage
+                                    imageUrl={hero.image_url}
+                                    alias={hero.alias}
+                                    className="absolute inset-0 w-full h-full object-cover"
+                                />
 
                                 {/* Gradient overlay */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-transparent to-transparent" />
