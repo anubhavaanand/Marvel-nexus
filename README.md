@@ -39,47 +39,8 @@
 - Supabase account
 - TMDB API key (optional)
 
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/anubhavaanand/Marvel-nexus.git
-cd Marvel-nexus
-
-# Install dependencies
-npm install
-
-# Set up environment variables
-cp env.example .env.local
-# Edit .env.local with your credentials
-
-# Run database migrations
-# Execute scripts/create-tables.sql in Supabase SQL Editor
-
-# Seed the database
-node scripts/seed-ultimate.js
-
-# Start development server
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000)
-
----
-
-## 🔐 Admin Access
-
-Access the admin panel at `/admin`
-
-**Default Password:** `Anubhav@12`
-
-**Features:**
-- Add/Edit/Delete heroes
-- Upload images
-- Manage franchises
-- Toggle premium content
-
----
+ deployed at :-
+https://multiversearchive.vercel.app/
 
 ## 📁 Project Structure
 
