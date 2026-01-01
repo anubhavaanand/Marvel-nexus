@@ -32,127 +32,12 @@
 
 ---
 
-## 🎯 Quick Start
-
-### Prerequisites
-- Node.js 18+
-- Supabase account
-- TMDB API key (optional)
 
  deployed at :-
 https://multiversearchive.vercel.app/
+`
 
-## 📁 Project Structure
 
-```
-Marvel-nexus/
-├── src/
-│   ├── app/                  # Next.js app router
-│   │   ├── admin/           # Admin panel
-│   │   ├── hero/[slug]/     # Hero detail pages
-│   │   ├── watch-order/     # Watch order pages
-│   │   └── page.tsx         # Homepage
-│   ├── components/          # React components
-│   │   ├── admin/           # Admin-specific components
-│   │   ├── ui/              # Reusable UI components
-│   │   └── ...
-│   └── lib/                 # Utilities & config
-│       ├── supabase.ts      # Database client
-│       └── utils.ts         # Helper functions
-├── scripts/                 # Database scripts
-│   ├── create-tables.sql    # Database schema
-│   ├── seed-ultimate.js     # Seed heroes
-│   └── add-spidermen.js     # Add Spider-Men variants
-└── public/                  # Static assets
-```
-
----
-
-## 🗄️ Database Schema
-
-**Tables:**
-- `heroes` - Hero profiles (name, alias, powers, weaknesses)
-- `canon_events` - Important timeline events
-- `movies` - Movie/show information
-- `hero_movies` - Junction table
-
-See `scripts/create-tables.sql` for full schema.
-
----
-
-## 🎨 Customization
-
-### Add a New Franchise
-
-1. Update `src/components/HeroCard.tsx` color scheme
-2. Add tab in `src/app/page.tsx`
-3. Create heroes with new franchise value
-
-### Change Admin Password
-
-Edit `src/app/admin/page.tsx`:
-```typescript
-const ADMIN_PASSWORD = 'your-new-password'
-```
-
-### Add More Heroes
-
-**Option 1: Via Admin Panel** (Recommended)
-- Login to `/admin`
-- Click "Add New Hero"
-- Fill form & save
-
-**Option 2: Via Script**
-- Edit `scripts/seed-ultimate.js`
-- Add hero object
-- Run: `node scripts/seed-ultimate.js`
-
----
-
-## 🚀 Deployment
-
-### Deploy to Vercel (Recommended)
-
-1. Push code to GitHub
-2. Import project on [Vercel](https://vercel.com)
-3. Add environment variables:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-4. Deploy!
-
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
-
----
-
-## 🌐 Environment Variables
-
-```bash
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-key
-
-# Optional: TMDB (for movie data)
-NEXT_PUBLIC_TMDB_API_KEY=your-tmdb-key
-```
-
----
-
-## 📝 Available Scripts
-
-```bash
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run start        # Start production server
-npm run lint         # Run ESLint
-
-# Database scripts
-node scripts/seed-ultimate.js    # Seed all heroes
-node scripts/add-spidermen.js    # Add Spider-Men variants
-```
-
----
 
 ## 🎯 Features Breakdown
 
@@ -181,13 +66,6 @@ node scripts/add-spidermen.js    # Add Spider-Men variants
 
 ---
 
-## 🔒 Security
-
-- ✅ Environment variables secured
-- ✅ Row Level Security (RLS) enabled in Supabase
-- ✅ Admin authentication via session storage
-- ✅ Input validation & sanitization
-- ✅ HTTPS enforced in production
 
 ---
 
@@ -200,7 +78,7 @@ node scripts/add-spidermen.js    # Add Spider-Men variants
 
 ## 🤝 Contributing
 
-This is a personal project, but feel free to fork and customize!
+This is a personal project, & i dont like people copying me  but, feel free to fork and customize!
 
 ---
 
@@ -225,11 +103,6 @@ For issues or questions, open an issue on GitHub
 
 ---
 
-## 🎉 Live Demo
-
-**Production:** [https://multiversearchive.vercel.app](https://multiversearchive.vercel.app)
-
-**Admin Panel:** [https://multiversearchive.vercel.app/admin](https://multiversearchive.vercel.app/admin)
 
 ---
 
