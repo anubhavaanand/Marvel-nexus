@@ -1,16 +1,9 @@
 'use client'
 
-import { useState, useEffect, lazy, Suspense } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Sparkles, Atom, Bug, Shield, Zap, Swords, Skull, CircleDot } from 'lucide-react'
-import dynamic from 'next/dynamic'
-
-// Lazy load 3D scene to avoid SSR issues
-const Scene3DWrapper = dynamic(() => import('@/components/3d/Scene3DWrapper'), {
-    ssr: false,
-    loading: () => null,
-})
 
 interface HomeClientProps {
     children: React.ReactNode
@@ -65,84 +58,82 @@ export default function HomeClient({ children }: HomeClientProps) {
     const theme = franchiseThemes[activeTab] || franchiseThemes.mcu
 
     return (
-        <Scene3DWrapper>
-            <div className="relative min-h-screen">
-                {/* Animated Background Layer */}
-                <AnimatePresence mode="wait">
+        <div className="relative min-h-screen">
+            {/* Animated Background Layer */}
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={activeTab}
+                    className="fixed inset-0 pointer-events-none z-0"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    {/* Main glow effect */}
+                    <div
+                        className="absolute inset-0"
+                        style={{ background: theme.bgGlow }}
+                    />
+
+                    {/* Animated gradient */}
+                    <div className={`absolute inset-0 bg-gradient-to-b ${theme.gradient}`} />
+
+                    {/* Floating orbs */}
                     <motion.div
-                        key={activeTab}
-                        className="fixed inset-0 pointer-events-none z-0"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.5 }}
-                    >
-                        {/* Main glow effect */}
-                        <div
-                            className="absolute inset-0"
-                            style={{ background: theme.bgGlow }}
-                        />
+                        className={`absolute w-[500px] h-[500px] rounded-full bg-${theme.color}-500/10 blur-[100px]`}
+                        animate={{
+                            x: ['-20%', '10%', '-20%'],
+                            y: ['-10%', '10%', '-10%'],
+                        }}
+                        transition={{
+                            duration: 20,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                        }}
+                        style={{ top: '-10%', left: '0%' }}
+                    />
+                    <motion.div
+                        className={`absolute w-[400px] h-[400px] rounded-full bg-${theme.color}-500/10 blur-[100px]`}
+                        animate={{
+                            x: ['20%', '-10%', '20%'],
+                            y: ['10%', '-20%', '10%'],
+                        }}
+                        transition={{
+                            duration: 25,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                        }}
+                        style={{ bottom: '10%', right: '0%' }}
+                    />
 
-                        {/* Animated gradient */}
-                        <div className={`absolute inset-0 bg-gradient-to-b ${theme.gradient}`} />
+                    {/* Scan lines */}
+                    <div
+                        className="absolute inset-0 opacity-[0.015]"
+                        style={{
+                            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.05) 2px, rgba(255,255,255,0.05) 4px)',
+                        }}
+                    />
 
-                        {/* Floating orbs */}
-                        <motion.div
-                            className={`absolute w-[500px] h-[500px] rounded-full bg-${theme.color}-500/10 blur-[100px]`}
-                            animate={{
-                                x: ['-20%', '10%', '-20%'],
-                                y: ['-10%', '10%', '-10%'],
-                            }}
-                            transition={{
-                                duration: 20,
-                                repeat: Infinity,
-                                ease: "easeInOut",
-                            }}
-                            style={{ top: '-10%', left: '0%' }}
-                        />
-                        <motion.div
-                            className={`absolute w-[400px] h-[400px] rounded-full bg-${theme.color}-500/10 blur-[100px]`}
-                            animate={{
-                                x: ['20%', '-10%', '20%'],
-                                y: ['10%', '-20%', '10%'],
-                            }}
-                            transition={{
-                                duration: 25,
-                                repeat: Infinity,
-                                ease: "easeInOut",
-                            }}
-                            style={{ bottom: '10%', right: '0%' }}
-                        />
-
-                        {/* Scan lines */}
-                        <div
-                            className="absolute inset-0 opacity-[0.015]"
-                            style={{
-                                backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.05) 2px, rgba(255,255,255,0.05) 4px)',
-                            }}
-                        />
-
-                        {/* Grid pattern */}
-                        <div
-                            className="absolute inset-0 opacity-[0.02]"
-                            style={{
-                                backgroundImage: `
+                    {/* Grid pattern */}
+                    <div
+                        className="absolute inset-0 opacity-[0.02]"
+                        style={{
+                            backgroundImage: `
                 linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)
               `,
-                                backgroundSize: '60px 60px',
-                            }}
-                        />
-                    </motion.div>
-                </AnimatePresence>
+                            backgroundSize: '60px 60px',
+                        }}
+                    />
+                </motion.div>
+            </AnimatePresence>
 
-                {/* Tab Change Handler - Hidden element to capture tab changes */}
-                <div className="relative z-10">
-                    <TabChangeListener onTabChange={setActiveTab} />
-                    {children}
-                </div>
+            {/* Tab Change Handler - Hidden element to capture tab changes */}
+            <div className="relative z-10">
+                <TabChangeListener onTabChange={setActiveTab} />
+                {children}
             </div>
-        </Scene3DWrapper>
+        </div>
     )
 }
 
