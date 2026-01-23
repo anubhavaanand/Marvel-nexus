@@ -16,7 +16,7 @@ const heroes = [
     { alias: 'Thor', name: 'Thor Odinson', franchise: 'MCU', origin_world: 'Asgard', image_url: 'https://image.tmdb.org/t/p/original/prSfAi1xGrhLQNxVSUFh61xQ4Qy.jpg', powers: ['God of Thunder', 'Mjolnir'], weaknesses: ['Pride'], is_locked_content: false },
     { alias: 'Hulk', name: 'Bruce Banner', franchise: 'MCU', origin_world: 'Earth-616', image_url: 'https://image.tmdb.org/t/p/original/gKzYx79y0AQTL4UAk1cBQJ3nvrm.jpg', powers: ['Super Strength', 'Regen'], weaknesses: ['Rage'], is_locked_content: false },
     { alias: 'Black Widow', name: 'Natasha Romanoff', franchise: 'MCU', origin_world: 'Earth-616', image_url: 'https://image.tmdb.org/t/p/original/qAZ0pzat24kLdO3o8ejmbLxyOac.jpg', powers: ['Master Spy', 'Martial Arts'], weaknesses: ['Human'], is_locked_content: false },
-    { alias: 'Hawkeye', name: 'Clint Barton', franchise: 'MCU', origin_world: 'Earth-616', image_url: 'https://image.tmdb.org/t/p/original/s2z9Xk9r5F6X7vF9.jpg', powers: ['Master Archer', 'Accuracy'], weaknesses: ['Hearing Loss'], is_locked_content: false },
+    { alias: 'Hawkeye', name: 'Clint Barton', franchise: 'MCU', origin_world: 'Earth-616', image_url: 'https://image.tmdb.org/t/p/original/eYguDsGeqB4jKLnbdDqKpQQW88K.jpg', powers: ['Master Archer', 'Accuracy'], weaknesses: ['Hearing Loss'], is_locked_content: false },
     { alias: 'Doctor Strange', name: 'Stephen Strange', franchise: 'MCU', origin_world: 'Earth-616', image_url: 'https://image.tmdb.org/t/p/original/uGBVj3bEbCoZbDjjl9wTxcygko1.jpg', powers: ['Sorcery', 'Time Stone'], weaknesses: ['Arrogance'], is_locked_content: true },
     { alias: 'Scarlet Witch', name: 'Wanda Maximoff', franchise: 'MCU', origin_world: 'Earth-616', image_url: 'https://image.tmdb.org/t/p/original/9Gtg2DzBhmYamXBS1hKAhiwbBKS.jpg', powers: ['Chaos Magic', 'Reality Warping'], weaknesses: ['Trauma'], is_locked_content: true },
     { alias: 'Spider-Man', name: 'Peter Parker', franchise: 'MCU', origin_world: 'Earth-616', image_url: 'https://image.tmdb.org/t/p/original/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg', powers: ['Spider-Sense', 'Webs'], weaknesses: ['Responsibility'], is_locked_content: false },
@@ -69,7 +69,7 @@ const heroes = [
     // PEACEMAKER
     // ==========================================
     { alias: 'Peacemaker', name: 'Chris Smith', franchise: 'Peacemaker', origin_world: 'DCEU', image_url: 'https://image.tmdb.org/t/p/original/hE3LRIbFuzJA45kuf5BaEwooY5I.jpg', powers: ['Guns', 'Dance'], weaknesses: ['Daddy Issues'], is_locked_content: false },
-    { alias: 'Vigilante', name: 'Adrian Chase', franchise: 'Peacemaker', origin_world: 'DCEU', image_url: 'https://image.tmdb.org/t/p/original/jFpX1iY4X12.jpg', powers: ['Regen', 'Sniper'], weaknesses: ['Awsward'], is_locked_content: false },
+    { alias: 'Vigilante', name: 'Adrian Chase', franchise: 'Peacemaker', origin_world: 'DCEU', image_url: 'https://image.tmdb.org/t/p/original/hE3LRIbFuzJA45kuf5BaEwooY5I.jpg', powers: ['Regen', 'Sniper'], weaknesses: ['Awsward'], is_locked_content: false },
     { alias: 'Judomaster', name: 'Judomaster', franchise: 'Peacemaker', origin_world: 'DCEU', image_url: 'https://image.tmdb.org/t/p/original/hE3LRIbFuzJA45kuf5BaEwooY5I.jpg', powers: ['Martial Arts'], weaknesses: ['Snacks'], is_locked_content: false },
     { alias: 'Eagly', name: 'Eagly', franchise: 'Peacemaker', origin_world: 'DCEU', image_url: 'https://image.tmdb.org/t/p/original/hE3LRIbFuzJA45kuf5BaEwooY5I.jpg', powers: ['Flight', 'Claws'], weaknesses: ['Bird'], is_locked_content: false },
 
@@ -78,10 +78,10 @@ const heroes = [
     // ==========================================
     { alias: 'Luffy', name: 'Monkey D. Luffy', franchise: 'Anime', origin_world: 'One Piece', image_url: 'https://image.tmdb.org/t/p/original/fcXdJlbSdUEeMSJFsXKSznpjOVy.jpg', powers: ['Rubber'], weaknesses: ['Water'], is_locked_content: false },
     { alias: 'Zoro', name: 'Roronoa Zoro', franchise: 'Anime', origin_world: 'One Piece', image_url: 'https://image.tmdb.org/t/p/original/fcXdJlbSdUEeMSJFsXKSznpjOVy.jpg', powers: ['Swords'], weaknesses: ['Directions'], is_locked_content: false },
-    { alias: 'Goku', name: 'Kakarot', franchise: 'Anime', origin_world: 'Dragon Ball', image_url: 'https://image.tmdb.org/t/p/original/tHuM8BOFplDP2LYJk2qX7.jpg', powers: ['Saiyan'], weaknesses: ['Hunger'], is_locked_content: false },
+    { alias: 'Goku', name: 'Kakarot', franchise: 'Anime', origin_world: 'Dragon Ball', image_url: 'https://image.tmdb.org/t/p/original/5dYBKVq8Tn3k0L4oLVE9fWjuQT8.jpg', powers: ['Saiyan'], weaknesses: ['Hunger'], is_locked_content: false },
     { alias: 'Naruto', name: 'Naruto Uzumaki', franchise: 'Anime', origin_world: 'Naruto', image_url: 'https://image.tmdb.org/t/p/original/2DZ0yqa0a8uSfbzM48t22nZqK0j.jpg', powers: ['Hokage'], weaknesses: ['Ramen'], is_locked_content: false },
     { alias: 'Saitama', name: 'One Punch Man', franchise: 'Anime', origin_world: 'OPM', image_url: 'https://image.tmdb.org/t/p/original/iE3s0lG5QVdEHOEZnoAxjmMtvnc.jpg', powers: ['Punch'], weaknesses: ['Bored'], is_locked_content: false },
-    { alias: 'Eren Yeager', name: 'Eren Yeager', franchise: 'Anime', origin_world: 'AOT', image_url: 'https://image.tmdb.org/t/p/original/h8MlL4h2e5.jpg', powers: ['Titan'], weaknesses: ['Freedom'], is_locked_content: true }
+    { alias: 'Eren Yeager', name: 'Eren Yeager', franchise: 'Anime', origin_world: 'AOT', image_url: 'https://image.tmdb.org/t/p/original/hTP1DtLGFamjfu8WqjnuQdP1n4i.jpg', powers: ['Titan'], weaknesses: ['Freedom'], is_locked_content: true }
 ];
 
 async function seedUltimate() {

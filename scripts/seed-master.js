@@ -258,7 +258,7 @@ const heroes = [
         name: 'Kakarot',
         franchise: 'Anime',
         origin_world: 'Planet Vegeta',
-        image_url: 'https://image.tmdb.org/t/p/original/tHuM8BOFplDP2LYJk2qX7.jpg',
+        image_url: 'https://image.tmdb.org/t/p/original/5dYBKVq8Tn3k0L4oLVE9fWjuQT8.jpg',
         powers: ['Kamehameha', 'Super Saiyan', 'Ultra Instinct'],
         weaknesses: ['Needles'],
         is_locked_content: false
@@ -268,7 +268,7 @@ const heroes = [
         name: 'Prince Vegeta',
         franchise: 'Anime',
         origin_world: 'Planet Vegeta',
-        image_url: 'https://image.tmdb.org/t/p/original/7g12r01c7yl9t2p0tqYjXp4g5.jpg',
+        image_url: 'https://image.tmdb.org/t/p/original/6IPvlNk5cRnqDmZFQLDmBQxY8PS.jpg',
         powers: ['Galick Gun', 'Final Flash'],
         weaknesses: ['Pride'],
         is_locked_content: false
@@ -278,7 +278,7 @@ const heroes = [
         name: 'Monkey D. Luffy',
         franchise: 'Anime',
         origin_world: 'East Blue',
-        image_url: 'https://image.tmdb.org/t/p/original/8gPzX6o9y0u8g0.jpg', // One Piece Film Red or similar
+        image_url: 'https://image.tmdb.org/t/p/original/fcXdJlbSdUEeMSJFsXKSznpjOVy.jpg',
         powers: ['Gum-Gum Fruit', 'Haki', 'Gear 5'],
         weaknesses: ['Seawater'],
         is_locked_content: false
@@ -288,7 +288,7 @@ const heroes = [
         name: 'Roronoa Zoro',
         franchise: 'Anime',
         origin_world: 'East Blue',
-        image_url: 'https://image.tmdb.org/t/p/original/zF22Jk.jpg', // Placeholder for Zoro (One Piece) or use Film Red Group
+        image_url: 'https://image.tmdb.org/t/p/original/fcXdJlbSdUEeMSJFsXKSznpjOVy.jpg',
         powers: ['Three Sword Style', 'Haki'],
         weaknesses: ['Direction'],
         is_locked_content: false
@@ -298,7 +298,7 @@ const heroes = [
         name: 'Naruto Uzumaki',
         franchise: 'Anime',
         origin_world: 'Hidden Leaf',
-        image_url: 'https://image.tmdb.org/t/p/original/x2q575r6M5h5i5j5.jpg',
+        image_url: 'https://image.tmdb.org/t/p/original/vauCEnR7CiyBDzRCD8y8QgVQPB1.jpg',
         powers: ['Rasengan', 'Shadow Clones', 'Kurama Mode'],
         weaknesses: ['Talk no Jutsu'],
         is_locked_content: false
@@ -318,7 +318,7 @@ const heroes = [
         name: 'Eren Yeager',
         franchise: 'Anime',
         origin_world: 'Paradis',
-        image_url: 'https://image.tmdb.org/t/p/original/h8MlL4h2e5.jpg',
+        image_url: 'https://image.tmdb.org/t/p/original/hTP1DtLGFamjfu8WqjnuQdP1n4i.jpg',
         powers: ['Attack Titan', 'Founding Titan'],
         weaknesses: ['Freedom'],
         is_locked_content: true
@@ -328,7 +328,7 @@ const heroes = [
         name: 'Satoru Gojo',
         franchise: 'Anime',
         origin_world: 'Tokyo Jujutsu High',
-        image_url: 'https://image.tmdb.org/t/p/original/hSK3d3.jpg',
+        image_url: 'https://image.tmdb.org/t/p/original/hGN4hvzCAslLzKLdpNxzVvlJfxt.jpg',
         powers: ['Infinity', 'Hollow Purple'],
         weaknesses: ['Sealing'],
         is_locked_content: true
