@@ -49,8 +49,10 @@ export default function Scene3DWrapper({ children, className = '' }: Scene3DWrap
     const [mounted, setMounted] = useState(false)
 
     useEffect(() => {
-        setMounted(true)
-        setWebglSupported(isWebGLAvailable())
+        requestAnimationFrame(() => {
+            setMounted(true)
+            setWebglSupported(isWebGLAvailable())
+        })
     }, [])
 
     const handleIncline = useCallback(() => {

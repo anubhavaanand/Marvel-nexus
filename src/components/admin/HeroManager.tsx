@@ -12,8 +12,7 @@ import {
     X,
     Loader2,
     Image as ImageIcon,
-    AlertTriangle,
-    CheckCircle
+    AlertTriangle
 } from 'lucide-react'
 import { getAllHeroes, updateHero, deleteHero, type Hero } from '@/lib/supabase'
 
@@ -25,17 +24,19 @@ export default function HeroManager() {
     const [isSaving, setIsSaving] = useState(false)
     const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
-    // Load heroes on mount
-    useEffect(() => {
-        fetchHeroes()
-    }, [])
-
     const fetchHeroes = async () => {
         setLoading(true)
         const data = await getAllHeroes()
         setHeroes(data)
         setLoading(false)
     }
+
+    // Load heroes on mount
+    useEffect(() => {
+        requestAnimationFrame(() => {
+            fetchHeroes()
+        })
+    }, [])
 
     const handleSave = async () => {
         if (!editingHero) return

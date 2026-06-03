@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, useScroll, useTransform } from 'framer-motion'
-import { useRef } from 'react'
+import { useRef, useEffect, useState } from 'react'
 
 // Franchise background themes
 const franchiseThemes: Record<string, {
@@ -197,26 +197,49 @@ export function FloatingParticles({ color = 'cyan', count = 20 }: { color?: stri
 
     const bgClass = colorClasses[color] || colorClasses.cyan
 
+    interface Particle {
+        x: string;
+        y: string;
+        initialOpacity: number;
+        animateY: string[];
+        duration: number;
+    }
+
+    const [particles, setParticles] = useState<Particle[]>([])
+
+    useEffect(() => {
+        const generated = Array.from({ length: count }, () => ({
+            x: Math.random() * 100 + '%',
+            y: Math.random() * 100 + '%',
+            initialOpacity: Math.random() * 0.5 + 0.1,
+            animateY: [
+                Math.random() * 100 + '%',
+                Math.random() * 100 + '%',
+            ],
+            duration: Math.random() * 10 + 10,
+        }))
+        requestAnimationFrame(() => {
+            setParticles(generated)
+        })
+    }, [count])
+
     return (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {Array.from({ length: count }).map((_, i) => (
+            {particles.map((p, i) => (
                 <motion.div
                     key={i}
                     className={`absolute w-1 h-1 rounded-full ${bgClass}`}
                     initial={{
-                        x: Math.random() * 100 + '%',
-                        y: Math.random() * 100 + '%',
-                        opacity: Math.random() * 0.5 + 0.1,
+                        x: p.x,
+                        y: p.y,
+                        opacity: p.initialOpacity,
                     }}
                     animate={{
-                        y: [
-                            Math.random() * 100 + '%',
-                            Math.random() * 100 + '%',
-                        ],
+                        y: p.animateY,
                         opacity: [0.1, 0.5, 0.1],
                     }}
                     transition={{
-                        duration: Math.random() * 10 + 10,
+                        duration: p.duration,
                         repeat: Infinity,
                         ease: "linear",
                     }}

@@ -31,7 +31,7 @@ const mockMovies: Movie[] = [
     { id: '17', tmdb_id: 284053, title: 'Thor: Ragnarok', release_date: '2017-11-03', phase: 'Phase 3', poster_url: 'https://image.tmdb.org/t/p/w500/rzRwTcFvttcN1ZpX2xv4j3tSdJu.jpg', imdb_rating: 7.9 },
     { id: '18', tmdb_id: 284054, title: 'Black Panther', release_date: '2018-02-16', phase: 'Phase 3', poster_url: 'https://image.tmdb.org/t/p/w500/uxzzxijgPIY7slzFvMotPv8wjKA.jpg', imdb_rating: 7.3 },
     { id: '19', tmdb_id: 299536, title: 'Avengers: Infinity War', release_date: '2018-04-27', phase: 'Phase 3', poster_url: 'https://image.tmdb.org/t/p/w500/7WsyChQLEftFiDOVTGkv3hFpyyt.jpg', imdb_rating: 8.4 },
-    { id: '20', tmdb_id: 363088, title: 'Ant-Man and the Wasp', release_date: '2018-07-06', phase: 'Phase 3', poster_url: 'https://image.tmdb.org/t/p/w500/eivQmS3wqzqnQWILHLc4FsGfcXP.jpg', imdb_rating: 7.0 },
+    { id: '20', tmdb_id: 363088, title: 'Ant-Man and the Wasp', release_date: '2018-07-06', phase: 'Phase 3', poster_url: 'https://image.tmdb.org/t/p/w500/rv1AWImgx386ULjcf62VYaW8zSt.jpg', imdb_rating: 7.0 },
     { id: '21', tmdb_id: 299537, title: 'Captain Marvel', release_date: '2019-03-08', phase: 'Phase 3', poster_url: 'https://image.tmdb.org/t/p/w500/AtsgWhDnHTq68L0lLsUrCnM7TjG.jpg', imdb_rating: 6.8 },
     { id: '22', tmdb_id: 299534, title: 'Avengers: Endgame', release_date: '2019-04-26', phase: 'Phase 3', poster_url: 'https://image.tmdb.org/t/p/w500/or06FN3Dka5tukK1e9sl16pB3iy.jpg', imdb_rating: 8.4 },
     { id: '23', tmdb_id: 429617, title: 'Spider-Man: Far From Home', release_date: '2019-07-02', phase: 'Phase 3', poster_url: 'https://image.tmdb.org/t/p/w500/4q2NNj4S5dG2RLF9CpXsej7yXl.jpg', imdb_rating: 7.4 },
@@ -48,7 +48,7 @@ const mockMovies: Movie[] = [
     // Phase 5
     { id: '31', tmdb_id: 640146, title: 'Ant-Man and the Wasp: Quantumania', release_date: '2023-02-17', phase: 'Phase 5', poster_url: 'https://image.tmdb.org/t/p/w500/ngl2FKBlU4fhbdsrtdom9LVLBXw.jpg', imdb_rating: 6.0 },
     { id: '32', tmdb_id: 447365, title: 'Guardians of the Galaxy Vol. 3', release_date: '2023-05-05', phase: 'Phase 5', poster_url: 'https://image.tmdb.org/t/p/w500/r2J02Z2OpNTctfOSN1Ydgii51I3.jpg', imdb_rating: 7.9 },
-    { id: '33', tmdb_id: 609681, title: 'The Marvels', release_date: '2023-11-10', phase: 'Phase 5', poster_url: 'https://image.tmdb.org/t/p/w500/9GBhzXMFjgcZ3FdR9w3bUMMqps5.jpg', imdb_rating: 5.5 },
+    { id: '33', tmdb_id: 609681, title: 'The Marvels', release_date: '2023-11-10', phase: 'Phase 5', poster_url: 'https://image.tmdb.org/t/p/w500/tUtgLOESpCx7ue4BaeCTqp3vn1b.jpg', imdb_rating: 5.5 },
     { id: '34', tmdb_id: 533535, title: 'Deadpool & Wolverine', release_date: '2024-07-26', phase: 'Phase 5', poster_url: 'https://image.tmdb.org/t/p/w500/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg', imdb_rating: 7.7 },
 ]
 
