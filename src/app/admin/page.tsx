@@ -11,7 +11,6 @@ import {
     Plus,
     Film,
     Users,
-    AlertTriangle,
     Check,
     X,
     Loader2,
@@ -48,7 +47,9 @@ export default function AdminPage() {
     useEffect(() => {
         const stored = sessionStorage.getItem('admin_auth')
         if (stored === 'true') {
-            setIsAuthenticated(true)
+            requestAnimationFrame(() => {
+                setIsAuthenticated(true)
+            })
         }
     }, [])
 

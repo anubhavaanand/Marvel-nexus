@@ -18,8 +18,10 @@ export default function DecryptionOverlay({
 
     useEffect(() => {
         if (!isLoading) {
-            setProgress(0)
-            setStatus("INITIALIZING")
+            requestAnimationFrame(() => {
+                setProgress(0)
+                setStatus("INITIALIZING")
+            })
             return
         }
 
@@ -34,10 +36,12 @@ export default function DecryptionOverlay({
     }, [isLoading])
 
     useEffect(() => {
-        if (progress < 30) setStatus("ESTABLISHING_CONNECTION")
-        else if (progress < 60) setStatus("DECRYPTING_DATA")
-        else if (progress < 90) setStatus("VERIFYING_INTEGRITY")
-        else setStatus("COMPLETE")
+        requestAnimationFrame(() => {
+            if (progress < 30) setStatus("ESTABLISHING_CONNECTION")
+            else if (progress < 60) setStatus("DECRYPTING_DATA")
+            else if (progress < 90) setStatus("VERIFYING_INTEGRITY")
+            else setStatus("COMPLETE")
+        })
     }, [progress])
 
     return (

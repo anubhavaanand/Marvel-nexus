@@ -1,7 +1,7 @@
 'use client'
 
-import { motion, useScroll, useSpring, useTransform } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { motion, useScroll, useSpring, useTransform, MotionValue } from 'framer-motion'
+import { useState } from 'react'
 
 export default function TimelineScroll() {
     const { scrollYProgress } = useScroll()
@@ -11,15 +11,11 @@ export default function TimelineScroll() {
         restDelta: 0.001
     })
 
-    const [isHovered, setIsHovered] = useState(false)
-
-    // Generate random branches for the tree effect
-    const [branches, setBranches] = useState<number[]>([])
-
-    useEffect(() => {
-        // Create 20 branches at random positions
-        setBranches(Array.from({ length: 20 }, () => Math.random()))
-    }, [])
+    // Generate random branches deterministically for the tree effect
+    const [branches] = useState(() => Array.from({ length: 20 }, (_, i) => {
+        const seed = Math.sin((i + 1) * 9876.54) * 10000
+        return (seed - Math.floor(seed)) * 0.9 + 0.05 // keep away from boundaries
+    }))
 
     return (
         <>
@@ -30,8 +26,6 @@ export default function TimelineScroll() {
                 {/* Interactive Area (Invisible but clickable) */}
                 <div
                     className="absolute right-0 top-0 bottom-0 w-8 cursor-pointer pointer-events-auto"
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
                     onClick={(e) => {
                         // Click to scroll
                         const y = e.clientY / window.innerHeight
@@ -75,14 +69,16 @@ export default function TimelineScroll() {
     )
 }
 
-function Branch({ position, progress }: { position: number, progress: any }) {
+function Branch({ position, progress }: { position: number, progress: MotionValue<number> }) {
     // Determine if this branch is "active" (passed by scroll)
     const isActive = useTransform(progress, (p: number) => p >= position)
 
-    // Branch length and direction variation
-    const width = 10 + Math.random() * 20
-    const angle = Math.random() > 0.5 ? 45 : -45
-    const isRight = Math.random() > 0.5
+    // Branch length and direction variation using a deterministic pseudo-random hash from position
+    const seed = Math.sin(position * 12345.67) * 10000
+    const randomVal = seed - Math.floor(seed)
+
+    const width = 10 + randomVal * 20
+    const angle = randomVal > 0.5 ? 45 : -45
 
     return (
         <motion.div

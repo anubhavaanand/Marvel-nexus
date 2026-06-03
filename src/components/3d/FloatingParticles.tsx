@@ -22,14 +22,24 @@ export default function FloatingParticles({
 }: FloatingParticlesProps) {
     const ref = useRef<THREE.Points>(null!)
 
-    // Generate random positions for particles
+    // Generate deterministic pseudo-random positions for particles (satisfying React purity rules)
     const positions = useMemo(() => {
         const pos = new Float32Array(count * 3)
         for (let i = 0; i < count; i++) {
             const i3 = i * 3
-            pos[i3] = (Math.random() - 0.5) * spread
-            pos[i3 + 1] = (Math.random() - 0.5) * spread
-            pos[i3 + 2] = (Math.random() - 0.5) * spread
+            // Pseudo-random generation based on index to satisfy purity checks
+            const s1 = Math.sin((i + 1) * 12.9898) * 43758.5453
+            const r1 = s1 - Math.floor(s1) - 0.5
+            
+            const s2 = Math.sin((i + 1) * 78.233) * 43758.5453
+            const r2 = s2 - Math.floor(s2) - 0.5
+
+            const s3 = Math.sin((i + 1) * 37.719) * 43758.5453
+            const r3 = s3 - Math.floor(s3) - 0.5
+
+            pos[i3] = r1 * spread
+            pos[i3 + 1] = r2 * spread
+            pos[i3 + 2] = r3 * spread
         }
         return pos
     }, [count, spread])

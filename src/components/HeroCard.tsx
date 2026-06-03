@@ -2,7 +2,6 @@
 
 import { motion, useInView } from 'framer-motion'
 import { useRef, useState, useEffect } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Lock, Zap, Globe } from 'lucide-react'
@@ -36,7 +35,9 @@ export default function HeroCard({ hero, index = 0 }: HeroCardProps) {
     const [isHovering, setIsHovering] = useState(false)
 
     useEffect(() => {
-        setIsAdmin(sessionStorage.getItem('admin_auth') === 'true')
+        requestAnimationFrame(() => {
+            setIsAdmin(sessionStorage.getItem('admin_auth') === 'true')
+        })
     }, [])
 
     // 3D Tilt Effect - Track mouse position for parallax
@@ -100,10 +101,9 @@ export default function HeroCard({ hero, index = 0 }: HeroCardProps) {
                     boxShadow: `0 20px 40px -15px ${colors.shadowColor}`,
                     transformStyle: 'preserve-3d',
                     perspective: 1200,
-                    // @ts-ignore - CSS custom properties
                     '--mouse-x': `${mousePosition.x}%`,
                     '--mouse-y': `${mousePosition.y}%`,
-                }}
+                } as React.CSSProperties}
             >
                 {/* Border glow on hover */}
                 <motion.div

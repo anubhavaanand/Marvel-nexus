@@ -35,11 +35,12 @@ export default function ScrollCamera({
         camera.position.lerp(targetPosition.current, 0.05)
 
         // Smooth rotation
-        camera.rotation.x = THREE.MathUtils.lerp(
+        const nextRotationX = THREE.MathUtils.lerp(
             camera.rotation.x,
             targetRotation.current.x,
             0.05
         )
+        camera.rotation.set(nextRotationX, camera.rotation.y, camera.rotation.z)
     })
 
     return null
