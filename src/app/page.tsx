@@ -4,6 +4,7 @@ import HeroCard from "@/components/HeroCard"
 import { HeroGridSkeleton } from "@/components/Skeleton"
 import { getAllHeroes, type Hero } from "@/lib/supabase"
 import HomeClient from "@/components/HomeClient"
+import AnimeTitle from "@/components/AnimeTitle"
 import { Sparkles, Atom, Bug, Shield, Zap, Swords, Star, Skull, CircleDot } from 'lucide-react'
 
 // Extended mock data for all universes
@@ -73,11 +74,7 @@ export default async function Home() {
             <Sparkles className="w-8 h-8 text-cyan-400 animate-pulse" />
           </div>
 
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold font-orbitron text-center mb-4">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-cyan-400 text-glow">
-              MULTIVERSE ARCHIVE
-            </span>
-          </h1>
+          <AnimeTitle text="MULTIVERSE ARCHIVE" />
 
           <p className="text-neutral-400 max-w-2xl mx-auto text-lg font-inter">
             Your gateway to heroes across all universes. Explore powers, timelines, and canon events
