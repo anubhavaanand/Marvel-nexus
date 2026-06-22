@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://multiversearchive.vercel.app/sitemap.xml
