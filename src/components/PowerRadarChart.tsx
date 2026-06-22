@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
     RadarChart,
@@ -78,6 +79,18 @@ function generatePowerStats(powers: string[]): PowerData[] {
 }
 
 export default function PowerRadarChart({ powers, className = '' }: PowerRadarChartProps) {
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        let active = true
+        requestAnimationFrame(() => {
+            if (active) setMounted(true)
+        })
+        return () => {
+            active = false
+        }
+    }, [])
+
     if (!powers || powers.length === 0) {
         return (
             <div className={`glass-panel rounded-xl p-6 ${className}`}>
@@ -104,7 +117,8 @@ export default function PowerRadarChart({ powers, className = '' }: PowerRadarCh
             </h3>
 
             <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%">
+                {mounted ? (
+                    <ResponsiveContainer width="100%" height="100%">
                     <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
                         <PolarGrid
                             stroke="rgba(6, 182, 212, 0.2)"
@@ -150,6 +164,11 @@ export default function PowerRadarChart({ powers, className = '' }: PowerRadarCh
                         />
                     </RadarChart>
                 </ResponsiveContainer>
+                ) : (
+                    <div className="w-full h-full skeleton flex items-center justify-center">
+                        <span className="text-xs text-neutral-500 font-roboto-mono">INITIALIZING_DIAGNOSTICS...</span>
+                    </div>
+                )}
             </div>
 
             {/* Power List */}

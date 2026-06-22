@@ -93,8 +93,8 @@ export default async function Home() {
 
         {/* Franchise Tabs */}
         <Tabs defaultValue="mcu" className="w-full max-w-7xl mx-auto">
-          <div className="flex justify-center mb-8 overflow-x-auto pb-2">
-            <TabsList className="glass-panel p-1 rounded-full flex-wrap">
+          <div className="flex sm:justify-center mb-8 overflow-x-auto pb-2 justify-start scrollbar-hide">
+            <TabsList className="glass-panel p-1 rounded-full flex-nowrap whitespace-nowrap">
               <TabsTrigger
                 value="mcu"
                 className="rounded-full px-4 py-2 font-orbitron text-xs sm:text-sm data-[state=active]:bg-cyan-900/50 data-[state=active]:text-cyan-400 transition-all"

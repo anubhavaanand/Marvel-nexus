@@ -18,7 +18,7 @@ export default function Navbar() {
 
     return (
         <motion.nav
-            className="fixed bottom-4 left-1/2 z-50 glass-panel-enhanced rounded-full px-6 py-3 scanlines-enhanced"
+            className="fixed bottom-4 left-1/2 z-50 glass-panel-enhanced rounded-full px-4 py-2 sm:px-6 sm:py-3 scanlines-enhanced"
             initial={{ y: 100, opacity: 0, x: '-50%' }}
             animate={{ y: 0, opacity: 1, x: '-50%' }}
             transition={{
@@ -31,7 +31,7 @@ export default function Navbar() {
             {/* Background glow effect */}
             <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cyan-500/10 via-transparent to-cyan-500/10 blur-xl -z-10" />
 
-            <div className="flex gap-6 items-center">
+            <div className="flex gap-4 sm:gap-6 items-center">
                 {/* Logo with System Status */}
                 <motion.div
                     className="hidden sm:flex items-center gap-2 pr-4 border-r border-white/10"
