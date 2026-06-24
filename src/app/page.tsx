@@ -1,24 +1,15 @@
 import { Suspense } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import HeroCard from "@/components/HeroCard"
 import { HeroGridSkeleton } from "@/components/Skeleton"
 import { getAllHeroes, type Hero } from "@/lib/supabase"
 import HomeClient from "@/components/HomeClient"
-import AnimeTitle from "@/components/AnimeTitle"
-import { Sparkles, Atom, Bug, Shield, Zap, Swords, Star, Skull, CircleDot } from 'lucide-react'
-
-// Extended mock data for all universes
-const mockHeroes: Hero[] = [
-  // Keeping format but will rely on DB
-]
+import { Shield, Atom, Bug, Zap, Swords, Star, Skull, CircleDot, ArrowRight, Sparkles } from 'lucide-react'
 
 async function getHeroesData() {
   try {
     const allHeroes = await getAllHeroes()
     if (!allHeroes || allHeroes.length === 0) {
-      return {
-        mcu: [], xmen: [], spider: [], dc: [], anime: [], theBoys: [], peacemaker: []
-      }
+      return { mcu: [], xmen: [], spider: [], dc: [], anime: [], theBoys: [], peacemaker: [] }
     }
     const pm = ['Peacemaker', 'Vigilante', 'Judomaster', 'Eagly']
     return {
@@ -31,28 +22,59 @@ async function getHeroesData() {
       peacemaker: allHeroes.filter(h => pm.includes(h.alias)),
     }
   } catch {
-    return {
-      mcu: [], xmen: [], spider: [], dc: [], anime: [], theBoys: [], peacemaker: []
-    }
+    return { mcu: [], xmen: [], spider: [], dc: [], anime: [], theBoys: [], peacemaker: [] }
   }
 }
 
 function HeroGrid({ heroes }: { heroes: Hero[] }) {
   if (heroes.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-neutral-500">
-        <Shield className="w-16 h-16 mb-4 opacity-30" />
-        <p className="text-lg font-orbitron">No heroes found in this dimension</p>
-        <p className="text-sm mt-2">Check back later or seed the database</p>
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <div className="w-14 h-14 rounded-2xl glass flex items-center justify-center mb-4">
+          <Shield className="w-7 h-7 text-[var(--meta)]" />
+        </div>
+        <p className="text-lg font-medium text-[var(--fg)]">No heroes found in this dimension</p>
+        <p className="text-sm text-[var(--meta)] mt-2">Check back later or seed the database</p>
       </div>
     )
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
       {heroes.map((hero, index) => (
         <HeroCard key={hero.id} hero={hero} index={index} />
       ))}
+    </div>
+  )
+}
+
+function FranchiseTabs({ children, data }: { children: React.ReactNode; data: Record<string, Hero[]> }) {
+  const franchises = [
+    { id: 'mcu', label: 'MCU', icon: Shield, color: 'var(--franchise-mcu)', count: data.mcu.length },
+    { id: 'xmen', label: 'X-Men', icon: Atom, color: 'var(--franchise-xmen)', count: data.xmen.length },
+    { id: 'spider', label: 'Spider-Verse', icon: Bug, color: 'var(--franchise-spider)', count: data.spider.length },
+    { id: 'dc', label: 'DC', icon: Zap, color: 'var(--franchise-dc)', count: data.dc.length },
+    { id: 'anime', label: 'Anime', icon: Swords, color: 'var(--franchise-anime)', count: data.anime.length },
+    { id: 'theboys', label: 'The Boys', icon: Skull, color: 'var(--franchise-theboys)', count: data.theBoys.length },
+    { id: 'peacemaker', label: 'Peacemaker', icon: CircleDot, color: 'var(--franchise-dc)', count: data.peacemaker.length },
+  ]
+
+  return (
+    <div className="space-y-8">
+      <div className="flex flex-wrap justify-center gap-2">
+        {franchises.map((franchise) => (
+          <button
+            key={franchise.id}
+            className="tab-trigger group"
+            data-franchise={franchise.id}
+          >
+            <franchise.icon className="w-4 h-4" style={{ color: franchise.color }} />
+            <span>{franchise.label}</span>
+            <span className="text-xs opacity-60">({franchise.count})</span>
+          </button>
+        ))}
+      </div>
+      {children}
     </div>
   )
 }
@@ -63,143 +85,156 @@ export default async function Home() {
 
   return (
     <HomeClient>
-      <main className="min-h-screen px-4 sm:px-8 pt-8 pb-32 relative z-10">
-        {/* Hero Section */}
-        <header className="text-center mb-12 pt-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Sparkles className="w-8 h-8 text-cyan-400 animate-pulse" />
-            <span className="text-sm font-mono text-cyan-400 tracking-widest uppercase">
-              Hero Database v2.1
-            </span>
-            <Sparkles className="w-8 h-8 text-cyan-400 animate-pulse" />
+      <main className="min-h-screen">
+        {/* Dark Apple editorial hero — pure black canvas */}
+        <section className="relative bg-[var(--bg)] overflow-hidden">
+          <div className="absolute inset-0 bg-grid opacity-[0.15]" />
+          <div className="absolute inset-0 gradient-spotlight" />
+
+          <div className="relative container-wide py-28 sm:py-36">
+            <div className="max-w-4xl mx-auto text-center">
+              <div className="flex items-center justify-center gap-2 mb-6">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium glass text-[var(--fg-2)]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
+                  Hero Database v2.1
+                </span>
+              </div>
+
+              <h1 className="text-hero mb-6 leading-[1.05]">
+                <span className="text-[var(--fg)]">Multiverse</span>
+                <br />
+                <span className="text-gradient">Archive</span>
+              </h1>
+
+              <p className="text-lg sm:text-xl text-[var(--fg-2)] max-w-2xl mx-auto mb-10 leading-relaxed">
+                Your gateway to heroes across all universes. Explore powers, timelines, and canon events
+                from Marvel, DC, The Boys, and beyond.
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
+                <button className="btn btn-primary btn-lg group">
+                  <Sparkles className="w-4 h-4" />
+                  Explore Heroes
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                </button>
+                <button className="btn btn-secondary btn-lg">
+                  View Timeline
+                </button>
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-3">
+                <div className="stat-pill">
+                  <Star className="w-3.5 h-3.5 text-[var(--accent)]" />
+                  <span className="stat-value">{totalHeroes}</span>
+                  <span className="stat-label">Heroes</span>
+                </div>
+                <div className="stat-pill">
+                  <Shield className="w-3.5 h-3.5 text-[var(--franchise-mcu)]" />
+                  <span className="stat-value">{mcu.length + xmen.length + spider.length}</span>
+                  <span className="stat-label">Marvel</span>
+                </div>
+                <div className="stat-pill">
+                  <Zap className="w-3.5 h-3.5 text-[var(--franchise-dc)]" />
+                  <span className="stat-value">{dc.length}</span>
+                  <span className="stat-label">DC</span>
+                </div>
+                <div className="stat-pill">
+                  <Skull className="w-3.5 h-3.5 text-[var(--franchise-theboys)]" />
+                  <span className="stat-value">{theBoys.length}</span>
+                  <span className="stat-label">The Boys</span>
+                </div>
+                <div className="stat-pill">
+                  <Swords className="w-3.5 h-3.5 text-[var(--franchise-anime)]" />
+                  <span className="stat-value">{anime.length}</span>
+                  <span className="stat-label">Anime</span>
+                </div>
+              </div>
+            </div>
           </div>
+        </section>
 
-          <AnimeTitle text="MULTIVERSE ARCHIVE" />
+        <div className="container-wide">
+          <div className="divider" />
+        </div>
 
-          <p className="text-neutral-400 max-w-2xl mx-auto text-lg font-inter">
-            Your gateway to heroes across all universes. Explore powers, timelines, and canon events
-            from Marvel, DC, The Boys, and beyond.
-          </p>
+        {/* Browse by Universe — surface chapter */}
+        <section className="section bg-[var(--bg)]">
+          <div className="container-wide">
+            <div className="text-center mb-12">
+              <span className="text-eyebrow mb-4 block">Browse by Universe</span>
+              <h2 className="text-title mb-4">Hero Database</h2>
+              <p className="text-body max-w-xl mx-auto">
+                Explore heroes from your favorite franchises. Each universe has its own unique characters and stories.
+              </p>
+            </div>
 
-          {/* Stats Bar */}
-          <div className="flex flex-wrap justify-center gap-4 mt-8">
-            <Stat label="Total Heroes" value={totalHeroes} icon={<Star className="w-4 h-4" />} color="purple" />
-            <Stat label="Marvel" value={mcu.length + xmen.length + spider.length} icon={<Shield className="w-4 h-4" />} color="cyan" />
-            <Stat label="DC" value={dc.length} icon={<Zap className="w-4 h-4" />} color="blue" />
-            <Stat label="The Boys" value={theBoys.length} icon={<Skull className="w-4 h-4" />} color="red" />
-            <Stat label="Anime" value={anime.length} icon={<Swords className="w-4 h-4" />} color="orange" />
+            <FranchiseTabs data={{ mcu, xmen, spider, dc, anime, theBoys, peacemaker }}>
+              <Suspense fallback={<HeroGridSkeleton count={8} />}>
+                <div className="mt-8">
+                  <HeroGrid heroes={mcu} />
+                </div>
+              </Suspense>
+            </FranchiseTabs>
           </div>
-        </header>
+        </section>
 
-        {/* Franchise Tabs */}
-        <Tabs defaultValue="mcu" className="w-full max-w-7xl mx-auto">
-          <div className="flex sm:justify-center mb-8 overflow-x-auto pb-2 justify-start scrollbar-hide">
-            <TabsList className="glass-panel p-1 rounded-full flex-nowrap whitespace-nowrap">
-              <TabsTrigger
-                value="mcu"
-                className="rounded-full px-4 py-2 font-orbitron text-xs sm:text-sm data-[state=active]:bg-cyan-900/50 data-[state=active]:text-cyan-400 transition-all"
-              >
-                <Shield className="w-4 h-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">MCU</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="xmen"
-                className="rounded-full px-4 py-2 font-orbitron text-xs sm:text-sm data-[state=active]:bg-yellow-900/50 data-[state=active]:text-yellow-400 transition-all"
-              >
-                <Atom className="w-4 h-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">X-Men</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="spider"
-                className="rounded-full px-4 py-2 font-orbitron text-xs sm:text-sm data-[state=active]:bg-red-900/50 data-[state=active]:text-red-400 transition-all"
-              >
-                <Bug className="w-4 h-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Spider-Verse</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="dc"
-                className="rounded-full px-4 py-2 font-orbitron text-xs sm:text-sm data-[state=active]:bg-blue-900/50 data-[state=active]:text-blue-400 transition-all"
-              >
-                <Zap className="w-4 h-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">DC</span>
-              </TabsTrigger>
+        {/* Featured section — dark chapter */}
+        <section className="section bg-[var(--bg)]">
+          <div className="container-wide">
+            <div className="text-center mb-12">
+              <span className="text-eyebrow mb-4 block">Featured</span>
+              <h2 className="text-title mb-4">Most Popular Heroes</h2>
+              <p className="text-body max-w-xl mx-auto">
+                The most searched and viewed heroes across the multiverse.
+              </p>
+            </div>
 
-              <TabsTrigger
-                value="anime"
-                className="rounded-full px-4 py-2 font-orbitron text-xs sm:text-sm data-[state=active]:bg-orange-900/50 data-[state=active]:text-orange-400 transition-all"
-              >
-                <Swords className="w-4 h-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Anime</span>
-              </TabsTrigger>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div className="card-glass p-8 text-center">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'linear-gradient(135deg, var(--franchise-mcu), #60a5fa)' }}>
+                  <Shield className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="text-heading mb-1">MCU Heroes</h3>
+                <p className="text-caption mb-3">Earth-616 and beyond</p>
+                <span className="text-2xl font-bold text-[var(--accent)]">{mcu.length}</span>
+              </div>
 
-              <TabsTrigger
-                value="theboys"
-                className="rounded-full px-4 py-2 font-orbitron text-xs sm:text-sm data-[state=active]:bg-red-900/50 data-[state=active]:text-red-400 transition-all"
-              >
-                <Skull className="w-4 h-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">The Boys</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="peacemaker"
-                className="rounded-full px-4 py-2 font-orbitron text-xs sm:text-sm data-[state=active]:bg-blue-900/50 data-[state=active]:text-blue-400 transition-all"
-              >
-                <CircleDot className="w-4 h-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Peacemaker</span>
-              </TabsTrigger>
-            </TabsList>
+              <div className="card-glass p-8 text-center">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'linear-gradient(135deg, var(--franchise-spider), #f97316)' }}>
+                  <Bug className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="text-heading mb-1">Spider-Verse</h3>
+                <p className="text-caption mb-3">Across the spider-verse</p>
+                <span className="text-2xl font-bold text-[var(--accent)]">{spider.length}</span>
+              </div>
+
+              <div className="card-glass p-8 text-center">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'linear-gradient(135deg, var(--franchise-dc), #22d3ee)' }}>
+                  <Zap className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="text-heading mb-1">DC Universe</h3>
+                <p className="text-caption mb-3">Justice and beyond</p>
+                <span className="text-2xl font-bold text-[var(--accent)]">{dc.length}</span>
+              </div>
+            </div>
           </div>
+        </section>
 
-          <Suspense fallback={<HeroGridSkeleton count={8} />}>
-            <TabsContent value="mcu" className="mt-0">
-              <HeroGrid heroes={mcu} />
-            </TabsContent>
-
-            <TabsContent value="xmen" className="mt-0">
-              <HeroGrid heroes={xmen} />
-            </TabsContent>
-
-            <TabsContent value="spider" className="mt-0">
-              <HeroGrid heroes={spider} />
-            </TabsContent>
-
-            <TabsContent value="dc" className="mt-0">
-              <HeroGrid heroes={dc} />
-            </TabsContent>
-
-            <TabsContent value="anime" className="mt-0">
-              <HeroGrid heroes={anime} />
-            </TabsContent>
-
-            <TabsContent value="theboys" className="mt-0">
-              <HeroGrid heroes={theBoys} />
-            </TabsContent>
-
-            <TabsContent value="peacemaker" className="mt-0">
-              <HeroGrid heroes={peacemaker} />
-            </TabsContent>
-          </Suspense>
-        </Tabs>
+        {/* Footer */}
+        <footer className="section-sm bg-[var(--bg)] border-t border-[var(--border)]">
+          <div className="container-wide">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 rounded-[10px] flex items-center justify-center" style={{ background: 'linear-gradient(135deg, var(--accent), #60a5fa)' }}>
+                  <span className="text-white font-bold text-xs">M</span>
+                </div>
+                <span className="text-[var(--fg)] font-semibold text-sm">Multiverse Archive</span>
+              </div>
+              <p className="text-caption">&copy; 2024 Multiverse Archive. All rights reserved.</p>
+            </div>
+          </div>
+        </footer>
       </main>
     </HomeClient>
-  )
-}
-
-// Stats component
-function Stat({ label, value, icon, color }: { label: string; value: number; icon: React.ReactNode; color: string }) {
-  const colorClasses: Record<string, string> = {
-    cyan: 'text-cyan-400 border-cyan-500/30 bg-cyan-950/30',
-    yellow: 'text-yellow-400 border-yellow-500/30 bg-yellow-950/30',
-    red: 'text-red-400 border-red-500/30 bg-red-950/30',
-    blue: 'text-blue-400 border-blue-500/30 bg-blue-950/30',
-    orange: 'text-orange-400 border-orange-500/30 bg-orange-950/30',
-    purple: 'text-purple-400 border-purple-500/30 bg-purple-950/30',
-  }
-
-  return (
-    <div className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${colorClasses[color]}`}>
-      {icon}
-      <span className="font-mono text-lg font-bold">{value}</span>
-      <span className="text-xs text-neutral-500">{label}</span>
-    </div>
   )
 }

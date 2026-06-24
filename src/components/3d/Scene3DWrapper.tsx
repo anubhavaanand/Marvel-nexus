@@ -1,15 +1,15 @@
 'use client'
 
-import { Canvas } from '@react-three/fiber'
-import { Preload, PerformanceMonitor, Stars } from '@react-three/drei'
-import { Suspense, useState, useEffect, useCallback, ReactNode, useMemo } from 'react'
+import { Canvas, useFrame } from '@react-three/fiber'
+import { Preload, PerformanceMonitor, Stars, Float, MeshDistortMaterial, Points, PointMaterial } from '@react-three/drei'
+import { Suspense, useState, useEffect, useCallback, ReactNode, useRef, useMemo } from 'react'
+import * as THREE from 'three'
 
 interface Scene3DWrapperProps {
     children: ReactNode
     className?: string
 }
 
-// Check for WebGL support
 function isWebGLAvailable(): boolean {
     if (typeof window === 'undefined') return false
     try {
@@ -21,22 +21,122 @@ function isWebGLAvailable(): boolean {
     }
 }
 
-// Minimal 3D Scene content using drei's Stars component
-function MinimalSceneContent() {
+function FloatingGeometry({ mouse }: { mouse: React.MutableRefObject<{ x: number; y: number }> }) {
+    const groupRef = useRef<THREE.Group>(null!)
+    const torusRef = useRef<THREE.Mesh>(null!)
+    const sphereRef = useRef<THREE.Mesh>(null!)
+
+    useFrame((state) => {
+        if (groupRef.current) {
+            const targetRotX = mouse.current.y * 0.05
+            const targetRotY = mouse.current.x * 0.08
+            groupRef.current.rotation.x = THREE.MathUtils.lerp(
+                groupRef.current.rotation.x, targetRotX, 0.02
+            )
+            groupRef.current.rotation.y = THREE.MathUtils.lerp(
+                groupRef.current.rotation.y, targetRotY, 0.02
+            )
+        }
+        if (torusRef.current) {
+            torusRef.current.rotation.x = state.clock.elapsedTime * 0.05
+            torusRef.current.rotation.y = state.clock.elapsedTime * 0.08
+        }
+        if (sphereRef.current) {
+            sphereRef.current.rotation.x = state.clock.elapsedTime * 0.03
+            sphereRef.current.rotation.y = state.clock.elapsedTime * 0.05
+        }
+    })
+
+    return (
+        <group ref={groupRef}>
+            <Float speed={0.3} rotationIntensity={0.1} floatIntensity={0.3}>
+                <mesh ref={torusRef} position={[-3, 1, -8]}>
+                    <torusGeometry args={[1.2, 0.3, 32, 64]} />
+                    <MeshDistortMaterial
+                        color="#0071e3"
+                        emissive="#0071e3"
+                        emissiveIntensity={0.15}
+                        transparent
+                        opacity={0.15}
+                        wireframe
+                        distort={0.1}
+                        speed={0.5}
+                    />
+                </mesh>
+            </Float>
+
+            <Float speed={0.2} rotationIntensity={0.05} floatIntensity={0.2}>
+                <mesh ref={sphereRef} position={[4, -2, -12]}>
+                    <icosahedronGeometry args={[0.8, 1]} />
+                    <MeshDistortMaterial
+                        color="#60a5fa"
+                        emissive="#60a5fa"
+                        emissiveIntensity={0.1}
+                        transparent
+                        opacity={0.08}
+                        wireframe
+                        distort={0.05}
+                        speed={0.3}
+                    />
+                </mesh>
+            </Float>
+        </group>
+    )
+}
+
+function SoothingParticles() {
+    const count = 200
+    const ref = useRef<THREE.Points>(null!)
+
+    const positions = useMemo(() => {
+        const pos = new Float32Array(count * 3)
+        for (let i = 0; i < count; i++) {
+            const i3 = i * 3
+            pos[i3] = (Math.random() - 0.5) * 60
+            pos[i3 + 1] = (Math.random() - 0.5) * 40
+            pos[i3 + 2] = (Math.random() - 0.5) * 30 - 10
+        }
+        return pos
+    }, [])
+
+    useFrame((state) => {
+        if (ref.current) {
+            ref.current.rotation.y = state.clock.elapsedTime * 0.008
+            ref.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.005) * 0.02
+        }
+    })
+
+    return (
+        <Points ref={ref} positions={positions} stride={3} frustumCulled={false}>
+            <PointMaterial
+                transparent
+                color="#a1a1a6"
+                size={0.04}
+                sizeAttenuation
+                depthWrite={false}
+                opacity={0.4}
+                blending={THREE.AdditiveBlending}
+            />
+        </Points>
+    )
+}
+
+function MinimalSceneContent({ mouse }: { mouse: React.MutableRefObject<{ x: number; y: number }> }) {
     return (
         <>
-            <color attach="background" args={['#000000']} />
-            <ambientLight intensity={0.3} />
-            <pointLight position={[10, 10, 10]} intensity={0.2} color="#00ffff" />
+            <ambientLight intensity={0.2} />
+            <pointLight position={[10, 10, 10]} intensity={0.1} color="#0071e3" />
             <Stars
-                radius={50}
-                depth={30}
-                count={200}
+                radius={80}
+                depth={40}
+                count={300}
                 factor={2}
                 saturation={0}
                 fade
-                speed={0.5}
+                speed={0.3}
             />
+            <SoothingParticles />
+            <FloatingGeometry mouse={mouse} />
             <Preload all />
         </>
     )
@@ -47,12 +147,22 @@ export default function Scene3DWrapper({ children, className = '' }: Scene3DWrap
     const [webglSupported, setWebglSupported] = useState(true)
     const [hasError, setHasError] = useState(false)
     const [mounted, setMounted] = useState(false)
+    const mouse = useRef({ x: 0, y: 0 })
 
     useEffect(() => {
         requestAnimationFrame(() => {
             setMounted(true)
             setWebglSupported(isWebGLAvailable())
         })
+    }, [])
+
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            mouse.current.x = (e.clientX / window.innerWidth) * 2 - 1
+            mouse.current.y = -(e.clientY / window.innerHeight) * 2 + 1
+        }
+        window.addEventListener('mousemove', handleMouseMove, { passive: true })
+        return () => window.removeEventListener('mousemove', handleMouseMove)
     }, [])
 
     const handleIncline = useCallback(() => {
@@ -63,14 +173,12 @@ export default function Scene3DWrapper({ children, className = '' }: Scene3DWrap
         setDpr(prev => Math.max(prev - 0.25, 0.5))
     }, [])
 
-    // SSR or no WebGL support or error - just render children
     if (!mounted || !webglSupported || hasError) {
         return <div className={`relative ${className}`}>{children}</div>
     }
 
     return (
         <div className={`relative ${className}`}>
-            {/* 3D Canvas - Fixed background with particles */}
             <div className="fixed inset-0 z-0" style={{ pointerEvents: 'none' }}>
                 <Canvas
                     dpr={dpr}
@@ -80,20 +188,12 @@ export default function Scene3DWrapper({ children, className = '' }: Scene3DWrap
                         powerPreference: 'low-power',
                         stencil: false,
                         depth: false,
-                        failIfMajorPerformanceCaveat: true,
                     }}
-                    camera={{
-                        position: [0, 0, 1],
-                        fov: 60,
-                        near: 0.1,
-                        far: 100,
-                    }}
+                    camera={{ position: [0, 0, 1], fov: 60, near: 0.1, far: 100 }}
                     onCreated={({ gl }) => {
-                        // Handle context loss
                         const canvas = gl.domElement
                         canvas.addEventListener('webglcontextlost', (e) => {
                             e.preventDefault()
-                            console.warn('WebGL context lost, disabling 3D')
                             setHasError(true)
                         })
                     }}
@@ -108,17 +208,15 @@ export default function Scene3DWrapper({ children, className = '' }: Scene3DWrap
                     <PerformanceMonitor
                         onIncline={handleIncline}
                         onDecline={handleDecline}
-                        flipflops={2}
+                        flipflops={3}
                         factor={0.5}
                     >
                         <Suspense fallback={null}>
-                            <MinimalSceneContent />
+                            <MinimalSceneContent mouse={mouse} />
                         </Suspense>
                     </PerformanceMonitor>
                 </Canvas>
             </div>
-
-            {/* Content layer */}
             <div className="relative z-10">
                 {children}
             </div>
