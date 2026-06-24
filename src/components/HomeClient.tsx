@@ -1,9 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Shield, Atom, Bug, Zap, Swords, Skull, CircleDot } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 interface HomeClientProps {
   children: React.ReactNode

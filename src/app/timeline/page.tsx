@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import TimelineSlider from '@/components/TimelineSlider'
 import { TimelineSkeleton } from '@/components/Skeleton'
 import { getAllMovies, type Movie } from '@/lib/supabase'
-import { Calendar, Film, Sparkles, ArrowRight } from 'lucide-react'
+import { Film, Sparkles } from 'lucide-react'
 
 const mockMovies: Movie[] = [
   { id: '1', tmdb_id: 1726, title: 'Iron Man', release_date: '2008-05-02', phase: 'Phase 1', poster_url: 'https://image.tmdb.org/t/p/w500/78lPtwv72eTNqFW9COBYI0dWDJa.jpg', imdb_rating: 7.9 },

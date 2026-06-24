@@ -4,14 +4,12 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import {
-  Play,
   Calendar,
   Clock,
   Star,
   Tv,
   Film,
-  ArrowUpDown,
-  Sparkles
+  ArrowUpDown
 } from 'lucide-react'
 
 interface WatchItem {

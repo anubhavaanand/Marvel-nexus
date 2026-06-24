@@ -1,9 +1,7 @@
-import { Suspense } from 'react'
-import HeroCard from "@/components/HeroCard"
-import { HeroGridSkeleton } from "@/components/Skeleton"
-import { getAllHeroes, type Hero } from "@/lib/supabase"
+import { getAllHeroes } from "@/lib/supabase"
 import HomeClient from "@/components/HomeClient"
-import { Shield, Atom, Bug, Zap, Swords, Star, Skull, CircleDot, ArrowRight, Sparkles } from 'lucide-react'
+import FranchiseTabs from "@/components/FranchiseTabs"
+import { Shield, Zap, Swords, Star, Skull, ArrowRight, Sparkles, Bug } from 'lucide-react'
 
 async function getHeroesData() {
   try {
@@ -26,58 +24,6 @@ async function getHeroesData() {
   }
 }
 
-function HeroGrid({ heroes }: { heroes: Hero[] }) {
-  if (heroes.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-24 text-center">
-        <div className="w-14 h-14 rounded-2xl glass flex items-center justify-center mb-4">
-          <Shield className="w-7 h-7 text-[var(--meta)]" />
-        </div>
-        <p className="text-lg font-medium text-[var(--fg)]">No heroes found in this dimension</p>
-        <p className="text-sm text-[var(--meta)] mt-2">Check back later or seed the database</p>
-      </div>
-    )
-  }
-
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-      {heroes.map((hero, index) => (
-        <HeroCard key={hero.id} hero={hero} index={index} />
-      ))}
-    </div>
-  )
-}
-
-function FranchiseTabs({ children, data }: { children: React.ReactNode; data: Record<string, Hero[]> }) {
-  const franchises = [
-    { id: 'mcu', label: 'MCU', icon: Shield, color: 'var(--franchise-mcu)', count: data.mcu.length },
-    { id: 'xmen', label: 'X-Men', icon: Atom, color: 'var(--franchise-xmen)', count: data.xmen.length },
-    { id: 'spider', label: 'Spider-Verse', icon: Bug, color: 'var(--franchise-spider)', count: data.spider.length },
-    { id: 'dc', label: 'DC', icon: Zap, color: 'var(--franchise-dc)', count: data.dc.length },
-    { id: 'anime', label: 'Anime', icon: Swords, color: 'var(--franchise-anime)', count: data.anime.length },
-    { id: 'theboys', label: 'The Boys', icon: Skull, color: 'var(--franchise-theboys)', count: data.theBoys.length },
-    { id: 'peacemaker', label: 'Peacemaker', icon: CircleDot, color: 'var(--franchise-dc)', count: data.peacemaker.length },
-  ]
-
-  return (
-    <div className="space-y-8">
-      <div className="flex flex-wrap justify-center gap-2">
-        {franchises.map((franchise) => (
-          <button
-            key={franchise.id}
-            className="tab-trigger group"
-            data-franchise={franchise.id}
-          >
-            <franchise.icon className="w-4 h-4" style={{ color: franchise.color }} />
-            <span>{franchise.label}</span>
-            <span className="text-xs opacity-60">({franchise.count})</span>
-          </button>
-        ))}
-      </div>
-      {children}
-    </div>
-  )
-}
 
 export default async function Home() {
   const { mcu, xmen, spider, dc, anime, theBoys, peacemaker } = await getHeroesData()
@@ -168,13 +114,7 @@ export default async function Home() {
               </p>
             </div>
 
-            <FranchiseTabs data={{ mcu, xmen, spider, dc, anime, theBoys, peacemaker }}>
-              <Suspense fallback={<HeroGridSkeleton count={8} />}>
-                <div className="mt-8">
-                  <HeroGrid heroes={mcu} />
-                </div>
-              </Suspense>
-            </FranchiseTabs>
+            <FranchiseTabs data={{ mcu, xmen, spider, dc, anime, theBoys, peacemaker }} />
           </div>
         </section>
 

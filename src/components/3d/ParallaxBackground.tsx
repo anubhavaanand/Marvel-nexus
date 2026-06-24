@@ -12,7 +12,6 @@ interface ParallaxBackgroundProps {
 }
 
 export default function ParallaxBackground({
-    scrollY = 0,
     layers = 5,
     depth = 20,
     color = '#0891b2',
