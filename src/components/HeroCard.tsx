@@ -34,7 +34,13 @@ export default function HeroCard({ hero, index = 0 }: HeroCardProps) {
 
   useEffect(() => {
     requestAnimationFrame(() => {
-      setIsAdmin(sessionStorage.getItem('admin_auth') === 'true')
+      let adminAuth = false
+      try {
+        adminAuth = sessionStorage.getItem('admin_auth') === 'true'
+      } catch (e) {
+        console.warn("sessionStorage is not accessible:", e)
+      }
+      setIsAdmin(adminAuth)
     })
   }, [])
 

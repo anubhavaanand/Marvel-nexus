@@ -16,7 +16,12 @@ export default function LockedContentGuard({ children, isLocked }: LockedContent
     const [isChecking, setIsChecking] = useState(true)
 
     useEffect(() => {
-        const adminAuth = sessionStorage.getItem('admin_auth') === 'true'
+        let adminAuth = false
+        try {
+            adminAuth = sessionStorage.getItem('admin_auth') === 'true'
+        } catch (e) {
+            console.warn("sessionStorage is not accessible:", e)
+        }
         requestAnimationFrame(() => {
             setIsAdmin(adminAuth)
             setIsChecking(false)
