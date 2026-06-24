@@ -43,6 +43,20 @@ export default function RootLayout({
         <main className="relative z-10 pt-16">
           {children}
         </main>
+        <footer className="relative z-10 border-t border-[var(--border)] py-6 px-4 text-center text-xs text-[var(--muted)]">
+          <p>
+            This product uses the TMDB API but is not endorsed or certified by TMDB.
+            {' '}
+            <a
+              href="https://www.themoviedb.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-[var(--accent)] transition-colors"
+            >
+              Powered by The Movie Database
+            </a>
+          </p>
+        </footer>
       </body>
     </html>
   )
