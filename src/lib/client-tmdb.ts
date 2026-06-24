@@ -14,7 +14,7 @@ interface QueueItem {
 
 const queue: QueueItem[] = []
 let activeCount = 0
-const MAX_CONCURRENT = 3
+const MAX_CONCURRENT = 1 // Fully sequential processing
 
 function processQueue() {
   if (activeCount >= MAX_CONCURRENT || queue.length === 0) return
@@ -28,12 +28,9 @@ function processQueue() {
     .catch(item.reject)
     .finally(() => {
       activeCount--
-      // Small stagger delay of 50ms before triggering the next fetch
-      setTimeout(processQueue, 50)
+      // Gentle stagger delay of 150ms between requests
+      setTimeout(processQueue, 150)
     })
-
-  // Process next item if concurrent slots are still available
-  processQueue()
 }
 
 function enqueue<T>(fn: () => Promise<T>): Promise<T> {
