@@ -80,6 +80,61 @@ export async function fetchAllMarvelMovies(pages: number = 3): Promise<TMDBMovie
     return allMovies
 }
 
+// Search for a person/character by name
+export async function searchPerson(name: string): Promise<TMDBPerson | null> {
+    if (!TMDB_API_KEY) {
+        console.warn('TMDB API key not configured')
+        return null
+    }
+
+    try {
+        const res = await fetch(
+            `${BASE_URL}/search/person?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(name)}`,
+            { next: { revalidate: 86400 } } // Cache for 24 hours
+        )
+
+        if (!res.ok) {
+            throw new Error(`TMDB API error: ${res.status}`)
+        }
+
+        const data = await res.json()
+        return data.results?.[0] || null
+    } catch (error) {
+        console.error('Error searching person:', error)
+        return null
+    }
+}
+
+// Get person details (including images)
+export async function getPersonImages(personId: number): Promise<string[]> {
+    if (!TMDB_API_KEY) return []
+
+    try {
+        const res = await fetch(
+            `${BASE_URL}/person/${personId}/images?api_key=${TMDB_API_KEY}`,
+            { next: { revalidate: 86400 } }
+        )
+
+        if (!res.ok) {
+            throw new Error(`TMDB API error: ${res.status}`)
+        }
+
+        const data = await res.json()
+        return (data.profiles || []).map((p: { file_path: string }) => p.file_path)
+    } catch (error) {
+        console.error('Error fetching person images:', error)
+        return []
+    }
+}
+
+// Get the best profile image URL for a hero by name
+export async function getHeroImageUrl(heroName: string, heroAlias: string): Promise<string | null> {
+    // Try searching by alias first, then by real name
+    const person = await searchPerson(heroAlias) || await searchPerson(heroName)
+    if (!person?.profile_path) return null
+    return getImageUrl(person.profile_path, 'w500')
+}
+
 // Search for a specific movie
 export async function searchMovie(title: string): Promise<TMDBMovie | null> {
     if (!TMDB_API_KEY) {
