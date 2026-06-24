@@ -26,8 +26,8 @@ async function enrichMockHeroesWithTmdb(heroes: Hero[]): Promise<Hero[]> {
                 return null
             }
 
-            // Try alias first, then real name
-            const person = await searchPerson(hero.alias) || await searchPerson(hero.name)
+            // Try actor name first, then alias, then character name
+            const person = await searchPerson(hero.actor_name || '') || await searchPerson(hero.alias) || await searchPerson(hero.name)
             if (person?.profile_path) {
                 const url = `https://image.tmdb.org/t/p/w500${person.profile_path}`
                 tmdbImageCache.set(cacheKey, url)

@@ -15,7 +15,7 @@ export async function getTmdbImageUrl(name: string, alias: string): Promise<stri
   if (!TMDB_API_KEY) return null
 
   try {
-    const search = alias || name
+    const search = name || alias
     const res = await fetch(
       `${BASE_URL}/search/person?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(search)}`,
       { signal: AbortSignal.timeout(3000) }
