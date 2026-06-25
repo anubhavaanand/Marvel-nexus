@@ -16,7 +16,8 @@ import {
     Image as ImageIcon,
     AlertTriangle
 } from 'lucide-react'
-import { getAllHeroes, updateHero, deleteHero, type Hero } from '@/lib/supabase'
+import { getAllHeroes, type Hero } from '@/lib/supabase'
+import { updateHeroAction, deleteHeroAction } from '@/app/actions/admin'
 
 export default function HeroManager() {
     const [heroes, setHeroes] = useState<Hero[]>([])
@@ -45,7 +46,7 @@ export default function HeroManager() {
 
         setIsSaving(true)
         try {
-            const updated = await updateHero(editingHero.id, {
+            const updated = await updateHeroAction(editingHero.id, {
                 alias: editingHero.alias,
                 name: editingHero.name,
                 image_url: editingHero.image_url,
@@ -70,10 +71,14 @@ export default function HeroManager() {
         }
 
         setIsSaving(true)
-        const success = await deleteHero(id)
-        if (success) {
-            setHeroes(heroes.filter(h => h.id !== id))
-            setDeleteConfirm(null)
+        try {
+            const success = await deleteHeroAction(id)
+            if (success) {
+                setHeroes(heroes.filter(h => h.id !== id))
+                setDeleteConfirm(null)
+            }
+        } catch (error) {
+            console.error('Failed to delete hero:', error)
         }
         setIsSaving(false)
     }

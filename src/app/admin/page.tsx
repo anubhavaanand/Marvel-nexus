@@ -21,9 +21,7 @@ import {
     EyeOff
 } from 'lucide-react'
 import HeroManager from '@/components/admin/HeroManager'
-
-// Simple password - change this to whatever you want!
-const ADMIN_PASSWORD = 'Anubhav@12'
+import { loginAdminAction, logoutAdminAction, checkAdminAuthAction } from '@/app/actions/admin'
 
 interface SeedStatus {
     heroes: 'idle' | 'loading' | 'success' | 'error'
@@ -43,19 +41,27 @@ export default function AdminPage() {
     })
     const [connectionStatus, setConnectionStatus] = useState<'unknown' | 'connected' | 'error'>('unknown')
 
-    // Check if already authenticated (stored in sessionStorage)
+    // Check if already authenticated (server session check)
     useEffect(() => {
-        const stored = sessionStorage.getItem('admin_auth')
-        if (stored === 'true') {
-            requestAnimationFrame(() => {
+        const checkAuth = async () => {
+            const isAuth = await checkAdminAuthAction()
+            if (isAuth) {
                 setIsAuthenticated(true)
-            })
+                sessionStorage.setItem('admin_auth', 'true')
+            } else {
+                sessionStorage.removeItem('admin_auth')
+            }
         }
+        requestAnimationFrame(() => {
+            checkAuth()
+        })
     }, [])
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (password === ADMIN_PASSWORD) {
+        setError('')
+        const success = await loginAdminAction(password)
+        if (success) {
             setIsAuthenticated(true)
             sessionStorage.setItem('admin_auth', 'true')
             setError('')
@@ -65,7 +71,8 @@ export default function AdminPage() {
         }
     }
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        await logoutAdminAction()
         setIsAuthenticated(false)
         sessionStorage.removeItem('admin_auth')
     }

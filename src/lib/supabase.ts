@@ -8,7 +8,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 const tmdbImageCache = new Map<string, string | null>()
 
 async function enrichMockHeroesWithTmdb(heroes: Hero[]): Promise<Hero[]> {
-    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY
+    const apiKey = process.env.TMDB_API_KEY
     if (!apiKey) return heroes
 
     // Skip enrichment for heroes that intentionally have no placeholder image
