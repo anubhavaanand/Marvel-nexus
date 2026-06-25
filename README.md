@@ -30,52 +30,6 @@ This application features a premium, Stark-Industries-style "JARVIS" visual inte
 
 ---
 
-## 🔧 Local Development & Setup
-
-### Prerequisites
-- Node.js (v20+ recommended)
-- npm (v10+ recommended)
-
-### 1. Clone & Install Dependencies
-```bash
-git clone https://github.com/anubhavaanand/Marvel-nexus.git
-cd Marvel-nexus
-npm install
-```
-
-### 2. Configure Environment Variables
-Create a `.env.local` file in the project root based on `env.example`:
-```env
-# Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-
-# TMDB API (For movie & poster syncing)
-NEXT_PUBLIC_TMDB_API_KEY=your_tmdb_api_key
-```
-
-### 3. Initialize & Seed Database
-If you are configuring a new Supabase database, run the setup SQL scripts from the Supabase SQL editor:
-1. Run `scripts/create-tables.sql` to initialize tables schema.
-2. Run `scripts/update-franchise-constraint.sql` to enable extra universes.
-
-Then verify and seed the database locally:
-```bash
-# Verify connection credentials
-node scripts/check-env.js
-
-# Sync with TMDB and seed 80+ heroes
-node scripts/add-expanded-heroes.js
-```
-
-### 4. Run Development Server
-```bash
-npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000) to view the archive.
-
----
 
 ## 🗂️ Project Structure
 ```text
@@ -90,7 +44,7 @@ Marvel-nexus/
     │   ├── timeline/       # Chronological phase timelines
     │   └── watch-order/    # MCU/DC sortable movie lists
     ├── components/         # Reusable HUD & visual components
-    │   ├── 3d/             # WebGL particle background scene
+    │   ├── 3d/             # WebGL particle background scen
     │   ├── ui/             # Radix & styling primitives
     │   └── admin/          # Form inputs and list managers
     └── lib/                # Database clients (Supabase, TMDB integration)
