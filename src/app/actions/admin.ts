@@ -18,7 +18,10 @@ function getAdminSupabase() {
 
 // Generate the secure session token hash
 function getSessionToken() {
-  const password = process.env.ADMIN_PASSWORD || 'Anubhav@12'
+  const password = process.env.ADMIN_PASSWORD
+  if (!password) {
+    throw new Error('ADMIN_PASSWORD environment variable is not set')
+  }
   return crypto.createHash('sha256').update(password + 'marvel-nexus-salt-987').digest('hex')
 }
 
@@ -26,7 +29,10 @@ function getSessionToken() {
  * Validates the password and sets a secure HttpOnly cookie
  */
 export async function loginAdminAction(password: string): Promise<boolean> {
-  const correctPassword = process.env.ADMIN_PASSWORD || 'Anubhav@12'
+  const correctPassword = process.env.ADMIN_PASSWORD
+  if (!correctPassword) {
+    throw new Error('ADMIN_PASSWORD environment variable is not set')
+  }
   if (password === correctPassword) {
     const token = getSessionToken()
     const cookieStore = await cookies()
