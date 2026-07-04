@@ -40,7 +40,7 @@ node scripts/test-image-url.js "https://image.tmdb.org/t/p/w500/abc123.jpg"
 
 **Option A: Via Admin Panel** (Recommended)
 1. Go to `/admin`
-2. Login with password: `Anubhav@12`
+2. Login with your configured admin password
 3. Click "Add New Hero"
 4. Paste your TESTED image URL
 5. Fill other fields
@@ -124,7 +124,7 @@ node scripts/test-image-url.js "URL_HERE"
 
 # Add hero via Admin Panel
 1. Visit /admin
-2. Login: Anubhav@12
+2. Login: with your configured admin password
 3. Add Hero form
 
 # Check current heroes

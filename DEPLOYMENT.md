@@ -135,7 +135,7 @@ Use AWS Amplify or AWS Elastic Beanstalk:
 
 - [ ] Test all franchise tabs (MCU, DC, Spider-Verse, The Boys, Peacemaker)
 - [ ] Verify images are loading
-- [ ] Test admin login with password: `Anubhav@12`
+- [ ] Test admin login with your configured `ADMIN_PASSWORD`
 - [ ] Check Hero Manager CRUD operations
 - [ ] Test Watch Order page
 - [ ] Verify the Timeline Scroll works
