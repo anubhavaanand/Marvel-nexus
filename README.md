@@ -54,7 +54,7 @@ Marvel-nexus/
 
 ## 📝 Documentation Links
 
-- **Contribution Guidelines**: Explore coding standards and branching flows in [CONTRIBUTING.md](file:///home/anubhavanand/Marvel-nexus/CONTRIBUTING.md).
-- **Project Versioning**: Review the history of security patches, design overhauls, and mobile layout fixes in [CHANGELOG.md](file:///home/anubhavanand/Marvel-nexus/CHANGELOG.md).
-- **Safe Hero Guide**: Check character creation visual protocols in [SAFE-HERO-GUIDE.md](file:///home/anubhavanand/Marvel-nexus/SAFE-HERO-GUIDE.md).
-- **Database Troubleshooting**: Find connection resolutions in [DATABASE-TROUBLESHOOTING.md](file:///home/anubhavanand/Marvel-nexus/DATABASE-TROUBLESHOOTING.md).
+- **Contribution Guidelines**: Explore coding standards and branching flows in [CONTRIBUTING.md](./CONTRIBUTING.md).
+- **Project Versioning**: Review the history of security patches, design overhauls, and mobile layout fixes in [CHANGELOG.md](./CHANGELOG.md).
+- **Safe Hero Guide**: Check character creation visual protocols in [SAFE-HERO-GUIDE.md](./SAFE-HERO-GUIDE.md).
+- **Database Troubleshooting**: Find connection resolutions in [DATABASE-TROUBLESHOOTING.md](./DATABASE-TROUBLESHOOTING.md).

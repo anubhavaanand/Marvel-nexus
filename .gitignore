@@ -142,3 +142,15 @@ local.settings.json
 # Error reports
 crash-reports/
 error-reports/
+
+# AI agent tooling artifacts
+.gemini/
+.specify/
+.od-skills/
+.jules/
+session_context.md
+skills-lock.json
+GEMINI.md
+
+# Reports (generated)
+reports/
