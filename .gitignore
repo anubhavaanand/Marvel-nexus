@@ -154,3 +154,9 @@ GEMINI.md
 
 # Reports (generated)
 reports/
+
+# AI agent artifacts
+.agents/
+
+# OS metadata
+.directory
