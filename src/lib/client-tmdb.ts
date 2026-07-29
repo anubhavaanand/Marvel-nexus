@@ -6,9 +6,9 @@ const IMAGE_BASE = 'https://image.tmdb.org/t/p/w500'
 const tmdbCache = new Map<string, string | null>()
 
 // Concurrency Queue to avoid rate limiting / ECONNRESET from TMDB
-interface QueueItem {
-  fn: () => Promise<string | null>
-  resolve: (value: string | null) => void
+interface QueueItem<T = string | null> {
+  fn: () => Promise<T>
+  resolve: (value: T) => void
   reject: (reason?: unknown) => void
 }
 
