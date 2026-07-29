@@ -7,9 +7,9 @@ const tmdbCache = new Map<string, string | null>()
 
 // Concurrency Queue to avoid rate limiting / ECONNRESET from TMDB
 interface QueueItem {
-  fn: () => Promise<any>
-  resolve: (value: any) => void
-  reject: (reason?: any) => void
+  fn: () => Promise<string | null>
+  resolve: (value: string | null) => void
+  reject: (reason?: unknown) => void
 }
 
 const queue: QueueItem[] = []
