@@ -6,13 +6,13 @@ const IMAGE_BASE = 'https://image.tmdb.org/t/p/w500'
 const tmdbCache = new Map<string, string | null>()
 
 // Concurrency Queue to avoid rate limiting / ECONNRESET from TMDB
-interface QueueItem<T = string | null> {
+interface QueueItem<T> {
   fn: () => Promise<T>
   resolve: (value: T) => void
   reject: (reason?: unknown) => void
 }
 
-const queue: QueueItem[] = []
+const queue: QueueItem<unknown>[] = []
 let activeCount = 0
 const MAX_CONCURRENT = 1 // Fully sequential processing
 
@@ -34,8 +34,8 @@ function processQueue() {
 }
 
 function enqueue<T>(fn: () => Promise<T>): Promise<T> {
-  return new Promise((resolve, reject) => {
-    queue.push({ fn, resolve, reject })
+  return new Promise<T>((resolve, reject) => {
+    queue.push({ fn, resolve, reject } as QueueItem<unknown>)
     processQueue()
   })
 }
