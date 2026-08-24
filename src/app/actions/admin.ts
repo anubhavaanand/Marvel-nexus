@@ -22,7 +22,18 @@ function getSessionToken() {
   if (!password) {
     throw new Error('ADMIN_PASSWORD environment variable is not set')
   }
-  return crypto.createHash('sha256').update(password + 'marvel-nexus-salt-987').digest('hex')
+  const salt = process.env.ADMIN_SESSION_SALT || 'marvel-nexus-salt-987'
+  return crypto.createHash('sha256').update(password + salt).digest('hex')
+}
+
+/**
+ * Securely compares two strings to prevent timing attacks.
+ * Hashes both inputs to ensure they have the same length before comparing.
+ */
+function secureCompare(a: string, b: string): boolean {
+  const hashA = crypto.createHash('sha256').update(a).digest()
+  const hashB = crypto.createHash('sha256').update(b).digest()
+  return crypto.timingSafeEqual(hashA, hashB)
 }
 
 /**
@@ -33,7 +44,7 @@ export async function loginAdminAction(password: string): Promise<boolean> {
   if (!correctPassword) {
     throw new Error('ADMIN_PASSWORD environment variable is not set')
   }
-  if (password === correctPassword) {
+  if (secureCompare(password, correctPassword)) {
     const token = getSessionToken()
     const cookieStore = await cookies()
     cookieStore.set('admin_session', token, {
@@ -58,7 +69,7 @@ export async function checkAdminAuthAction(): Promise<boolean> {
     if (!sessionCookie) return false
 
     const expectedToken = getSessionToken()
-    return sessionCookie.value === expectedToken
+    return secureCompare(sessionCookie.value, expectedToken)
   } catch {
     return false
   }
