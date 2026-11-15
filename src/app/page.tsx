@@ -4,6 +4,9 @@ import HomeClient from '@/components/HomeClient'
 import FranchiseTabs from '@/components/FranchiseTabs'
 import { Shield, Zap, Swords, Star, Skull, ArrowRight, Sparkles, Bug } from 'lucide-react'
 
+// Hero data lives in Supabase and changes without a rebuild; render per request.
+export const dynamic = 'force-dynamic'
+
 export default async function Home() {
   let buckets: HeroBuckets = EMPTY_HERO_BUCKETS
   let totalHeroes = 0

@@ -4,6 +4,9 @@ import { TimelineSkeleton } from '@/components/Skeleton'
 import { getAllMovies, type Movie } from '@/lib/supabase'
 import { Film, Sparkles } from 'lucide-react'
 
+// Movie data lives in Supabase and changes without a rebuild; render per request.
+export const dynamic = 'force-dynamic'
+
 const mockMovies: Movie[] = [
   {
     id: '1',
