@@ -31,9 +31,12 @@ export default function NotFound() {
           Dimension Not Found
         </h2>
 
-        <p className="text-[var(--muted)] max-w-md mx-auto mb-10" style={{ fontFamily: 'var(--font-body)', lineHeight: 1.47 }}>
-          This reality appears to have been erased from the multiverse.
-          Perhaps it was a canon event that needed to happen.
+        <p
+          className="text-[var(--muted)] max-w-md mx-auto mb-10"
+          style={{ fontFamily: 'var(--font-body)', lineHeight: 1.47 }}
+        >
+          This reality appears to have been erased from the multiverse. Perhaps it was a canon event
+          that needed to happen.
         </p>
 
         {/* Action Button */}
@@ -47,10 +50,7 @@ export default function NotFound() {
         {/* Decorative dots */}
         <div className="mt-16 flex justify-center gap-1.5">
           {[...Array(5)].map((_, i) => (
-            <div
-              key={i}
-              className="w-1.5 h-1.5 rounded-full bg-[var(--border)]"
-            />
+            <div key={i} className="w-1.5 h-1.5 rounded-full bg-[var(--border)]" />
           ))}
         </div>
       </div>

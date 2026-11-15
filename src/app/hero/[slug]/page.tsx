@@ -5,16 +5,7 @@ import CanonEventAlert from '@/components/CanonEventAlert'
 import LockedContentGuard from '@/components/LockedContentGuard'
 import HeroImage from '@/components/HeroImage'
 import { getHeroBySlug, type HeroWithRelations } from '@/lib/supabase'
-import {
-  ArrowLeft,
-  Globe,
-  Zap,
-  AlertTriangle,
-  Shield,
-  Film,
-  Lock,
-  Sparkles
-} from 'lucide-react'
+import { ArrowLeft, Globe, Zap, AlertTriangle, Shield, Film, Lock, Sparkles } from 'lucide-react'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -25,20 +16,20 @@ async function getHeroData(slug: string): Promise<HeroWithRelations | null> {
     const hero = await getHeroBySlug(slug)
     return hero
   } catch (e) {
-    console.error("Error fetching hero:", e)
+    console.error('Error fetching hero:', e)
     return null
   }
 }
 
 const franchiseColors: Record<string, { primary: string; glow: string }> = {
-  'MCU': { primary: 'var(--franchise-mcu)', glow: 'rgba(0, 113, 227, 0.3)' },
+  MCU: { primary: 'var(--franchise-mcu)', glow: 'rgba(0, 113, 227, 0.3)' },
   'X-Men': { primary: 'var(--franchise-xmen)', glow: 'rgba(234, 179, 8, 0.3)' },
   'Spider-Verse': { primary: 'var(--franchise-spider)', glow: 'rgba(239, 68, 68, 0.3)' },
-  'Defenders': { primary: '#a855f7', glow: 'rgba(168, 85, 247, 0.3)' },
-  'DC': { primary: 'var(--franchise-dc)', glow: 'rgba(59, 130, 246, 0.3)' },
-  'Anime': { primary: 'var(--franchise-anime)', glow: 'rgba(249, 115, 22, 0.3)' },
+  Defenders: { primary: '#a855f7', glow: 'rgba(168, 85, 247, 0.3)' },
+  DC: { primary: 'var(--franchise-dc)', glow: 'rgba(59, 130, 246, 0.3)' },
+  Anime: { primary: 'var(--franchise-anime)', glow: 'rgba(249, 115, 22, 0.3)' },
   'The Boys': { primary: 'var(--franchise-theboys)', glow: 'rgba(220, 38, 38, 0.3)' },
-  'Invincible': { primary: '#eab308', glow: 'rgba(234, 179, 8, 0.3)' },
+  Invincible: { primary: '#eab308', glow: 'rgba(234, 179, 8, 0.3)' },
 }
 
 export default async function HeroPage({ params }: PageProps) {
@@ -60,7 +51,7 @@ export default async function HeroPage({ params }: PageProps) {
           <div
             className="absolute inset-0"
             style={{
-              background: `radial-gradient(ellipse at 30% 50%, ${colors.glow} 0%, transparent 60%)`
+              background: `radial-gradient(ellipse at 30% 50%, ${colors.glow} 0%, transparent 60%)`,
             }}
           />
 
@@ -91,7 +82,9 @@ export default async function HeroPage({ params }: PageProps) {
                       <div className="w-14 h-14 rounded-full glass flex items-center justify-center mb-3">
                         <Lock className="w-5 h-5 text-[var(--muted)]" />
                       </div>
-                      <span className="text-sm font-medium text-[var(--muted)]">Premium Unlocked</span>
+                      <span className="text-sm font-medium text-[var(--muted)]">
+                        Premium Unlocked
+                      </span>
                     </div>
                   </div>
                 )}
@@ -144,7 +137,10 @@ export default async function HeroPage({ params }: PageProps) {
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {hero.weaknesses?.map((weakness, i) => (
-                      <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-[var(--danger)]/10 text-[var(--danger)] border border-[var(--danger)]/20">
+                      <span
+                        key={i}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-[var(--danger)]/10 text-[var(--danger)] border border-[var(--danger)]/20"
+                      >
                         {weakness}
                       </span>
                     ))}

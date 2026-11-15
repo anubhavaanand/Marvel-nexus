@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -109,9 +109,9 @@
   --warn: #eab308;
   --danger: #ef4444;
 
-  --font-display: "SF Pro Display", "Inter", "Helvetica Neue", sans-serif;
-  --font-body: "SF Pro Text", "Inter", "Helvetica Neue", sans-serif;
-  --font-mono: "SF Mono", "JetBrains Mono", ui-monospace, monospace;
+  --font-display: 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
+  --font-body: 'SF Pro Text', 'Inter', 'Helvetica Neue', sans-serif;
+  --font-mono: 'SF Mono', 'JetBrains Mono', ui-monospace, monospace;
 
   --text-xs: 12px;
   --text-sm: 14px;
@@ -187,7 +187,12 @@
     overflow-x: hidden;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
     font-weight: 600;
     letter-spacing: var(--tracking-tight);
@@ -205,14 +210,24 @@
     box-shadow: var(--focus-ring);
   }
 
-  ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
   ::-webkit-scrollbar-thumb {
     background: var(--meta);
     border-radius: 2px;
   }
-  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
-  html { scrollbar-width: thin; scrollbar-color: var(--meta) transparent; }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--muted);
+  }
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--meta) transparent;
+  }
 }
 
 /* ─── Utilities ───────────────────────────── */
@@ -230,9 +245,15 @@
     padding: 0 var(--container-gutter);
   }
 
-  .section { padding: var(--section-y) 0; }
-  .section-md { padding: var(--section-y-md) 0; }
-  .section-sm { padding: var(--section-y-sm) 0; }
+  .section {
+    padding: var(--section-y) 0;
+  }
+  .section-md {
+    padding: var(--section-y-md) 0;
+  }
+  .section-sm {
+    padding: var(--section-y-sm) 0;
+  }
 
   /* Glass morphism — Apple-style frosted glass */
   .glass {
@@ -337,8 +358,14 @@
     color: var(--fg);
   }
 
-  .btn-sm { padding: 8px 16px; font-size: var(--text-xs); }
-  .btn-lg { padding: 16px 32px; font-size: var(--text-base); }
+  .btn-sm {
+    padding: 8px 16px;
+    font-size: var(--text-xs);
+  }
+  .btn-lg {
+    padding: 16px 32px;
+    font-size: var(--text-base);
+  }
 
   /* Typography — Apple scale */
   .text-hero {
@@ -423,12 +450,24 @@
   }
 
   /* Franchise badges */
-  .franchise-mcu { --franchise-color: var(--franchise-mcu); }
-  .franchise-xmen { --franchise-color: var(--franchise-xmen); }
-  .franchise-spider { --franchise-color: var(--franchise-spider); }
-  .franchise-dc { --franchise-color: var(--franchise-dc); }
-  .franchise-anime { --franchise-color: var(--franchise-anime); }
-  .franchise-theboys { --franchise-color: var(--franchise-theboys); }
+  .franchise-mcu {
+    --franchise-color: var(--franchise-mcu);
+  }
+  .franchise-xmen {
+    --franchise-color: var(--franchise-xmen);
+  }
+  .franchise-spider {
+    --franchise-color: var(--franchise-spider);
+  }
+  .franchise-dc {
+    --franchise-color: var(--franchise-dc);
+  }
+  .franchise-anime {
+    --franchise-color: var(--franchise-anime);
+  }
+  .franchise-theboys {
+    --franchise-color: var(--franchise-theboys);
+  }
 
   .franchise-badge {
     background: color-mix(in oklab, var(--franchise-color), transparent 85%);
@@ -454,7 +493,9 @@
     transition: color var(--motion-fast) var(--ease-out);
   }
 
-  .link:hover { color: var(--accent-hover); }
+  .link:hover {
+    color: var(--accent-hover);
+  }
 
   .nav-link {
     display: inline-flex;
@@ -492,9 +533,16 @@
     outline: none;
   }
 
-  .input::placeholder { color: var(--meta); }
-  .input:hover { border-color: var(--border-strong); }
-  .input:focus { border-color: var(--accent); box-shadow: var(--focus-ring); }
+  .input::placeholder {
+    color: var(--meta);
+  }
+  .input:hover {
+    border-color: var(--border-strong);
+  }
+  .input:focus {
+    border-color: var(--accent);
+    box-shadow: var(--focus-ring);
+  }
 
   .ph-img {
     background: var(--surface);
@@ -505,8 +553,12 @@
     font-size: var(--text-sm);
   }
 
-  .glow-accent { box-shadow: 0 0 40px rgba(0, 113, 227, 0.15); }
-  .glow-subtle { box-shadow: 0 0 60px rgba(0, 113, 227, 0.08); }
+  .glow-accent {
+    box-shadow: 0 0 40px rgba(0, 113, 227, 0.15);
+  }
+  .glow-subtle {
+    box-shadow: 0 0 60px rgba(0, 113, 227, 0.08);
+  }
 
   .bg-grid {
     background-image:
@@ -533,15 +585,39 @@
     transform: scale(0.96);
   }
 
-  @keyframes fadeIn { to { opacity: 1; } }
-  @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
-  @keyframes scaleIn { to { opacity: 1; transform: scale(1); } }
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes slideUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes scaleIn {
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
 
-  .delay-1 { animation-delay: 120ms; }
-  .delay-2 { animation-delay: 240ms; }
-  .delay-3 { animation-delay: 360ms; }
-  .delay-4 { animation-delay: 480ms; }
-  .delay-5 { animation-delay: 600ms; }
+  .delay-1 {
+    animation-delay: 120ms;
+  }
+  .delay-2 {
+    animation-delay: 240ms;
+  }
+  .delay-3 {
+    animation-delay: 360ms;
+  }
+  .delay-4 {
+    animation-delay: 480ms;
+  }
+  .delay-5 {
+    animation-delay: 600ms;
+  }
 }
 
 /* ─── Components ──────────────────────────── */
@@ -637,9 +713,15 @@
   overflow: hidden;
 }
 
-.chapter-dark { background: var(--bg); }
-.chapter-surface { background: var(--surface); }
-.chapter-elevated { background: var(--surface-elevated); }
+.chapter-dark {
+  background: var(--bg);
+}
+.chapter-surface {
+  background: var(--surface);
+}
+.chapter-elevated {
+  background: var(--surface-elevated);
+}
 
 /* Glass panels */
 .glass-panel {
@@ -710,7 +792,7 @@
 }
 
 .border-glow::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: -1px;
   border-radius: inherit;

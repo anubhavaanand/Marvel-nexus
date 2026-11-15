@@ -29,28 +29,32 @@ export default function SearchPage() {
     loadHeroes()
   }, [])
 
-  const performSearch = useCallback((searchQuery: string, franchise: string) => {
-    setIsSearching(true)
-    setHasSearched(true)
+  const performSearch = useCallback(
+    (searchQuery: string, franchise: string) => {
+      setIsSearching(true)
+      setHasSearched(true)
 
-    setTimeout(() => {
-      let filtered = allHeroes
-      if (franchise !== 'All') {
-        filtered = filtered.filter(h => h.franchise === franchise)
-      }
-      if (searchQuery.trim()) {
-        const lowerQuery = searchQuery.toLowerCase()
-        filtered = filtered.filter(h =>
-          h.name.toLowerCase().includes(lowerQuery) ||
-          h.alias.toLowerCase().includes(lowerQuery) ||
-          h.origin_world.toLowerCase().includes(lowerQuery) ||
-          h.powers?.some(p => p.toLowerCase().includes(lowerQuery))
-        )
-      }
-      setResults(filtered)
-      setIsSearching(false)
-    }, 150)
-  }, [allHeroes])
+      setTimeout(() => {
+        let filtered = allHeroes
+        if (franchise !== 'All') {
+          filtered = filtered.filter((h) => h.franchise === franchise)
+        }
+        if (searchQuery.trim()) {
+          const lowerQuery = searchQuery.toLowerCase()
+          filtered = filtered.filter(
+            (h) =>
+              h.name.toLowerCase().includes(lowerQuery) ||
+              h.alias.toLowerCase().includes(lowerQuery) ||
+              h.origin_world.toLowerCase().includes(lowerQuery) ||
+              h.powers?.some((p) => p.toLowerCase().includes(lowerQuery)),
+          )
+        }
+        setResults(filtered)
+        setIsSearching(false)
+      }, 150)
+    },
+    [allHeroes],
+  )
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -171,9 +175,7 @@ export default function SearchPage() {
                       {results.length} {results.length === 1 ? 'hero' : 'heroes'} found
                     </span>
                     {query && (
-                      <span className="text-[var(--muted)] text-sm">
-                        for &quot;{query}&quot;
-                      </span>
+                      <span className="text-[var(--muted)] text-sm">for &quot;{query}&quot;</span>
                     )}
                   </div>
                 </div>
@@ -189,8 +191,12 @@ export default function SearchPage() {
                     <div className="w-14 h-14 rounded-2xl glass flex items-center justify-center mb-4">
                       <Search className="w-7 h-7 text-[var(--meta)]" />
                     </div>
-                    <p className="text-lg font-medium text-[var(--fg)]">No heroes found in this dimension</p>
-                    <p className="text-sm text-[var(--meta)] mt-2">Try a different search term or filter</p>
+                    <p className="text-lg font-medium text-[var(--fg)]">
+                      No heroes found in this dimension
+                    </p>
+                    <p className="text-sm text-[var(--meta)] mt-2">
+                      Try a different search term or filter
+                    </p>
                   </div>
                 )}
               </motion.div>
@@ -201,7 +207,9 @@ export default function SearchPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="text-center py-12"
               >
-                <p className="text-[var(--meta)]">Type a search term or select a franchise to begin</p>
+                <p className="text-[var(--meta)]">
+                  Type a search term or select a franchise to begin
+                </p>
               </motion.div>
             )}
           </AnimatePresence>

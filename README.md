@@ -30,8 +30,8 @@ This application features a premium, Stark-Industries-style "JARVIS" visual inte
 
 ---
 
-
 ## 🗂️ Project Structure
+
 ```text
 Marvel-nexus/
 ├── public/                 # Static assets (favicons, overlays)

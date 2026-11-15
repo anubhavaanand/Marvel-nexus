@@ -7,17 +7,13 @@ interface HomeClientProps {
 }
 
 export default function HomeClient({ children }: HomeClientProps) {
-  return (
-    <div className="min-h-screen">
-      {children}
-    </div>
-  )
+  return <div className="min-h-screen">{children}</div>
 }
 
 // Enhanced animated badge
 export function AnimatedBadge({
   children,
-  color = 'blue'
+  color = 'blue',
 }: {
   children: React.ReactNode
   color?: string

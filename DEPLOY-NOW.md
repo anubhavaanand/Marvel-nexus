@@ -3,6 +3,7 @@
 ## 🎯 Deploy in 3 Steps
 
 ### Step 1: Push to GitHub
+
 ```bash
 git add .
 git commit -m "Ready for deployment"
@@ -10,6 +11,7 @@ git push
 ```
 
 ### Step 2: Deploy to Vercel
+
 1. Go to https://vercel.com
 2. Sign in with GitHub
 3. Click "New Project"
@@ -34,7 +36,7 @@ git push
    Type: A
    Name: @
    Value: 76.76.21.21
-   
+
    Type: CNAME
    Name: www
    Value: cname.vercel-dns.com
@@ -55,9 +57,9 @@ git push
 
 ## 💰 Cost Comparison
 
-| Platform | Hosting | Custom Domain | SSL |
-|----------|---------|---------------|-----|
-| Vercel | **FREE** | Buy separately ($10-15/year) | **FREE** |
+| Platform     | Hosting  | Custom Domain                | SSL      |
+| ------------ | -------- | ---------------------------- | -------- |
+| Vercel       | **FREE** | Buy separately ($10-15/year) | **FREE** |
 | GitHub Pages | **FREE** | Buy separately ($10-15/year) | **FREE** |
 
 **Winner: Vercel** - Same cost, better features!
@@ -76,6 +78,7 @@ git push
 ## 📱 After Deployment
 
 Your live URLs:
+
 - **Vercel Default**: `https://marvel-nexus.vercel.app`
 - **Custom Domain** (after setup): `https://yourdomain.com`
 

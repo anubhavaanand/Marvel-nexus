@@ -7,11 +7,14 @@ Thank you for your interest in contributing to the **Multiverse Archive**! To ma
 ## 💻 Local Environment Setup
 
 ### 1. Requirements
+
 - Node.js version 20 or higher.
 - npm version 10 or higher.
 
 ### 2. Configuration
+
 Always copy `env.example` to `.env.local` in the project root to set up your environment variables locally.
+
 - **Never commit `.env.local` or any secrets file to Git.** These are secured under `.gitignore`.
 - Provide correct keys for Supabase and the **TMDB Database API** to enable sync functionality.
 
@@ -30,8 +33,10 @@ Before staging your work, make sure that your local changes do not break databas
 ## 🎨 Frontend Coding Standards
 
 ### 1. React 19 & Next.js 16 Code Purity
+
 - **Render Purity**: Component render bodies must be pure. Do not call impure methods like `Math.random()` inline inside rendering loops. Utilize React hooks like `useMemo` or `useEffect` instead.
 - **Client Component Hydration Guard**: Recharts, Canvas, or other browser-only components that reference `window` or `document` will cause hydration errors or server-side reference crashes during SSR. Wrap them in a `mounted` state:
+
 ```typescript
 const [mounted, setMounted] = useState(false)
 useEffect(() => {
@@ -42,6 +47,7 @@ return mounted ? <BrowserOnlyComponent /> : <LoadingSkeleton />
 ```
 
 ### 2. Styling & Responsiveness
+
 - All tabs lists containing dynamic listings must scroll horizontally (`flex-nowrap whitespace-nowrap overflow-x-auto`) on mobile viewports to prevent layout shifts.
 - Fixed layout elements (like the bottom navbar) must use responsive padding and item gaps to adjust cleanly to narrower mobile viewports.
 
@@ -50,19 +56,24 @@ return mounted ? <BrowserOnlyComponent /> : <LoadingSkeleton />
 ## 🌿 Git Workflow & Branching
 
 ### 1. Branch Naming Rules
+
 Use clean and descriptive names prefixed by change type:
+
 - `feature/your-feature-name` — for new pages or visual additions.
 - `bugfix/fix-issue-name` — for functional or layout corrections.
 - `docs/update-documentation` — for README or spec modifications.
 
 ### 2. Commit Message Guidelines
+
 Follow conventional commits structure:
+
 - `feat: add mobile responsive search filters`
 - `fix: resolve Recharts SSR hydration crash`
 - `docs: add contributing rules`
 - `style: adjust bottom navbar padding`
 
 ### 3. Pull Request Process
+
 1. Run static checks and linters before committing:
    ```bash
    npm run lint

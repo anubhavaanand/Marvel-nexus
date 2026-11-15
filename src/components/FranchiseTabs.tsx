@@ -19,16 +19,54 @@ interface FranchiseTabsProps {
 }
 
 export default function FranchiseTabs({ data }: FranchiseTabsProps) {
-  const [activeTab, setActiveTab] = useState<'mcu' | 'xmen' | 'spider' | 'dc' | 'anime' | 'theBoys' | 'peacemaker'>('mcu')
+  const [activeTab, setActiveTab] = useState<
+    'mcu' | 'xmen' | 'spider' | 'dc' | 'anime' | 'theBoys' | 'peacemaker'
+  >('mcu')
 
   const franchises = [
-    { id: 'mcu', label: 'MCU', icon: Shield, color: 'var(--franchise-mcu)', count: data.mcu?.length || 0 },
-    { id: 'xmen', label: 'X-Men', icon: Atom, color: 'var(--franchise-xmen)', count: data.xmen?.length || 0 },
-    { id: 'spider', label: 'Spider-Verse', icon: Bug, color: 'var(--franchise-spider)', count: data.spider?.length || 0 },
+    {
+      id: 'mcu',
+      label: 'MCU',
+      icon: Shield,
+      color: 'var(--franchise-mcu)',
+      count: data.mcu?.length || 0,
+    },
+    {
+      id: 'xmen',
+      label: 'X-Men',
+      icon: Atom,
+      color: 'var(--franchise-xmen)',
+      count: data.xmen?.length || 0,
+    },
+    {
+      id: 'spider',
+      label: 'Spider-Verse',
+      icon: Bug,
+      color: 'var(--franchise-spider)',
+      count: data.spider?.length || 0,
+    },
     { id: 'dc', label: 'DC', icon: Zap, color: 'var(--franchise-dc)', count: data.dc?.length || 0 },
-    { id: 'anime', label: 'Anime', icon: Swords, color: 'var(--franchise-anime)', count: data.anime?.length || 0 },
-    { id: 'theBoys', label: 'The Boys', icon: Skull, color: 'var(--franchise-theboys)', count: data.theBoys?.length || 0 },
-    { id: 'peacemaker', label: 'Peacemaker', icon: CircleDot, color: 'var(--franchise-dc)', count: data.peacemaker?.length || 0 },
+    {
+      id: 'anime',
+      label: 'Anime',
+      icon: Swords,
+      color: 'var(--franchise-anime)',
+      count: data.anime?.length || 0,
+    },
+    {
+      id: 'theBoys',
+      label: 'The Boys',
+      icon: Skull,
+      color: 'var(--franchise-theboys)',
+      count: data.theBoys?.length || 0,
+    },
+    {
+      id: 'peacemaker',
+      label: 'Peacemaker',
+      icon: CircleDot,
+      color: 'var(--franchise-dc)',
+      count: data.peacemaker?.length || 0,
+    },
   ] as const
 
   const activeHeroes = data[activeTab] || []
@@ -42,7 +80,10 @@ export default function FranchiseTabs({ data }: FranchiseTabsProps) {
             onClick={() => setActiveTab(franchise.id)}
             className={`tab-trigger group ${activeTab === franchise.id ? 'active' : ''}`}
           >
-            <franchise.icon className="w-4 h-4" style={{ color: activeTab === franchise.id ? undefined : franchise.color }} />
+            <franchise.icon
+              className="w-4 h-4"
+              style={{ color: activeTab === franchise.id ? undefined : franchise.color }}
+            />
             <span>{franchise.label}</span>
             <span className="text-xs opacity-60">({franchise.count})</span>
           </button>
@@ -56,8 +97,12 @@ export default function FranchiseTabs({ data }: FranchiseTabsProps) {
               <div className="w-14 h-14 rounded-2xl glass flex items-center justify-center mb-4">
                 <Shield className="w-7 h-7 text-[var(--meta)]" />
               </div>
-              <p className="text-lg font-medium text-[var(--fg)]">No heroes found in this dimension</p>
-              <p className="text-sm text-[var(--meta)] mt-2">Check back later or seed the database</p>
+              <p className="text-lg font-medium text-[var(--fg)]">
+                No heroes found in this dimension
+              </p>
+              <p className="text-sm text-[var(--meta)] mt-2">
+                Check back later or seed the database
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">

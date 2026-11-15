@@ -73,7 +73,7 @@ async function fetchAllMarvelMovies() {
 
   while (page <= totalPages) {
     const data = await tmdbFetch(
-      `/discover/movie?with_companies=420&sort_by=release_date.asc&page=${page}&include_adult=false`
+      `/discover/movie?with_companies=420&sort_by=release_date.asc&page=${page}&include_adult=false`,
     )
     totalPages = data.total_pages
     movies.push(...data.results)
@@ -158,7 +158,9 @@ async function syncMovies() {
           failed++
         }
       } else {
-        console.log(`  ✅ [${i + 1}/${toInsert.length}] ${dbMovie.phase}: ${dbMovie.title} (${dbMovie.release_date?.slice(0, 4) || 'TBA'}) ⭐ ${dbMovie.imdb_rating}`)
+        console.log(
+          `  ✅ [${i + 1}/${toInsert.length}] ${dbMovie.phase}: ${dbMovie.title} (${dbMovie.release_date?.slice(0, 4) || 'TBA'}) ⭐ ${dbMovie.imdb_rating}`,
+        )
         inserted++
         insertedMovies.push(data)
       }
@@ -182,9 +184,11 @@ async function syncMovies() {
       return acc
     }, {})
     console.log('\n📊 Phase Breakdown:')
-    Object.entries(phaseCounts).sort().forEach(([phase, count]) => {
-      console.log(`   ${phase}: ${count} movies`)
-    })
+    Object.entries(phaseCounts)
+      .sort()
+      .forEach(([phase, count]) => {
+        console.log(`   ${phase}: ${count} movies`)
+      })
     console.log(`   Total: ${allMovies.length} movies in database`)
   }
   console.log('═'.repeat(60))

@@ -1,6 +1,6 @@
-import { getAllHeroes } from "@/lib/supabase"
-import HomeClient from "@/components/HomeClient"
-import FranchiseTabs from "@/components/FranchiseTabs"
+import { getAllHeroes } from '@/lib/supabase'
+import HomeClient from '@/components/HomeClient'
+import FranchiseTabs from '@/components/FranchiseTabs'
 import { Shield, Zap, Swords, Star, Skull, ArrowRight, Sparkles, Bug } from 'lucide-react'
 
 async function getHeroesData() {
@@ -11,23 +11,29 @@ async function getHeroesData() {
     }
     const pm = ['Peacemaker', 'Vigilante', 'Judomaster', 'Eagly']
     return {
-      mcu: allHeroes.filter(h => h.franchise === 'MCU'),
-      xmen: allHeroes.filter(h => h.franchise === 'X-Men'),
-      spider: allHeroes.filter(h => h.franchise === 'Spider-Verse' || h.alias === 'Spider-Man'),
-      dc: allHeroes.filter(h => h.franchise === 'DC' && !pm.includes(h.alias)),
-      anime: allHeroes.filter(h => h.franchise === 'Anime'),
-      theBoys: allHeroes.filter(h => h.franchise === 'The Boys'),
-      peacemaker: allHeroes.filter(h => pm.includes(h.alias)),
+      mcu: allHeroes.filter((h) => h.franchise === 'MCU'),
+      xmen: allHeroes.filter((h) => h.franchise === 'X-Men'),
+      spider: allHeroes.filter((h) => h.franchise === 'Spider-Verse' || h.alias === 'Spider-Man'),
+      dc: allHeroes.filter((h) => h.franchise === 'DC' && !pm.includes(h.alias)),
+      anime: allHeroes.filter((h) => h.franchise === 'Anime'),
+      theBoys: allHeroes.filter((h) => h.franchise === 'The Boys'),
+      peacemaker: allHeroes.filter((h) => pm.includes(h.alias)),
     }
   } catch {
     return { mcu: [], xmen: [], spider: [], dc: [], anime: [], theBoys: [], peacemaker: [] }
   }
 }
 
-
 export default async function Home() {
   const { mcu, xmen, spider, dc, anime, theBoys, peacemaker } = await getHeroesData()
-  const totalHeroes = mcu.length + xmen.length + spider.length + dc.length + anime.length + theBoys.length + peacemaker.length
+  const totalHeroes =
+    mcu.length +
+    xmen.length +
+    spider.length +
+    dc.length +
+    anime.length +
+    theBoys.length +
+    peacemaker.length
 
   return (
     <HomeClient>
@@ -53,8 +59,8 @@ export default async function Home() {
               </h1>
 
               <p className="text-lg sm:text-xl text-[var(--fg-2)] max-w-2xl mx-auto mb-10 leading-relaxed">
-                Your gateway to heroes across all universes. Explore powers, timelines, and canon events
-                from Marvel, DC, The Boys, and beyond.
+                Your gateway to heroes across all universes. Explore powers, timelines, and canon
+                events from Marvel, DC, The Boys, and beyond.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
@@ -63,9 +69,7 @@ export default async function Home() {
                   Explore Heroes
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
                 </button>
-                <button className="btn btn-secondary btn-lg">
-                  View Timeline
-                </button>
+                <button className="btn btn-secondary btn-lg">View Timeline</button>
               </div>
 
               <div className="flex flex-wrap justify-center gap-3">
@@ -110,7 +114,8 @@ export default async function Home() {
               <span className="text-eyebrow mb-4 block">Browse by Universe</span>
               <h2 className="text-title mb-4">Hero Database</h2>
               <p className="text-body max-w-xl mx-auto">
-                Explore heroes from your favorite franchises. Each universe has its own unique characters and stories.
+                Explore heroes from your favorite franchises. Each universe has its own unique
+                characters and stories.
               </p>
             </div>
 
@@ -131,7 +136,10 @@ export default async function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               <div className="card-glass p-8 text-center">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'linear-gradient(135deg, var(--franchise-mcu), #60a5fa)' }}>
+                <div
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                  style={{ background: 'linear-gradient(135deg, var(--franchise-mcu), #60a5fa)' }}
+                >
                   <Shield className="w-7 h-7 text-white" />
                 </div>
                 <h3 className="text-heading mb-1">MCU Heroes</h3>
@@ -140,7 +148,12 @@ export default async function Home() {
               </div>
 
               <div className="card-glass p-8 text-center">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'linear-gradient(135deg, var(--franchise-spider), #f97316)' }}>
+                <div
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                  style={{
+                    background: 'linear-gradient(135deg, var(--franchise-spider), #f97316)',
+                  }}
+                >
                   <Bug className="w-7 h-7 text-white" />
                 </div>
                 <h3 className="text-heading mb-1">Spider-Verse</h3>
@@ -149,7 +162,10 @@ export default async function Home() {
               </div>
 
               <div className="card-glass p-8 text-center">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'linear-gradient(135deg, var(--franchise-dc), #22d3ee)' }}>
+                <div
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                  style={{ background: 'linear-gradient(135deg, var(--franchise-dc), #22d3ee)' }}
+                >
                   <Zap className="w-7 h-7 text-white" />
                 </div>
                 <h3 className="text-heading mb-1">DC Universe</h3>
@@ -165,7 +181,10 @@ export default async function Home() {
           <div className="container-wide">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-7 h-7 rounded-[10px] flex items-center justify-center" style={{ background: 'linear-gradient(135deg, var(--accent), #60a5fa)' }}>
+                <div
+                  className="w-7 h-7 rounded-[10px] flex items-center justify-center"
+                  style={{ background: 'linear-gradient(135deg, var(--accent), #60a5fa)' }}
+                >
                   <span className="text-white font-bold text-xs">M</span>
                 </div>
                 <span className="text-[var(--fg)] font-semibold text-sm">Multiverse Archive</span>

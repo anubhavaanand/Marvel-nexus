@@ -1,13 +1,16 @@
 # Database Connection Troubleshooting
 
 ## ❌ Current Issue
+
 Connection to Supabase database is **failing** with error:
+
 ```
 TypeError: fetch failed
 getaddrinfo ENOTFOUND ngrbczgogtmngnskymui.supabase.co
 ```
 
 ## ✅ What's Configured Correctly
+
 - Environment variables are set in `.env.local`
 - Supabase client initializes successfully
 - URL format is correct
@@ -15,18 +18,22 @@ getaddrinfo ENOTFOUND ngrbczgogtmngnskymui.supabase.co
 ## ⚠️ Most Likely Causes
 
 ### 1. **Supabase Project Paused/Deleted** (Most Likely)
+
 Your Supabase project at `ngrbczgogtmngnskymui.supabase.co` cannot be reached.
 
 **Solution:**
+
 1. Go to https://supabase.com/dashboard
 2. Check if your project is **paused** or **deleted**
 3. If paused, click "Resume" to wake it up
 4. If deleted, create a new project and update `.env.local`
 
 ### 2. **Network/DNS Issue**
+
 The URL might be temporarily unreachable.
 
 **Test:**
+
 ```bash
 ping ngrbczgogtmngnskymui.supabase.co
 ```
@@ -34,6 +41,7 @@ ping ngrbczgogtmngnskymui.supabase.co
 If ping fails, it's definitely a connectivity issue.
 
 ### 3. **Free Tier Inactivity**
+
 Supabase pauses inactive free tier projects after 7 days.
 
 **Solution:**
@@ -44,6 +52,7 @@ Visit your project dashboard and resume it.
 ## 🔧 How to Fix
 
 ### Option A: Resume Existing Project
+
 1. Visit https://supabase.com/dashboard/projects
 2. Find your project
 3. Click "Resume" if it's paused
@@ -51,6 +60,7 @@ Visit your project dashboard and resume it.
 5. Run: `node scripts/check-env.js` to verify
 
 ### Option B: Create New Project
+
 1. Go to https://supabase.com/dashboard
 2. Create a new project
 3. Run the SQL from `scripts/create-tables.sql` in SQL Editor
@@ -87,8 +97,9 @@ node scripts/count-heroes.js
 ## 📝 All Bugs Are Still Fixed!
 
 Even though the database is unreachable right now, all the code bugs have been fixed:
+
 - ✅ A-Train's name corrected
-- ✅ 10 broken image URLs fixed  
+- ✅ 10 broken image URLs fixed
 - ✅ 47 new heroes ready to add
 - ✅ Health check tool created
 - ✅ Full documentation written

@@ -13,15 +13,15 @@ interface HeroCardProps {
 }
 
 const franchiseColors: Record<string, { primary: string; glow: string }> = {
-  'MCU': { primary: 'var(--franchise-mcu)', glow: 'rgba(0, 113, 227, 0.25)' },
+  MCU: { primary: 'var(--franchise-mcu)', glow: 'rgba(0, 113, 227, 0.25)' },
   'X-Men': { primary: 'var(--franchise-xmen)', glow: 'rgba(234, 179, 8, 0.25)' },
   'Spider-Verse': { primary: 'var(--franchise-spider)', glow: 'rgba(239, 68, 68, 0.25)' },
-  'Defenders': { primary: '#a855f7', glow: 'rgba(168, 85, 247, 0.25)' },
-  'DC': { primary: 'var(--franchise-dc)', glow: 'rgba(59, 130, 246, 0.25)' },
-  'Anime': { primary: 'var(--franchise-anime)', glow: 'rgba(249, 115, 22, 0.25)' },
+  Defenders: { primary: '#a855f7', glow: 'rgba(168, 85, 247, 0.25)' },
+  DC: { primary: 'var(--franchise-dc)', glow: 'rgba(59, 130, 246, 0.25)' },
+  Anime: { primary: 'var(--franchise-anime)', glow: 'rgba(249, 115, 22, 0.25)' },
   'The Boys': { primary: 'var(--franchise-theboys)', glow: 'rgba(220, 38, 38, 0.25)' },
-  'Invincible': { primary: '#eab308', glow: 'rgba(234, 179, 8, 0.25)' },
-  'Peacemaker': { primary: 'var(--franchise-dc)', glow: 'rgba(59, 130, 246, 0.25)' },
+  Invincible: { primary: '#eab308', glow: 'rgba(234, 179, 8, 0.25)' },
+  Peacemaker: { primary: 'var(--franchise-dc)', glow: 'rgba(59, 130, 246, 0.25)' },
 }
 
 export default function HeroCard({ hero, index = 0 }: HeroCardProps) {
@@ -38,7 +38,7 @@ export default function HeroCard({ hero, index = 0 }: HeroCardProps) {
       try {
         adminAuth = sessionStorage.getItem('admin_auth') === 'true'
       } catch (e) {
-        console.warn("sessionStorage is not accessible:", e)
+        console.warn('sessionStorage is not accessible:', e)
       }
       setIsAdmin(adminAuth)
     })
@@ -61,17 +61,21 @@ export default function HeroCard({ hero, index = 0 }: HeroCardProps) {
           <div
             className="absolute inset-0 flex items-center justify-center"
             style={{
-              background: `linear-gradient(135deg, ${colors.glow} 0%, var(--surface) 100%)`
+              background: `linear-gradient(135deg, ${colors.glow} 0%, var(--surface) 100%)`,
             }}
           >
             <span
               className="text-6xl font-bold opacity-10 select-none"
               style={{
                 fontFamily: 'var(--font-display)',
-                color: colors.primary
+                color: colors.primary,
               }}
             >
-              {hero.alias.split(' ').map(w => w[0]).join('').slice(0, 2)}
+              {hero.alias
+                .split(' ')
+                .map((w) => w[0])
+                .join('')
+                .slice(0, 2)}
             </span>
           </div>
 

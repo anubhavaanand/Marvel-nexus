@@ -16,14 +16,11 @@ export async function GET(request: NextRequest) {
   try {
     const res = await fetch(
       `${BASE_URL}/search/person?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`,
-      { signal: AbortSignal.timeout(5000) }
+      { signal: AbortSignal.timeout(5000) },
     )
 
     if (!res.ok) {
-      return NextResponse.json(
-        { error: `TMDB API error: ${res.status}` },
-        { status: res.status }
-      )
+      return NextResponse.json({ error: `TMDB API error: ${res.status}` }, { status: res.status })
     }
 
     const data = await res.json()

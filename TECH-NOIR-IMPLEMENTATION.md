@@ -1,6 +1,7 @@
 # Tech-Noir Visual Identity Implementation
 
 ## 🎨 Overview
+
 This document outlines the comprehensive Tech-Noir design enhancements applied to the Marvel-nexus project, transforming it into a premium, JARVIS-like high-tech HUD interface.
 
 ---
@@ -8,16 +9,19 @@ This document outlines the comprehensive Tech-Noir design enhancements applied t
 ## ✅ Implemented Features
 
 ### 1. **Color Palette Enhancement**
+
 - **Primary (Stark Blue)**: `#06b6d4` (Cyan-400/500) - Active UI, highlights, stable data
 - **Secondary (Canon Red)**: `#f43f5e` (Rose-500/600) - Warnings, threats, glitch states
 - **Background (The Void)**: `#0a0a0a` (Neutral-950) - Pure black for glow effects
 
 ### 2. **Typography System**
+
 - **Orbitron**: Headings - Sci-fi, geometric, technical feel
 - **Inter**: Body text - Clean, readable
 - **Roboto Mono**: ✨ NEW - Technical specs, IDs, terminal readouts
 
 ### 3. **Glassmorphism & Depth**
+
 - **Enhanced Glass Panels**: `backdrop-filter: blur(16px)` with rgba(23, 23, 23, 0.5) background
 - **Tactile Borders**: 1px borders with low opacity (cyan-500/20)
 - **Z-Axis Depth**: CSS `perspective: 1200px` for 3D layering
@@ -26,6 +30,7 @@ This document outlines the comprehensive Tech-Noir design enhancements applied t
 ### 4. **High-End Animations (The "JARVIS" Feel)**
 
 #### Spring Physics
+
 - **Stiffness**: 250-300 for snappy, organic feel
 - **Damping**: 20-25 for smooth deceleration
 - Applied to:
@@ -35,11 +40,13 @@ This document outlines the comprehensive Tech-Noir design enhancements applied t
   - Canon event alerts
 
 #### 3D Hover Tilt
+
 - **Parallax Mapping**: Mouse x/y → rotation x/y (±12.5° max)
 - **Holographic Glare**: Radial gradient tracking mouse position
 - Implemented on `HeroCard` component
 
 #### Tactical Scanning
+
 - **Scanline Animation**: Glowing horizontal line (4s cycle)
 - Applied to:
   - Hero cards
@@ -51,6 +58,7 @@ This document outlines the comprehensive Tech-Noir design enhancements applied t
 ### 5. **Component-Specific Elements**
 
 #### Decryption Overlay ✨ NEW
+
 - **Location**: `/src/components/DecryptionOverlay.tsx`
 - **Features**:
   - Full-screen blur with progress bar
@@ -60,6 +68,7 @@ This document outlines the comprehensive Tech-Noir design enhancements applied t
   - Spring-based animations
 
 #### Canon Alerts (Hazard Style)
+
 - **Enhanced Features**:
   - Bright red borders for high glitch levels (>6)
   - Diagonal stripe pattern overlay
@@ -69,6 +78,7 @@ This document outlines the comprehensive Tech-Noir design enhancements applied t
   - Terminal-style text: "FIXED_CANON_EVENT - DO_NOT_ALTER"
 
 #### Holographic Backgrounds
+
 - **SVG Grids**: 40px grid pattern at 3% opacity
 - **Radial Glows**: Cyan and rose background circles
 - **HUD Grid**: Applied to hero detail page
@@ -76,15 +86,18 @@ This document outlines the comprehensive Tech-Noir design enhancements applied t
 ### 6. **AI Interaction Language (The "Voice")**
 
 #### System Instructions
+
 - **Before**: "Loading..."
 - **After**: "BOOTING_JARVIS...", "INITIALIZING_NEURAL_LINK..."
 
 #### Status Indicators
+
 - **System Stable**: Pulsing green dot in navbar
 - **Text Style**: "SYSTEM_STABLE" in Roboto Mono
 - **Threat Detection**: Red pulsing icons for canon events
 
 #### Terminal Text Examples
+
 - "< RETURN_TO_ARCHIVE"
 - "ABILITIES_MATRIX"
 - "VULNERABILITY_LOG"
@@ -97,6 +110,7 @@ This document outlines the comprehensive Tech-Noir design enhancements applied t
 ## 📁 Modified Files
 
 ### Core Styles
+
 1. **`/src/app/globals.css`**
    - Added 346 lines of Tech-Noir enhancements
    - New animations: tactical-scan, decrypt, system-boot, energy-shield
@@ -104,10 +118,12 @@ This document outlines the comprehensive Tech-Noir design enhancements applied t
    - Enhanced glitch effects
 
 ### Layout
+
 2. **`/src/app/layout.tsx`**
    - Added Roboto Mono to Google Fonts import
 
 ### Components
+
 3. **`/src/components/HeroCard.tsx`**
    - 3D tilt with mouse tracking
    - Holographic glare effect
@@ -141,6 +157,7 @@ This document outlines the comprehensive Tech-Noir design enhancements applied t
    - Enhanced glass panels
 
 ### New Components
+
 8. **`/src/components/DecryptionOverlay.tsx`** ✨ NEW
    - Immersive loading experience
    - Progress bars with glow effects
@@ -152,6 +169,7 @@ This document outlines the comprehensive Tech-Noir design enhancements applied t
 ## 🎯 Key CSS Classes Reference
 
 ### Animations
+
 ```css
 .tactical-scan       /* Biometric scan line */
 .decrypt-animation   /* Data decryption effect */
@@ -162,6 +180,7 @@ This document outlines the comprehensive Tech-Noir design enhancements applied t
 ```
 
 ### Styling
+
 ```css
 .glass-panel-enhanced  /* Premium glassmorphism */
 .hazard-alert         /* Critical warning style */
@@ -171,6 +190,7 @@ This document outlines the comprehensive Tech-Noir design enhancements applied t
 ```
 
 ### Utilities
+
 ```css
 .font-roboto-mono    /* Technical font */
 .spring-hover        /* Spring physics hover */
@@ -183,24 +203,29 @@ This document outlines the comprehensive Tech-Noir design enhancements applied t
 ## 🎨 Design Principles Applied
 
 ### 1. **Micro-interactions**
+
 Every button click feels like a "system command":
+
 - `scale: 0.95` on click
 - `scale: 1.05-1.15` on hover
 - Spring physics for organic feel
 
 ### 2. **Visual Hierarchy**
+
 - Glowing elements for importance
 - Pulsing for active states
 - Scanlines for system processes
 - Color-coded by threat level
 
 ### 3. **Depth & Layering**
+
 - Multiple shadow layers
 - Perspective transformations
 - Backdrop blur
 - Gradient overlays
 
 ### 4. **System Communication**
+
 - Terminal-style language
 - Status indicators
 - Progress feedback
@@ -211,12 +236,14 @@ Every button click feels like a "system command":
 ## 🚀 Performance Considerations
 
 ### Optimizations
+
 - CSS-only animations where possible
 - `will-change` hints for transforms
 - Pointer-events: none on overlays
 - Hardware-accelerated properties (transform, opacity)
 
 ### Spring Physics Values
+
 - **Stiffness 250-300**: Snappy but not jarring
 - **Damping 20-25**: Natural deceleration
 - **Duration**: Auto-calculated by physics
@@ -226,18 +253,21 @@ Every button click feels like a "system command":
 ## 📊 Impact Metrics
 
 ### Visual Quality
+
 - ✅ Premium glassmorphism with depth
 - ✅ Smooth, organic animations
 - ✅ Consistent tech-noir aesthetic
 - ✅ Professional, polished UI
 
 ### User Experience
+
 - ✅ Tactile feedback on all interactions
 - ✅ Clear system status communication
 - ✅ Immersive loading states
 - ✅ Visual hierarchy for importance
 
 ### Code Quality
+
 - ✅ Reusable CSS utilities
 - ✅ Consistent animation system
 - ✅ Well-documented classes
@@ -248,6 +278,7 @@ Every button click feels like a "system command":
 ## 🎬 Next Steps (Optional Enhancements)
 
 ### Potential Future Additions
+
 1. **Sound Effects**: Click/hover sounds for system commands
 2. **Particle Effects**: Data stream particles on load
 3. **Advanced Shaders**: WebGL holographic effects
@@ -259,12 +290,13 @@ Every button click feels like a "system command":
 ## 📝 Usage Examples
 
 ### Using the Decryption Overlay
+
 ```tsx
 import DecryptionOverlay from '@/components/DecryptionOverlay'
 
 function MyPage() {
   const [loading, setLoading] = useState(true)
-  
+
   return (
     <>
       <DecryptionOverlay isLoading={loading} title="HERO_DATABASE" />
@@ -275,6 +307,7 @@ function MyPage() {
 ```
 
 ### Applying Tech-Noir Effects
+
 ```tsx
 // Add tactical scanning
 <div className="tactical-scan">...</div>
@@ -287,10 +320,9 @@ function MyPage() {
 ```
 
 ### Terminal Text
+
 ```tsx
-<span className="font-roboto-mono terminal-text">
-  SYSTEM_ONLINE
-</span>
+<span className="font-roboto-mono terminal-text">SYSTEM_ONLINE</span>
 ```
 
 ---

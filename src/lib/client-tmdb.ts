@@ -23,7 +23,8 @@ function processQueue() {
   if (!item) return
 
   activeCount++
-  item.fn()
+  item
+    .fn()
     .then(item.resolve)
     .catch(item.reject)
     .finally(() => {
@@ -47,14 +48,16 @@ export async function getTmdbImageUrl(name: string, alias: string): Promise<stri
   return enqueue(async () => {
     try {
       const search = name || alias
-      const res = await fetch(
-        `/api/tmdb/search?query=${encodeURIComponent(search)}`,
-        { signal: AbortSignal.timeout(5000) }
-      )
+      const res = await fetch(`/api/tmdb/search?query=${encodeURIComponent(search)}`, {
+        signal: AbortSignal.timeout(5000),
+      })
       if (!res.ok) return null
       const data = await res.json()
       const path = data.person?.profile_path
-      if (!path) { tmdbCache.set(key, null); return null }
+      if (!path) {
+        tmdbCache.set(key, null)
+        return null
+      }
 
       const url = `${IMAGE_BASE}${path}`
       tmdbCache.set(key, url)
