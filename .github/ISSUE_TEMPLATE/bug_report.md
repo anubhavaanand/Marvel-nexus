@@ -1,9 +1,9 @@
 ---
 name: Bug report
 about: Report a problem with Multiverse Archive
-title: "bug: "
-labels: ["bug"]
-assignees: ""
+title: 'bug: '
+labels: ['bug']
+assignees: ''
 ---
 
 ## Describe the bug
