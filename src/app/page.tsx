@@ -1,39 +1,24 @@
 import { getAllHeroes } from '@/lib/supabase'
+import { bucketHeroes, EMPTY_HERO_BUCKETS, type HeroBuckets } from '@/lib/stats'
 import HomeClient from '@/components/HomeClient'
 import FranchiseTabs from '@/components/FranchiseTabs'
 import { Shield, Zap, Swords, Star, Skull, ArrowRight, Sparkles, Bug } from 'lucide-react'
 
-async function getHeroesData() {
+export default async function Home() {
+  let buckets: HeroBuckets = EMPTY_HERO_BUCKETS
+  let totalHeroes = 0
+
   try {
     const allHeroes = await getAllHeroes()
-    if (!allHeroes || allHeroes.length === 0) {
-      return { mcu: [], xmen: [], spider: [], dc: [], anime: [], theBoys: [], peacemaker: [] }
-    }
-    const pm = ['Peacemaker', 'Vigilante', 'Judomaster', 'Eagly']
-    return {
-      mcu: allHeroes.filter((h) => h.franchise === 'MCU'),
-      xmen: allHeroes.filter((h) => h.franchise === 'X-Men'),
-      spider: allHeroes.filter((h) => h.franchise === 'Spider-Verse' || h.alias === 'Spider-Man'),
-      dc: allHeroes.filter((h) => h.franchise === 'DC' && !pm.includes(h.alias)),
-      anime: allHeroes.filter((h) => h.franchise === 'Anime'),
-      theBoys: allHeroes.filter((h) => h.franchise === 'The Boys'),
-      peacemaker: allHeroes.filter((h) => pm.includes(h.alias)),
+    if (allHeroes && allHeroes.length > 0) {
+      buckets = bucketHeroes(allHeroes)
+      totalHeroes = allHeroes.length
     }
   } catch {
-    return { mcu: [], xmen: [], spider: [], dc: [], anime: [], theBoys: [], peacemaker: [] }
+    // Keep the empty state; the page should still render without data.
   }
-}
 
-export default async function Home() {
-  const { mcu, xmen, spider, dc, anime, theBoys, peacemaker } = await getHeroesData()
-  const totalHeroes =
-    mcu.length +
-    xmen.length +
-    spider.length +
-    dc.length +
-    anime.length +
-    theBoys.length +
-    peacemaker.length
+  const { mcu, xmen, spider, dc, anime, theBoys, peacemaker } = buckets
 
   return (
     <HomeClient>
