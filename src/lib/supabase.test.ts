@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { Hero } from './supabase'
-import { getAllHeroes, getHeroBySlug, needsImageEnrichment, searchHeroes } from './supabase'
+import {
+  escapeLikePattern,
+  getAllHeroes,
+  getHeroBySlug,
+  needsImageEnrichment,
+  searchHeroes,
+} from './supabase'
 
 describe('mock data fallback', () => {
   it('returns every mock hero when Supabase is not configured', async () => {
@@ -40,5 +46,17 @@ describe('needsImageEnrichment', () => {
     expect(needsImageEnrichment(withImage('https://image.tmdb.org/t/p/w500/example.jpg'))).toBe(
       false,
     )
+  })
+})
+
+describe('escapeLikePattern', () => {
+  it('escapes LIKE metacharacters so they are matched literally', () => {
+    expect(escapeLikePattern('100%')).toBe('100\\%')
+    expect(escapeLikePattern('a_b')).toBe('a\\_b')
+    expect(escapeLikePattern('a\\b')).toBe('a\\\\b')
+  })
+
+  it('leaves ordinary text unchanged', () => {
+    expect(escapeLikePattern('Hulk')).toBe('Hulk')
   })
 })
