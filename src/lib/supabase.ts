@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { searchPerson } from './tmdb'
+import { compareSlug } from './slugs'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
@@ -520,22 +521,21 @@ export async function getAllHeroes(): Promise<Hero[]> {
 
 export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | null> {
   if (!supabase) {
-    // Convert slug back to alias (e.g., "iron-man" -> "Iron Man")
-    const aliasFromSlug = slug
-      .split('-')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ')
-    const hero = mockHeroes.find((h) => h.alias.toLowerCase() === aliasFromSlug.toLowerCase())
+    const hero = mockHeroes.find((h) => compareSlug(h.alias, slug))
     if (!hero) return null
     const enriched = await enrichMockHeroesWithTmdb([hero])
     return enriched[0] || null
   }
 
-  // Convert slug back to alias (e.g., "iron-man" -> "Iron Man")
-  const aliasFromSlug = slug
-    .split('-')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
+  const { data: candidates, error: listError } = await supabase.from('heroes').select('id, alias')
+
+  if (listError) {
+    console.error('Error fetching heroes for slug lookup:', listError)
+    return null
+  }
+
+  const match = (candidates || []).find((h) => compareSlug(h.alias, slug))
+  if (!match) return null
 
   const { data, error } = await supabase
     .from('heroes')
@@ -551,7 +551,7 @@ export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | n
       )
     `,
     )
-    .ilike('alias', aliasFromSlug)
+    .eq('id', match.id)
     .single()
 
   if (error) {
