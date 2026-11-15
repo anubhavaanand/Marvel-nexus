@@ -609,34 +609,41 @@ export async function getMoviesByPhase(phase: string): Promise<Movie[]> {
   return data || []
 }
 
+export function escapeLikePattern(value: string): string {
+  return value.replace(/[\\%_]/g, (char) => `\\${char}`)
+}
+
 export async function searchHeroes(query: string): Promise<Hero[]> {
-  if (!supabase) {
-    const q = query.toLowerCase()
-    return mockHeroes.filter(
+  const trimmed = query.trim()
+  const needle = trimmed.toLowerCase()
+  const fallback = () =>
+    mockHeroes.filter(
       (h) =>
-        h.name.toLowerCase().includes(q) ||
-        h.alias.toLowerCase().includes(q) ||
-        h.powers.some((p) => p.toLowerCase().includes(q)),
+        h.name.toLowerCase().includes(needle) ||
+        h.alias.toLowerCase().includes(needle) ||
+        h.powers.some((p) => p.toLowerCase().includes(needle)),
     )
+
+  if (!supabase) return fallback()
+
+  // Query each column separately and merge in memory instead of building an
+  // `or(...)` filter from raw user input, which could alter the filter syntax.
+  const pattern = `%${escapeLikePattern(trimmed)}%`
+  const [byName, byAlias] = await Promise.all([
+    supabase.from('heroes').select('*').ilike('name', pattern).limit(100),
+    supabase.from('heroes').select('*').ilike('alias', pattern).limit(100),
+  ])
+
+  if (byName.error || byAlias.error) {
+    console.error('Error searching heroes:', byName.error?.message ?? byAlias.error?.message)
+    return fallback()
   }
 
-  const { data, error } = await supabase
-    .from('heroes')
-    .select('*')
-    .or(`name.ilike.%${query}%,alias.ilike.%${query}%`)
-    .order('name')
-
-  if (error) {
-    console.error('Error searching heroes:', error)
-    const q = query.toLowerCase()
-    return mockHeroes.filter(
-      (h) =>
-        h.name.toLowerCase().includes(q) ||
-        h.alias.toLowerCase().includes(q) ||
-        h.powers.some((p) => p.toLowerCase().includes(q)),
-    )
+  const merged = new Map<string, Hero>()
+  for (const hero of [...(byName.data ?? []), ...(byAlias.data ?? [])]) {
+    merged.set(hero.id, hero)
   }
-  return data || []
+  return [...merged.values()].sort((a, b) => a.name.localeCompare(b.name))
 }
 
 export async function getCanonEventsByHero(heroId: string): Promise<CanonEvent[]> {
