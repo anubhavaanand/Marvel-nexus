@@ -1,6 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { searchPerson } from './tmdb'
 import { compareSlug } from './slugs'
+import { mapWithConcurrency } from './concurrency'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
@@ -8,46 +9,44 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 // TMDB image cache to avoid repeated lookups
 const tmdbImageCache = new Map<string, string | null>()
 
+export function needsImageEnrichment(hero: Hero): boolean {
+  return !hero.image_url || hero.image_url.trim() === ''
+}
+
 async function enrichMockHeroesWithTmdb(heroes: Hero[]): Promise<Hero[]> {
   const apiKey = process.env.TMDB_API_KEY
   if (!apiKey) return heroes
 
-  // Skip enrichment for heroes that intentionally have no placeholder image
-  // (TMDB lookup happens client-side in HeroImage.tsx instead)
-  const needsEnrichment = heroes.filter((h) => h.image_url && h.image_url !== '')
+  // Only look up heroes that are actually missing an image.
+  const needsEnrichment = heroes.filter((h) => needsImageEnrichment(h))
   if (needsEnrichment.length === 0) return heroes
 
-  // Batch all TMDB lookups at once
-  const results = await Promise.allSettled(
-    needsEnrichment.map(async (hero) => {
-      const cacheKey = `${hero.name}|${hero.alias}`
-      if (tmdbImageCache.has(cacheKey)) {
-        const cached = tmdbImageCache.get(cacheKey)
-        if (cached) return { id: hero.id, url: cached }
-        return null
-      }
+  // Limit concurrent TMDB requests to avoid rate limiting and socket exhaustion.
+  const results = await mapWithConcurrency(needsEnrichment, 5, async (hero) => {
+    const cacheKey = `${hero.name}|${hero.alias}`
+    if (tmdbImageCache.has(cacheKey)) {
+      const cached = tmdbImageCache.get(cacheKey)
+      return cached ? { id: hero.id, url: cached } : null
+    }
 
-      // Try actor name first, then alias, then character name
-      const person =
-        (await searchPerson(hero.actor_name || '')) ||
-        (await searchPerson(hero.alias)) ||
-        (await searchPerson(hero.name))
-      if (person?.profile_path) {
-        const url = `https://image.tmdb.org/t/p/w500${person.profile_path}`
-        tmdbImageCache.set(cacheKey, url)
-        return { id: hero.id, url }
-      }
+    // Try actor name first, then alias, then character name
+    const person =
+      (await searchPerson(hero.actor_name || '')) ||
+      (await searchPerson(hero.alias)) ||
+      (await searchPerson(hero.name))
+    if (person?.profile_path) {
+      const url = `https://image.tmdb.org/t/p/w500${person.profile_path}`
+      tmdbImageCache.set(cacheKey, url)
+      return { id: hero.id, url }
+    }
 
-      tmdbImageCache.set(cacheKey, null)
-      return null
-    }),
-  )
+    tmdbImageCache.set(cacheKey, null)
+    return null
+  })
 
   const imageMap = new Map<string, string>()
   for (const result of results) {
-    if (result.status === 'fulfilled' && result.value) {
-      imageMap.set(result.value.id, result.value.url)
-    }
+    if (result) imageMap.set(result.id, result.url)
   }
 
   if (imageMap.size === 0) return heroes

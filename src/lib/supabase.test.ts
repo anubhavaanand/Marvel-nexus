@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { getAllHeroes, getHeroBySlug, searchHeroes } from './supabase'
+import type { Hero } from './supabase'
+import { getAllHeroes, getHeroBySlug, needsImageEnrichment, searchHeroes } from './supabase'
 
 describe('mock data fallback', () => {
   it('returns every mock hero when Supabase is not configured', async () => {
@@ -24,5 +25,20 @@ describe('mock data fallback', () => {
   ])('resolves hyphenated slug %s to %s', async (slug, alias) => {
     const hero = await getHeroBySlug(slug)
     expect(hero?.alias).toBe(alias)
+  })
+})
+
+describe('needsImageEnrichment', () => {
+  const withImage = (image_url: string) => ({ image_url }) as unknown as Hero
+
+  it('flags missing or blank images', () => {
+    expect(needsImageEnrichment(withImage(''))).toBe(true)
+    expect(needsImageEnrichment(withImage('   '))).toBe(true)
+  })
+
+  it('accepts an existing image URL', () => {
+    expect(needsImageEnrichment(withImage('https://image.tmdb.org/t/p/w500/example.jpg'))).toBe(
+      false,
+    )
   })
 })
