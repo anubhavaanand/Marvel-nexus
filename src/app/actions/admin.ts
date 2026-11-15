@@ -4,6 +4,7 @@ import crypto from 'crypto'
 import { cookies } from 'next/headers'
 import { createClient } from '@supabase/supabase-js'
 import { Hero } from '@/lib/supabase'
+import { sanitizeHeroUpdate } from '@/lib/hero-update'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
@@ -96,9 +97,15 @@ export async function updateHeroAction(id: string, updates: Partial<Hero>): Prom
   }
 
   const supabase = getAdminSupabase()
+  const sanitized = sanitizeHeroUpdate(updates)
+  if (!sanitized || Object.keys(sanitized).length === 0) {
+    console.error('Rejected hero update: invalid or empty payload')
+    return null
+  }
+
   const { data, error } = await supabase
     .from('heroes')
-    .update(updates)
+    .update(sanitized)
     .eq('id', id)
     .select()
     .single()
