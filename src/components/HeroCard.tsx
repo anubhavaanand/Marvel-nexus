@@ -5,6 +5,7 @@ import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Lock, Zap, Globe, ArrowRight } from 'lucide-react'
 import type { Hero } from '@/lib/supabase'
+import { slugifyAlias } from '@/lib/slugs'
 import HeroImage from './HeroImage'
 
 interface HeroCardProps {
@@ -26,7 +27,7 @@ const franchiseColors: Record<string, { primary: string; glow: string }> = {
 
 export default function HeroCard({ hero, index = 0 }: HeroCardProps) {
   const colors = franchiseColors[hero.franchise] || franchiseColors['MCU']
-  const slug = hero.alias.toLowerCase().replace(/\s+/g, '-').replace(/[()]/g, '')
+  const slug = slugifyAlias(hero.alias)
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-50px' })
 
@@ -45,7 +46,7 @@ export default function HeroCard({ hero, index = 0 }: HeroCardProps) {
   }, [])
 
   return (
-    <Link href={hero.is_locked_content && !isAdmin ? '#' : `/hero/${slug}`}>
+    <Link href={hero.is_locked_content && !isAdmin ? '/admin' : `/hero/${slug}`}>
       <motion.article
         ref={ref}
         className="hero-card group"
