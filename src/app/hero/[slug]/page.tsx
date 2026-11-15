@@ -2,9 +2,10 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import PowerRadarChart from '@/components/PowerRadarChart'
 import CanonEventAlert from '@/components/CanonEventAlert'
-import LockedContentGuard from '@/components/LockedContentGuard'
+import RestrictedAccess from '@/components/RestrictedAccess'
 import HeroImage from '@/components/HeroImage'
 import { getHeroBySlug, type HeroWithRelations } from '@/lib/supabase'
+import { checkAdminAuthAction } from '@/app/actions/admin'
 import { ArrowLeft, Globe, Zap, AlertTriangle, Shield, Film, Lock, Sparkles } from 'lucide-react'
 
 interface PageProps {
@@ -42,8 +43,14 @@ export default async function HeroPage({ params }: PageProps) {
 
   const colors = franchiseColors[hero.franchise] || franchiseColors['MCU']
 
+  const isAdmin = await checkAdminAuthAction()
+  if (hero.is_locked_content && !isAdmin) {
+    // Do not render or serialize any protected fields for non-admins.
+    return <RestrictedAccess />
+  }
+
   return (
-    <LockedContentGuard isLocked={hero.is_locked_content}>
+    <>
       <main className="min-h-screen">
         {/* Cinematic hero detail — pure black canvas */}
         <section className="relative bg-[var(--bg)] overflow-hidden">
@@ -208,7 +215,7 @@ export default async function HeroPage({ params }: PageProps) {
           </div>
         </section>
       </main>
-    </LockedContentGuard>
+    </>
   )
 }
 
