@@ -8,7 +8,7 @@
 
 **Input**: User description: "Analyze and secure project dependencies and configurations"
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Dependency Vulnerability Remediation (Priority: P1)
 
@@ -39,7 +39,7 @@ As a developer, I want to resolve all ESLint compilation warnings and errors (pa
 
 ---
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -48,7 +48,7 @@ As a developer, I want to resolve all ESLint compilation warnings and errors (pa
 - **FR-003**: The `HeroManager` component MUST be updated to resolve hoisting issues with functions like `fetchHeroes` being invoked before declaration.
 - **FR-004**: All unused imports/variables identified by ESLint MUST be pruned or resolved.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

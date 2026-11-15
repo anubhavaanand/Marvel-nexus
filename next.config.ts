@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   // Security headers
@@ -43,7 +43,12 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
   },
   // Transpile three.js modules for Next.js
-  transpilePackages: ['three', '@react-three/fiber', '@react-three/drei', '@react-three/postprocessing'],
+  transpilePackages: [
+    'three',
+    '@react-three/fiber',
+    '@react-three/drei',
+    '@react-three/postprocessing',
+  ],
   // Enable React strict mode for better development experience
   reactStrictMode: true,
   // Performance optimization: Enable compression
@@ -54,6 +59,6 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', '@react-three/fiber', '@react-three/drei'],
   },
-};
+}
 
-export default nextConfig;
+export default nextConfig

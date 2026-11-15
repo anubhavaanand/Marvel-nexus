@@ -23,7 +23,10 @@ function getSessionToken() {
     throw new Error('ADMIN_PASSWORD environment variable is not set')
   }
   const salt = process.env.ADMIN_SESSION_SALT || 'marvel-nexus-salt-987'
-  return crypto.createHash('sha256').update(password + salt).digest('hex')
+  return crypto
+    .createHash('sha256')
+    .update(password + salt)
+    .digest('hex')
 }
 
 /**
@@ -117,10 +120,7 @@ export async function deleteHeroAction(id: string): Promise<boolean> {
   }
 
   const supabase = getAdminSupabase()
-  const { error } = await supabase
-    .from('heroes')
-    .delete()
-    .eq('id', id)
+  const { error } = await supabase.from('heroes').delete().eq('id', id)
 
   if (error) {
     console.error('Error deleting hero via server action:', error)

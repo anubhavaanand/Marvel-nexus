@@ -31,9 +31,7 @@ export default function Navbar() {
       {/* Apple-style translucent glass nav */}
       <motion.header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          isScrolled
-            ? 'glass-strong'
-            : 'bg-transparent'
+          isScrolled ? 'glass-strong' : 'bg-transparent'
         }`}
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -43,7 +41,10 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-14">
             {/* Logo — Linear-style minimal wordmark */}
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-7 h-7 rounded-[10px] flex items-center justify-center" style={{ background: 'linear-gradient(135deg, var(--accent), #60a5fa)' }}>
+              <div
+                className="w-7 h-7 rounded-[10px] flex items-center justify-center"
+                style={{ background: 'linear-gradient(135deg, var(--accent), #60a5fa)' }}
+              >
                 <span className="text-white font-bold text-xs">M</span>
               </div>
               <span className="text-[var(--fg)] font-semibold text-base tracking-tight hidden sm:block">

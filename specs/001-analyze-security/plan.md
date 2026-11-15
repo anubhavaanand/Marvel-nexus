@@ -8,6 +8,7 @@
 
 This feature focuses on securing the codebase by resolving ESLint static analysis errors and dependency vulnerabilities.
 The key areas of code changes are:
+
 1. Refactoring components (`TimelineScroll.tsx`, `VisualEffects.tsx`) to avoid calling impure `Math.random()` during component rendering, aligning with React 19 requirements.
 2. Fixing variable hoisting errors (`fetchHeroes` in `HeroManager.tsx`).
 3. Running dependency security audits and upgrading Next.js and transient packages (`picomatch`, `postcss`, etc.) to mitigate known CVEs.
@@ -48,6 +49,7 @@ specs/001-analyze-security/
 ### Source Code (repository root)
 
 No new folders/files will be created. The following existing files will be modified:
+
 - `package.json` (updating dependency ranges)
 - `src/components/TimelineScroll.tsx` (removing impure random generation during render)
 - `src/components/VisualEffects.tsx` (removing impure random generation during render)

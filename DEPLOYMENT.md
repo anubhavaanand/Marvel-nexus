@@ -5,13 +5,15 @@
 Vercel is the easiest way to deploy Next.js applications and is made by the creators of Next.js.
 
 ### Prerequisites
+
 - GitHub account
 - Vercel account (free tier available at [vercel.com](https://vercel.com))
 - Your code pushed to GitHub
 
 ### Step-by-Step Deployment
 
-#### 1. Push Code 
+#### 1. Push Code
+
 ```bash
 git init
 git add .
@@ -24,6 +26,7 @@ git push -u origin main
 #### 2. Deploy on Vercel
 
 **Option A: Using Vercel Dashboard (Easiest)**
+
 1. Go to [vercel.com](https://vercel.com) and sign in
 2. Click **"Add New Project"**
 3. Import your GitHub repository
@@ -34,6 +37,7 @@ git push -u origin main
 6. Click **"Deploy"**
 
 **Option B: Using Vercel CLI**
+
 ```bash
 # Install Vercel CLI
 npm i -g vercel
@@ -53,7 +57,9 @@ vercel --prod
 ```
 
 #### 3. Environment Variables in Vercel
+
 In your Vercel project settings:
+
 - Go to **Settings** > **Environment Variables**
 - Add:
   - `NEXT_PUBLIC_SUPABASE_URL`
@@ -65,6 +71,7 @@ In your Vercel project settings:
 ## 🌐 Alternative: Deploy to Netlify
 
 ### Step-by-Step
+
 1. Push code to GitHub
 2. Go to [netlify.com](https://netlify.com)
 3. Click **"Add new site"** > **"Import an existing project"**
@@ -80,6 +87,7 @@ In your Vercel project settings:
 ## 🐳 Alternative: Deploy with Docker
 
 ### Create Dockerfile
+
 ```dockerfile
 FROM node:18-alpine
 
@@ -97,6 +105,7 @@ CMD ["npm", "start"]
 ```
 
 ### Build and Run
+
 ```bash
 docker build -t marvel-nexus .
 docker run -p 3000:3000 \
@@ -158,6 +167,7 @@ Use AWS Amplify or AWS Elastic Beanstalk:
 ## 🔄 Automatic Deployments
 
 Once connected to GitHub:
+
 - **Every push to `main`** = Auto-deploy to production (Vercel)
 - **Pull requests** = Preview deployments
 - **Rollback** anytime from Vercel dashboard
@@ -167,6 +177,7 @@ Once connected to GitHub:
 ## 🌟 Recommended Setup
 
 **Best for this project:**
+
 1. ✅ **Vercel** (fastest, easiest, free SSL, global CDN)
 2. Use GitHub for version control
 3. Set up automatic deployments

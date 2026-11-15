@@ -1,0 +1,9 @@
+node_modules
+.next
+out
+dist
+build
+coverage
+.vercel
+package-lock.json
+public/*.svg

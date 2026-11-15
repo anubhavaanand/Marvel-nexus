@@ -19,7 +19,7 @@ export default function AnimeTitle({ text, className = '' }: AnimeTitleProps) {
     if (textWrapper && textWrapper.textContent) {
       textWrapper.innerHTML = textWrapper.textContent.replace(
         /\S/g,
-        "<span class='letter inline-block origin-bottom'>$&</span>"
+        "<span class='letter inline-block origin-bottom'>$&</span>",
       )
     }
 
@@ -29,7 +29,7 @@ export default function AnimeTitle({ text, className = '' }: AnimeTitleProps) {
       scaleY: [0.3, 1],
       rotate: [15, 0],
       duration: 1200,
-      delay: stagger(40)
+      delay: stagger(40),
     })
   }, [text])
 

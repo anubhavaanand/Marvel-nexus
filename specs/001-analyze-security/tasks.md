@@ -8,7 +8,7 @@
 
 ## Phase 1: Setup
 
-- [X] T001 Verify npm packages are successfully installed and cache is warmed.
+- [x] T001 Verify npm packages are successfully installed and cache is warmed.
 
 ## Phase 2: Foundational
 
@@ -20,8 +20,8 @@ No database or major infrastructure blockers are required for this security patc
 
 **Independent Test**: Running `npm audit` should report 0 vulnerabilities.
 
-- [X] T002 Update dependency ranges in package.json or execute security fixes to resolve all 8 vulnerabilities.
-- [X] T003 Run `npm audit` to verify 0 vulnerabilities are reported.
+- [x] T002 Update dependency ranges in package.json or execute security fixes to resolve all 8 vulnerabilities.
+- [x] T003 Run `npm audit` to verify 0 vulnerabilities are reported.
 
 ## Phase 4: User Story 2 - Code Purity & Linting Compliance (Priority: P1)
 
@@ -29,11 +29,11 @@ No database or major infrastructure blockers are required for this security patc
 
 **Independent Test**: Running `npx eslint` should report 0 errors.
 
-- [X] T004 [P] Refactor `src/components/TimelineScroll.tsx` to make component rendering pure (removing Math.random from render).
-- [X] T005 [P] Refactor `src/components/VisualEffects.tsx` to generate random particle properties using pure Hooks (useEffect/useMemo) instead of inline during rendering.
-- [X] T006 [P] Refactor `src/components/admin/HeroManager.tsx` to move function declarations before they are accessed and remove unused variables.
-- [X] T007 Run `npx eslint` to verify that all errors are resolved.
+- [x] T004 [P] Refactor `src/components/TimelineScroll.tsx` to make component rendering pure (removing Math.random from render).
+- [x] T005 [P] Refactor `src/components/VisualEffects.tsx` to generate random particle properties using pure Hooks (useEffect/useMemo) instead of inline during rendering.
+- [x] T006 [P] Refactor `src/components/admin/HeroManager.tsx` to move function declarations before they are accessed and remove unused variables.
+- [x] T007 Run `npx eslint` to verify that all errors are resolved.
 
 ## Phase 5: Polish & Build Validation
 
-- [X] T008 Run `npm run build` to verify the application bundles successfully for production.
+- [x] T008 Run `npm run build` to verify the application bundles successfully for production.

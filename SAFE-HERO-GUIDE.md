@@ -5,12 +5,14 @@
 ### Step 1: Find a Good Image
 
 **Best Sources (in order):**
+
 1. **TMDB** (themoviedb.org) - Most reliable
 2. **Google Images** → Filter by "Large" → Right-click → Copy image address
 3. **Wikipedia** character pages
 4. **Official show/movie websites**
 
 **⚠️ AVOID:**
+
 - Pinterest (blocks hotlinking)
 - Instagram (blocks hotlinking)
 - Facebook (blocks hotlinking)
@@ -27,6 +29,7 @@ node scripts/test-image-url.js "YOUR_IMAGE_URL_HERE"
 ```
 
 **Example:**
+
 ```bash
 node scripts/test-image-url.js "https://image.tmdb.org/t/p/w500/abc123.jpg"
 ```
@@ -39,6 +42,7 @@ node scripts/test-image-url.js "https://image.tmdb.org/t/p/w500/abc123.jpg"
 ### Step 3: Add Hero
 
 **Option A: Via Admin Panel** (Recommended)
+
 1. Go to `/admin`
 2. Login with password: `<your-admin-password>`
 3. Click "Add New Hero"
@@ -54,6 +58,7 @@ Only if adding many heroes at once.
 ## 📸 How to Get TMDB Image URLs
 
 ### Method 1: Browse TMDB
+
 1. Go to https://www.themoviedb.org
 2. Search for the character/movie
 3. Click on the poster
@@ -61,12 +66,15 @@ Only if adding many heroes at once.
 5. **TEST IT** with our script!
 
 ### Method 2: TMDB API (Most Reliable)
+
 TMDB images follow this pattern:
+
 ```
 https://image.tmdb.org/t/p/w500/{IMAGE_ID}.jpg
 ```
 
 **Popular sizes:**
+
 - `w500` - Good for cards (recommended)
 - `original` - Full resolution (slower)
 
@@ -75,11 +83,13 @@ https://image.tmdb.org/t/p/w500/{IMAGE_ID}.jpg
 ## 🎯 Pre-Verified Safe Image Domains
 
 These domains generally work:
+
 - ✅ `image.tmdb.org/t/p/`
 - ✅ `upload.wikimedia.org/`
 - ✅ `m.media-amazon.com/images/`
 
 These often FAIL:
+
 - ❌ `static.wikia.nocookie.net` (sometimes blocks)
 - ❌ `i.pinimg.com` (Pinterest blocks)
 - ❌ `instagram.com`
@@ -90,6 +100,7 @@ These often FAIL:
 ## 🔧 If Image Still Fails
 
 Don't worry! The app has fallbacks:
+
 1. Shows hero initials (e.g., "IM" for Iron Man)
 2. Gradient background in franchise color
 3. Still fully functional
@@ -109,6 +120,7 @@ When adding many heroes from a new franchise:
 5. Update with character-specific images later
 
 **Example:**
+
 - Adding Harry Potter characters?
 - Test ONE URL from Harry Potter poster
 - Use it for all characters initially
@@ -136,12 +148,14 @@ node scripts/debug-heroes.js
 ## 🎨 Image Quality Tips
 
 **Recommended specs:**
+
 - **Format:** JPG or PNG
 - **Size:** 500-1000px width
 - **Aspect:** Portrait (2:3 or 3:4)
 - **Quality:** High resolution, not blurry
 
 **The app will:**
+
 - Auto-crop to fit cards
 - Add hover effects
 - Show fallback if fails
@@ -159,5 +173,5 @@ node scripts/debug-heroes.js
 
 ---
 
-Remember: **ALWAYS test URLs before adding!** 
+Remember: **ALWAYS test URLs before adding!**
 It saves time and prevents poster issues.
