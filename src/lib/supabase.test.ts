@@ -17,4 +17,12 @@ describe('mock data fallback', () => {
     const hero = await getHeroBySlug('iron-man')
     expect(hero?.alias).toBe('Iron Man')
   })
+
+  it.each([
+    ['spider-man', 'Spider-Man'],
+    ['spider-gwen', 'Spider-Gwen'],
+  ])('resolves hyphenated slug %s to %s', async (slug, alias) => {
+    const hero = await getHeroBySlug(slug)
+    expect(hero?.alias).toBe(alias)
+  })
 })
