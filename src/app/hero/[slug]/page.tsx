@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import PowerRadarChart from '@/components/PowerRadarChart'
@@ -19,13 +20,19 @@ interface PageProps {
 
 // Load failures propagate to the route's error boundary instead of being
 // reported as a 404; only a genuinely missing slug uses notFound().
-async function getHeroData(slug: string): Promise<HeroWithRelations | null> {
+// Memoized per request so render and generateMetadata share a single hero
+// fetch instead of fetching twice per hero page view.
+const getHeroData = cache(async function getHeroData(
+  slug: string,
+): Promise<HeroWithRelations | null> {
   return getHeroBySlug(slug)
-}
+})
 
-async function getHeroDataForAdmin(slug: string): Promise<HeroWithRelations | null> {
+const getHeroDataForAdmin = cache(async function getHeroDataForAdmin(
+  slug: string,
+): Promise<HeroWithRelations | null> {
   return getHeroBySlugForAdmin(slug)
-}
+})
 
 const franchiseColors: Record<string, { primary: string; glow: string }> = {
   MCU: { primary: 'var(--franchise-mcu)', glow: 'rgba(0, 113, 227, 0.3)' },
