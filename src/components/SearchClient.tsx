@@ -44,7 +44,7 @@ export default function SearchPage({
         (h) =>
           h.name.toLowerCase().includes(lowerQuery) ||
           h.alias.toLowerCase().includes(lowerQuery) ||
-          h.origin_world.toLowerCase().includes(lowerQuery) ||
+          h.origin_world?.toLowerCase().includes(lowerQuery) ||
           h.powers?.some((p) => p.toLowerCase().includes(lowerQuery)),
       )
     }
