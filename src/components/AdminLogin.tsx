@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Loader2, Lock, Eye, EyeOff } from 'lucide-react'
@@ -9,10 +9,24 @@ import { useRouter } from 'next/navigation'
 
 export default function AdminLogin() {
   const router = useRouter()
+  const passwordInputRef = useRef<HTMLInputElement>(null)
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [isLoggingIn, setIsLoggingIn] = useState(false)
+
+  // Avoid mobile layout shift: only autofocus on non-touch viewports
+  // after the mount animation completes
+  useEffect(() => {
+    const isTouch = window.matchMedia('(pointer: coarse)').matches
+    if (!isTouch && passwordInputRef.current) {
+      // Small delay to let the framer-motion animation settle
+      const timer = setTimeout(() => {
+        passwordInputRef.current?.focus()
+      }, 300)
+      return () => clearTimeout(timer)
+    }
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -60,13 +74,13 @@ export default function AdminLogin() {
               Password
             </label>
             <input
+              ref={passwordInputRef}
               id="admin-password"
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter password"
               className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-500 font-mono"
-              autoFocus
             />
             <button
               type="button"
