@@ -317,15 +317,12 @@ const mockMovies: Movie[] = [
 ]
 
 async function getMoviesData() {
-  try {
-    const movies = await getAllMovies()
-    if (!movies || movies.length === 0) {
-      return mockMovies
-    }
-    return movies
-  } catch {
+  const movies = await getAllMovies()
+  if (!movies || movies.length === 0) {
+    // No database configured: sample data keeps the page usable in demo mode.
     return mockMovies
   }
+  return movies
 }
 
 export const metadata = {
