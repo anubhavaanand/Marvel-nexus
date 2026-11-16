@@ -7,6 +7,7 @@ import { checkActionRateLimit } from '@/lib/action-rate-limit'
 import { checkAdminAuthAction } from './admin'
 import { getMCUPhase } from '@/lib/tmdb'
 import { getSafeErrorMessage } from '@/lib/error'
+import { slugifyAlias } from '@/lib/slugs'
 
 async function requireAdmin(): Promise<void> {
   const authed = await checkAdminAuthAction()
@@ -40,6 +41,8 @@ export async function seedDemoHeroesAction() {
     id: hero.id,
     name: hero.name,
     alias: hero.alias,
+    slug: slugifyAlias(hero.alias),
+    actor_name: null,
     franchise: hero.franchise,
     origin_world: hero.origin_world ?? null,
     powers: hero.powers,
