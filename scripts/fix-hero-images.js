@@ -11,8 +11,8 @@ const supabase = createClient(
 // These are the only 2 heroes with broken Wikia URLs
 const imageUpdates = {
   // Spider-Verse - Fix the 2 broken Wikia URLs
-  'Spider-Man (Andrew)': 'https://image.tmdb.org/t/p/original/tk58WPe3nSjeB7K7RmAZFW2Oq7n.jpg',
-  'Spider-Man (Tobey)': 'https://image.tmdb.org/t/p/original/tkc7AVvURPk1PdW6MpRhdOqV4EB.jpg',
+  'Spider-Man (Andrew)': 'https://image.tmdb.org/t/p/w500/tk58WPe3nSjeB7K7RmAZFW2Oq7n.jpg',
+  'Spider-Man (Tobey)': 'https://image.tmdb.org/t/p/w500/tkc7AVvURPk1PdW6MpRhdOqV4EB.jpg',
 }
 
 async function updateImages() {
