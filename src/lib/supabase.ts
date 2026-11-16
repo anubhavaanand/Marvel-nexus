@@ -561,24 +561,6 @@ export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | n
   return data
 }
 
-export async function getHeroesByFranchise(franchise: string): Promise<Hero[]> {
-  if (!supabase) {
-    return mockHeroes.filter((h) => h.franchise === franchise)
-  }
-
-  const { data, error } = await supabase
-    .from('heroes')
-    .select('*')
-    .eq('franchise', franchise)
-    .order('name')
-
-  if (error) {
-    console.error('Error fetching heroes by franchise:', error)
-    return mockHeroes.filter((h) => h.franchise === franchise)
-  }
-  return data || mockHeroes.filter((h) => h.franchise === franchise)
-}
-
 export async function getAllMovies(): Promise<Movie[]> {
   if (!supabase) return []
 
@@ -591,22 +573,6 @@ export async function getAllMovies(): Promise<Movie[]> {
     // Do not silently serve empty data when the real database fails.
     console.error('Error fetching movies:', error)
     throw new Error('Failed to load movies')
-  }
-  return data || []
-}
-
-export async function getMoviesByPhase(phase: string): Promise<Movie[]> {
-  if (!supabase) return []
-
-  const { data, error } = await supabase
-    .from('movies')
-    .select('*')
-    .eq('phase', phase)
-    .order('release_date', { ascending: true })
-
-  if (error) {
-    console.error('Error fetching movies by phase:', error)
-    return []
   }
   return data || []
 }
@@ -646,80 +612,4 @@ export async function searchHeroes(query: string): Promise<Hero[]> {
     merged.set(hero.id, hero)
   }
   return [...merged.values()].sort((a, b) => a.name.localeCompare(b.name))
-}
-
-export async function getCanonEventsByHero(heroId: string): Promise<CanonEvent[]> {
-  if (!supabase) return []
-
-  const { data, error } = await supabase
-    .from('canon_events')
-    .select(
-      `
-      *,
-      movies (*)
-    `,
-    )
-    .eq('hero_id', heroId)
-    .order('glitch_level', { ascending: false })
-
-  if (error) {
-    console.error('Error fetching canon events:', error)
-    return []
-  }
-  return data || []
-}
-
-// Admin functions for seeding data
-export async function insertHero(hero: Omit<Hero, 'id'>) {
-  if (!supabase) return null
-
-  const { data, error } = await supabase.from('heroes').insert(hero).select().single()
-
-  if (error) {
-    console.error('Error inserting hero:', error)
-    return null
-  }
-  return data
-}
-
-export async function insertMovie(movie: Omit<Movie, 'id'>) {
-  if (!supabase) return null
-
-  const { data, error } = await supabase.from('movies').insert(movie).select().single()
-
-  if (error) {
-    console.error('Error inserting movie:', error)
-    return null
-  }
-  return data
-}
-// Update a hero
-export async function updateHero(id: string, updates: Partial<Hero>) {
-  if (!supabase) return null
-
-  const { data, error } = await supabase
-    .from('heroes')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single()
-
-  if (error) {
-    console.error('Error updating hero:', error)
-    return null
-  }
-  return data
-}
-
-// Delete a hero
-export async function deleteHero(id: string) {
-  if (!supabase) return false
-
-  const { error } = await supabase.from('heroes').delete().eq('id', id)
-
-  if (error) {
-    console.error('Error deleting hero:', error)
-    return false
-  }
-  return true
 }
