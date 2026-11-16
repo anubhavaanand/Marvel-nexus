@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, X, Loader2, Sparkles } from 'lucide-react'
 import HeroCard from '@/components/HeroCard'
@@ -18,6 +18,18 @@ export default function SearchPage() {
   const [hasSearched, setHasSearched] = useState(false)
   const [allHeroes, setAllHeroes] = useState<Hero[]>([])
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const searchSeqRef = useRef(0)
+  const pendingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      searchSeqRef.current += 1
+      if (pendingTimeoutRef.current) {
+        clearTimeout(pendingTimeoutRef.current)
+        pendingTimeoutRef.current = null
+      }
+    }
+  }, [])
 
   useEffect(() => {
     async function loadHeroes() {
@@ -37,7 +49,11 @@ export default function SearchPage() {
       setIsSearching(true)
       setHasSearched(true)
 
-      setTimeout(() => {
+      const mySeq = ++searchSeqRef.current
+      pendingTimeoutRef.current = setTimeout(() => {
+        if (mySeq !== searchSeqRef.current) return
+        pendingTimeoutRef.current = null
+
         let filtered = allHeroes
         if (franchise !== 'All') {
           filtered = filtered.filter((h) => h.franchise === franchise)
