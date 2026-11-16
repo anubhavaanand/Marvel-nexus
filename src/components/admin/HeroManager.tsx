@@ -55,7 +55,9 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
         powers: editingHero.powers,
         weaknesses: editingHero.weaknesses,
       }
-      const result = isNew ? await createHeroAction(payload) : await updateHeroAction(editingHero.id, payload)
+      const result = isNew
+        ? await createHeroAction(payload)
+        : await updateHeroAction(editingHero.id, payload)
 
       if (result) {
         if (isNew) {
@@ -209,9 +211,14 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
             <div className="bg-neutral-800/80 border border-cyan-500/30 rounded-xl p-6 space-y-4 shadow-2xl shadow-black/50">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-lg font-orbitron text-cyan-400">
-  {editingHero.id ? 'Edit Hero' : 'Add Hero'}
-</h3>
-                <Button size="icon" variant="ghost" onClick={() => setEditingHero(null)}>
+                  {editingHero.id ? 'Edit Hero' : 'Add Hero'}
+                </h3>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => setEditingHero(null)}
+                  aria-label="Close edit form"
+                >
                   <X className="w-4 h-4" />
                 </Button>
               </div>
