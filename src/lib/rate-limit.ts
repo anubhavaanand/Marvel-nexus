@@ -12,15 +12,18 @@ let lastPrune = Date.now()
 
 let trustProxyWarned = false
 
-function prune(now: number): void {
-  // Drop entries whose window has fully elapsed so stale keys never linger.
+function evictExpired(now: number): void {
   for (const [key, bucket] of buckets) {
-    if (bucket.timestamps.length === 0 || now >= bucket.expiresAt) {
+    if (now >= bucket.expiresAt) {
       buckets.delete(key)
     }
   }
-  // Cap the map size: evict the oldest inserted keys when over budget so a
-  // hostile flood of distinct keys cannot grow the process unboundedly.
+}
+
+function enforceCap(now: number): void {
+  // Evict expired entries first so legitimate recent users survive a flood.
+  evictExpired(now)
+  // Then evict least-recently-used (front of Map = oldest access).
   if (buckets.size > MAX_KEYS) {
     const excess = buckets.size - MAX_KEYS
     const keys = Array.from(buckets.keys())
@@ -28,31 +31,37 @@ function prune(now: number): void {
       buckets.delete(keys[i])
     }
   }
+}
+
+function prune(now: number): void {
+  evictExpired(now)
+  enforceCap(now)
   lastPrune = now
 }
 
-/**
- * Fixed-window in-memory rate limiter.
- *
- * Suitable for a single server instance (local dev or a single-node deploy).
- * For multi-instance deployments use a shared store (Redis/Upstash).
- *
- * Memory is bounded: expired entries are pruned periodically and the map is
- * capped at MAX_KEYS.
- */
 export function isRateLimited(key: string, limit: number, windowMs: number): boolean {
   const now = Date.now()
   if (now - lastPrune > PRUNE_INTERVAL_MS) {
     prune(now)
   }
+  const existing = buckets.get(key)
+  // Per-key expiry: drop stale entry on access.
+  if (existing && now >= existing.expiresAt) {
+    buckets.delete(key)
+  }
   const entry = buckets.get(key)
   const timestamps = (entry?.timestamps ?? []).filter((t) => now - t < windowMs)
+  // Evict before inserting a brand-new key when at capacity.
+  if (!entry && buckets.size >= MAX_KEYS) {
+    enforceCap(now)
+  }
   const record = () => {
-    buckets.set(key, { timestamps, expiresAt: now + windowMs })
-    // Enforce the cap immediately after insertion too, otherwise a burst of
-    // new keys can sit above the budget until the next call.
+    const bucket: Bucket = { timestamps, expiresAt: now + windowMs }
+    // Move to end (most-recently-used) by delete+set.
+    buckets.delete(key)
+    buckets.set(key, bucket)
     if (buckets.size > MAX_KEYS) {
-      prune(now)
+      enforceCap(now)
     }
   }
   if (timestamps.length >= limit) {
@@ -64,47 +73,25 @@ export function isRateLimited(key: string, limit: number, windowMs: number): boo
   return false
 }
 
-/** Test helper: clear all windows. */
 export function resetRateLimiter(): void {
   buckets.clear()
   lastPrune = Date.now()
 }
 
-/** Return the number of tracked keys. Useful for tests asserting the cap. */
 export function getRateLimiterSize(): number {
   return buckets.size
 }
 
-/** Pure parser: first hop of an X-Forwarded-For list. Does not apply trust policy. */
 export function parseClientIp(headerValue: string | null): string {
   return headerValue?.split(',')[0]?.trim() || 'unknown'
 }
 
-/**
- * Resolves the client IP behind the proxy-trust policy.
- *
- * Proxy headers (X-Forwarded-For / X-Real-IP) are only honored when
- * TRUST_PROXY=true, i.e. when the app actually sits behind a trusted reverse
- * proxy that sets them. Otherwise clients could spoof their source address and
- * bypass per-IP limits entirely, so we fall back to a single shared bucket
- * ('unknown') rather than trusting unverified input. Set TRUST_PROXY=true when
- * deploying behind such a proxy.
- */
 export function resolveClientIp(forwardedFor: string | null, realIp: string | null): string {
   if (process.env.TRUST_PROXY === 'true') {
     const fromForwarded = parseClientIp(forwardedFor)
     if (fromForwarded !== 'unknown') return fromForwarded
     return parseClientIp(realIp)
   }
-  // Fail closed: without a trusted proxy we cannot verify any client-supplied
-  // address, so we must NOT trust X-Forwarded-For / X-Real-IP (spoofable).
-  // Returning a single shared bucket keeps the limiter conservative and
-  // prevents header spoofing from bypassing per-IP limits. Deployments that
-  // sit behind a reverse proxy MUST set TRUST_PROXY=true (see DEPLOYMENT.md);
-  // otherwise all clients share this bucket and login limiting is effectively
-  // global. We deliberately do not derive a "fingerprint" from spoofable
-  // headers (User-Agent etc.) because that would create a false sense of
-  // isolation while remaining trivially bypassable.
   if (!trustProxyWarned && (forwardedFor || realIp)) {
     trustProxyWarned = true
     console.warn(

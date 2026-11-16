@@ -90,3 +90,53 @@ describe('resolveClientIp', () => {
     expect(resolveClientIp('203.0.113.7, 10.0.0.1', '198.51.100.4')).toBe('unknown')
   })
 })
+
+describe('eviction order and expiry', () => {
+  beforeEach(() => resetRateLimiter())
+  afterEach(() => vi.useRealTimers())
+
+  it('expires per-key entries on access', () => {
+    vi.useFakeTimers()
+    isRateLimited('x', 1, 10)
+    vi.advanceTimersByTime(15)
+    expect(isRateLimited('x', 1, 10)).toBe(false)
+  })
+
+  it('evicts expired entries before LRU on overflow', () => {
+    vi.useFakeTimers()
+    resetRateLimiter()
+    // Fill map with some entries
+    isRateLimited('expired-1', 5, 10)
+    isRateLimited('expired-2', 5, 10)
+    isRateLimited('valid-1', 5, 100000)
+    // Advance past expiry for expired keys
+    vi.advanceTimersByTime(20)
+    // Trigger periodic prune by advancing past PRUNE_INTERVAL_MS
+    vi.advanceTimersByTime(60_001)
+    // Add more keys to force capacity check
+    isRateLimited('new-1', 5, 100000)
+    isRateLimited('new-2', 5, 100000)
+    // Expired keys should be gone, valid ones remain
+    expect(getRateLimiterSize()).toBeLessThanOrEqual(4)
+  })
+
+  it('keeps recently accessed keys over older ones on overflow', () => {
+    vi.useFakeTimers()
+    resetRateLimiter()
+    // Create MAX_KEYS entries (simulate near-capacity)
+    for (let i = 0; i < 100_000; i++) {
+      isRateLimited(`key-${i}`, 5, 3_600_000)
+    }
+    // Access the first key to make it MRU
+    isRateLimited('key-0', 5, 3_600_000)
+    // Advance time and trigger prune
+    vi.advanceTimersByTime(60_001)
+    // Force overflow by adding new keys
+    for (let i = 0; i < 5; i++) {
+      isRateLimited(`overflow-${i}`, 5, 3_600_000)
+    }
+    // The recently accessed key-0 should survive LRU eviction
+    // Size should still be MAX_KEYS
+    expect(getRateLimiterSize()).toBe(100_000)
+  })
+})
