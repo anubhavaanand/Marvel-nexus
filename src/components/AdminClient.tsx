@@ -28,6 +28,13 @@ import {
   checkAdminAuthAction,
   testDatabaseConnectionAction,
 } from '@/app/actions/admin'
+import {
+  createCanonEventsAction,
+  getAdminStatsAction,
+  seedDemoHeroesAction,
+  syncMoviesAction,
+  type AdminStats,
+} from '@/app/actions/seed'
 
 interface SeedStatus {
   heroes: 'idle' | 'loading' | 'success' | 'error'
@@ -37,9 +44,10 @@ interface SeedStatus {
 
 interface AdminClientProps {
   initialHeroes: Hero[]
+  initialStats?: AdminStats | null
 }
 
-export default function AdminPage({ initialHeroes }: AdminClientProps) {
+export default function AdminPage({ initialHeroes, initialStats = null }: AdminClientProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -55,6 +63,7 @@ export default function AdminPage({ initialHeroes }: AdminClientProps) {
   const [connectionTesting, setConnectionTesting] = useState(false)
   const [connectionLatency, setConnectionLatency] = useState<number | null>(null)
   const [connectionError, setConnectionError] = useState('')
+  const [stats, setStats] = useState<AdminStats | null>(initialStats)
 
   // Check if already authenticated (server session check)
   useEffect(() => {
@@ -180,26 +189,36 @@ export default function AdminPage({ initialHeroes }: AdminClientProps) {
     }
   }
 
-  const seedHeroes = async () => {
-    setSeedStatus((prev) => ({ ...prev, heroes: 'loading' }))
-    setTimeout(() => {
-      setSeedStatus((prev) => ({ ...prev, heroes: 'success' }))
-    }, 2000)
+  const refreshStats = async () => {
+    try {
+      const result = await getAdminStatsAction()
+      if (result.ok) setStats(result.stats)
+    } catch {
+      // Keep the last known stats if the refresh fails.
+    }
   }
 
-  const seedMovies = async () => {
-    setSeedStatus((prev) => ({ ...prev, movies: 'loading' }))
-    setTimeout(() => {
-      setSeedStatus((prev) => ({ ...prev, movies: 'success' }))
-    }, 2000)
+  const runSeedAction = async (
+    key: 'heroes' | 'movies' | 'events',
+    action: () => Promise<{ ok: boolean; error?: string }>,
+  ) => {
+    setSeedStatus((prev) => ({ ...prev, [key]: 'loading' }))
+    try {
+      const result = await action()
+      if (!result.ok) {
+        setSeedStatus((prev) => ({ ...prev, [key]: 'error' }))
+        return
+      }
+      setSeedStatus((prev) => ({ ...prev, [key]: 'success' }))
+      await refreshStats()
+    } catch {
+      setSeedStatus((prev) => ({ ...prev, [key]: 'error' }))
+    }
   }
 
-  const seedEvents = async () => {
-    setSeedStatus((prev) => ({ ...prev, events: 'loading' }))
-    setTimeout(() => {
-      setSeedStatus((prev) => ({ ...prev, events: 'success' }))
-    }, 2000)
-  }
+  const seedHeroes = () => runSeedAction('heroes', seedDemoHeroesAction)
+  const seedMovies = () => runSeedAction('movies', syncMoviesAction)
+  const seedEvents = () => runSeedAction('events', createCanonEventsAction)
 
   const getStatusIcon = (status: 'idle' | 'loading' | 'success' | 'error') => {
     switch (status) {
@@ -307,7 +326,9 @@ export default function AdminPage({ initialHeroes }: AdminClientProps) {
               <Users className="w-8 h-8 text-cyan-400" />
               <div>
                 <h3 className="font-orbitron text-white">Heroes</h3>
-                <p className="text-xs text-neutral-400">81+ heroes ready</p>
+                <p className="text-xs text-neutral-400">
+                  {stats ? `${stats.heroes} heroes in database` : 'Heroes from every franchise'}
+                </p>
               </div>
               {getStatusIcon(seedStatus.heroes)}
             </div>
@@ -440,10 +461,18 @@ export default function AdminPage({ initialHeroes }: AdminClientProps) {
           >
             <h2 className="text-xl font-orbitron text-white mb-6">Database Status</h2>
             <div className="grid grid-cols-2 gap-4">
-              <Stat label="Heroes" value="81+" color="cyan" />
-              <Stat label="Movies" value="34" color="purple" />
-              <Stat label="Canon Events" value="50+" color="red" />
-              <Stat label="Franchises" value="7" color="yellow" />
+              <Stat label="Heroes" value={stats ? String(stats.heroes) : '—'} color="cyan" />
+              <Stat label="Movies" value={stats ? String(stats.movies) : '—'} color="purple" />
+              <Stat
+                label="Canon Events"
+                value={stats ? String(stats.canonEvents) : '—'}
+                color="red"
+              />
+              <Stat
+                label="Franchises"
+                value={stats ? String(stats.franchises) : '—'}
+                color="yellow"
+              />
             </div>
           </motion.div>
 
