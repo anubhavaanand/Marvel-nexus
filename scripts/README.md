@@ -142,7 +142,7 @@ Total franchises supported:
 
 | File                              | Purpose                                 |
 | --------------------------------- | --------------------------------------- |
-| `create-tables.sql`               | Create initial database schema          |
+| `../supabase/schema.sql`          | Canonical database schema               |
 | `update-franchise-constraint.sql` | **NEW!** Update to allow new franchises |
 | `add-franchises.sql`              | Alternative franchise update            |
 
