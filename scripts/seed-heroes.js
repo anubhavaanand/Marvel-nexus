@@ -1,6 +1,8 @@
 const { createClient } = require('@supabase/supabase-js')
 require('dotenv').config({ path: '.env.local' })
 
+const guard = require('./seed-guard')
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
@@ -13,6 +15,23 @@ if (!supabaseUrl || !supabaseServiceKey) {
 }
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+// Safety gate: this script previously wiped canon_events + heroes with no
+// confirmation. It now requires an explicit --confirm flag and upserts by
+// alias instead of deleting first, so re-running it is idempotent.
+const flags = guard.parseArgs(process.argv.slice(2))
+guard.requireConfirm(
+  flags,
+  {
+    title: 'seed — upsert 51 heroes by alias (idempotent, no data loss)',
+    destructive: [],
+    safe: [
+      'UPSERT 51 heroes by alias — existing rows are updated, nothing is deleted',
+      'No DELETE/TRUNCATE on canon_events or heroes',
+    ],
+  },
+  'seed-heroes.js',
+)
 
 const heroes = [
   // ========================================
@@ -552,21 +571,14 @@ async function seed() {
   console.log(`📊 Total heroes to seed: ${heroes.length}`)
   console.log('')
 
-  // Clear existing data first
-  console.log('🧹 Clearing existing heroes...')
-  await supabase.from('canon_events').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-  await supabase.from('heroes').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+  // Idempotent upsert by alias — never deletes existing rows, so re-running
+  // the script is safe and does not wipe data.
+  console.log('🦸 Seeding heroes (upsert by alias)...')
+  const { inserted, updated, failed } = await guard.upsertHeroes(supabase, heroes)
 
-  // Seed Heroes
-  console.log('🦸 Seeding heroes...')
-  const { data: heroData, error: heroError } = await supabase.from('heroes').insert(heroes).select()
-
-  if (heroError) {
-    console.error('❌ Error seeding heroes:', heroError.message)
-    return
-  }
-
-  console.log(`✅ Successfully seeded ${heroData?.length || 0} heroes!`)
+  console.log(
+    `✅ Seeded ${inserted + updated} heroes (${inserted} new, ${updated} updated, ${failed} failed)`,
+  )
 
   // Count by franchise
   const counts = {

@@ -6,6 +6,8 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY,
 )
 
+const guard = require('./seed-guard')
+
 // MASTER HERO LIST - EXPANDED & FIXED
 const heroes = [
   // ==========================================
@@ -382,8 +384,24 @@ const heroes = [
 async function seedMaster() {
   console.log('🚀 Starting MASTER SEED process...')
 
-  // 1. DELETE ALL EXISTING HEROES
+  const flags = guard.parseArgs(process.argv.slice(2))
+
+  // 1. DELETE ALL EXISTING HEROES — destructive, requires explicit opt-in
   console.log('🗑️  Clearing existing heroes...')
+  if (!flags.confirm) {
+    console.log('')
+    console.log('⚠️  seed-master.js — full database reseed (DESTRUCTIVE)')
+    console.log('')
+    console.log('This script will:')
+    console.log('   🗑️  DELETE all existing rows from heroes')
+    console.log('   ✅  Insert heroes from the master list')
+    console.log('')
+    console.log('To proceed, re-run with --confirm:')
+    console.log('   node scripts/seed-master.js --confirm')
+    console.log('   OR set SEED_CONFIRM=1 in your environment')
+    process.exit(1)
+  }
+
   const { error: deleteError } = await supabase
     .from('heroes')
     .delete()

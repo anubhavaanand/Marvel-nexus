@@ -1,6 +1,8 @@
 const { createClient } = require('@supabase/supabase-js')
 require('dotenv').config({ path: '.env.local' })
 
+const guard = require('./seed-guard')
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -554,7 +556,24 @@ const heroes = [
 async function seedUltimate() {
   console.log('🚀 Starting ULTIMATE MASTER SEED process...')
 
-  // 1. WIPE EVERYTHING
+  const flags = guard.parseArgs(process.argv.slice(2))
+
+  // 1. WIPE EVERYTHING — destructive, requires explicit opt-in
+  if (!flags.confirm) {
+    console.log('')
+    console.log('⚠️  seed-ultimate.js — full database reseed (DESTRUCTIVE)')
+    console.log('')
+    console.log('This script will:')
+    console.log('   🗑️  DELETE all existing rows from heroes')
+    console.log('   ✅  Insert heroes from the ultimate list')
+    console.log('')
+    console.log('To proceed, re-run with --confirm:')
+    console.log('   node scripts/seed-ultimate.js --confirm')
+    console.log('   OR set SEED_CONFIRM=1 in your environment')
+    process.exit(1)
+  }
+
+  console.log('🗑️  Clearing existing heroes...')
   const { error: deleteError } = await supabase
     .from('heroes')
     .delete()
