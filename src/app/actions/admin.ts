@@ -174,7 +174,7 @@ export async function updateHeroAction(id: string, updates: Partial<Hero>): Prom
 
   revalidatePath('/')
   revalidatePath('/admin')
-  revalidatePath('/hero/[slug]', 'layout')
+  if (data?.slug) revalidatePath(`/hero/${data.slug}`)
   revalidatePath('/search')
   revalidatePath('/timeline')
   return data
@@ -246,7 +246,7 @@ export async function createHeroAction(updates: Partial<Hero>): Promise<Hero | n
 
   revalidatePath('/')
   revalidatePath('/admin')
-  revalidatePath('/hero/[slug]', 'layout')
+  if (data?.slug) revalidatePath(`/hero/${data.slug}`)
   revalidatePath('/search')
   revalidatePath('/timeline')
   return data
@@ -274,6 +274,9 @@ export async function deleteHeroAction(id: string): Promise<boolean> {
     return false
   }
 
+  // Resolve slug before deletion so we can revalidate the affected hero page.
+  const { data: heroRow } = await supabase.from('heroes').select('slug').eq('id', id).maybeSingle()
+
   // Clean up dependent rows first so orphaned canon_events/hero_movies rows
   // cannot remain even on databases without ON DELETE CASCADE (#233).
   const { error: canonError } = await supabase.from('canon_events').delete().eq('hero_id', id)
@@ -297,7 +300,7 @@ export async function deleteHeroAction(id: string): Promise<boolean> {
 
   revalidatePath('/')
   revalidatePath('/admin')
-  revalidatePath('/hero/[slug]', 'layout')
+  if (heroRow?.slug) revalidatePath(`/hero/${heroRow.slug}`)
   revalidatePath('/search')
   revalidatePath('/timeline')
   return true
