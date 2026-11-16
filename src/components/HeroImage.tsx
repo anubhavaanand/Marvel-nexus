@@ -11,12 +11,6 @@ interface HeroImageProps {
   className?: string
 }
 
-const placeholderPattern = /unsplash|placeholder|picsum/i
-
-function isPlaceholder(url: string): boolean {
-  return placeholderPattern.test(url) || url.includes('utm_')
-}
-
 export default function HeroImage({ imageUrl, alias, name = '', className = '' }: HeroImageProps) {
   const [currentSrc, setCurrentSrc] = useState(imageUrl || '')
   const [imageError, setImageError] = useState(false)
@@ -35,24 +29,9 @@ export default function HeroImage({ imageUrl, alias, name = '', className = '' }
     setTmdbAttempted(false)
   }, [imageUrl])
 
-  // Proactive TMDB lookup on mount — for empty URLs or random placeholder images
-  useEffect(() => {
-    if (tmdbAttempted || imageError) return
-    if (currentSrc && !isPlaceholder(currentSrc) && !imageError) return
-
-    // Only trigger once — either currentSrc is empty or it's a placeholder
-    setTmdbAttempted(true)
-    getTmdbImageUrl(name, alias)
-      .then((tmdbUrl) => {
-        if (mountedRef.current && tmdbUrl) {
-          setCurrentSrc(tmdbUrl)
-          setImageError(false)
-        }
-      })
-      .catch(() => {
-        // silently keep current source
-      })
-  }, [currentSrc, name, alias, tmdbAttempted, imageError])
+  // Proactive client-side TMDB lookups disabled (#155): mock images resolve
+  // server-side via enrichMockHeroesWithTmdb, so per-hero client fetches
+  // only duplicate that work. Single fallback lookup on image error remains.
 
   const handleError = async () => {
     if (tmdbAttempted) return
