@@ -14,7 +14,7 @@ This application features a premium, Stark-Industries-style "JARVIS" visual inte
 - 📺 **Official Watch Orders**: Detailed, sortable chronological and release order movie lists for the Marvel and DC universes.
 - 🌲 **Pine-Tree Timeline Scroll**: Interactive custom right-side scroll indicator matching MCU phase progress.
 - 📊 **Power Analysis Charts**: Hydration-safe radar charts visualizing capability matrices dynamically.
-- 🔒 **Secure Admin Clearance**: Built-in credential-protected panel with Hero Manager CRUD operations (create, update, delete) and a database connection tester. Seed/sync buttons are present but currently non-functional stubs (see issue #9); there is no database reset feature.
+- 🔒 **Secure Admin Clearance**: Built-in credential-protected panel with Hero Manager CRUD operations (create, update, delete) and a database connection tester. Seed and TMDB sync buttons are wired to real server actions (see #9/#114), including hero/event/movie relation seeding (#140); there is still no destructive database reset feature.
 
 ---
 
@@ -58,3 +58,20 @@ Marvel-nexus/
 - **Project Versioning**: Review the history of security patches, design overhauls, and mobile layout fixes in [CHANGELOG.md](./CHANGELOG.md).
 - **Safe Hero Guide**: Check character creation visual protocols in [SAFE-HERO-GUIDE.md](./SAFE-HERO-GUIDE.md).
 - **Database Troubleshooting**: Find connection resolutions in [DATABASE-TROUBLESHOOTING.md](./DATABASE-TROUBLESHOOTING.md).
+
+---
+
+## 📄 License & Citation
+
+Released under the [MIT License](./LICENSE). If you use this project in research or writing, see [CITATION.cff](./CITATION.cff) for a machine-readable citation.
+
+```yaml
+cff-version: 1.2.0
+message: 'If you use this software, please cite it as below.'
+title: 'Multiverse Archive'
+authors:
+  - family-names: Anand
+    given-names: Anubhav
+year: 2026
+url: 'https://github.com/anubhavaanand/Marvel-nexus'
+```
