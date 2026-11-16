@@ -26,6 +26,11 @@ describe('isValidHeroUpdatePayload', () => {
     expect(isValidHeroUpdatePayload({ powers: ['a'.repeat(201)] })).toBe(false)
   })
 
+  it('rejects unknown keys', () => {
+    expect(isValidHeroUpdatePayload({ alias: 'Iron Man', foo: 'bar' })).toBe(false)
+    expect(isValidHeroUpdatePayload({ id: 1 } as unknown)).toBe(false)
+  })
+
   it('rejects non-string array items and unknown types', () => {
     expect(isValidHeroUpdatePayload({ powers: [1, 2] as unknown })).toBe(false)
     expect(isValidHeroUpdatePayload({ alias: 5 as unknown })).toBe(false)
