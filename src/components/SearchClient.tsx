@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, X, Loader2, Sparkles, AlertTriangle, RefreshCw } from 'lucide-react'
 import HeroCard from '@/components/HeroCard'
@@ -28,62 +28,42 @@ export default function SearchPage({
   const [hasSearched, setHasSearched] = useState(false)
   const [allHeroes] = useState<Hero[]>(initialAllHeroes)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
-  const searchSeqRef = useRef(0)
-  const pendingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  useEffect(() => {
-    return () => {
-      searchSeqRef.current += 1
-      if (pendingTimeoutRef.current) {
-        clearTimeout(pendingTimeoutRef.current)
-        pendingTimeoutRef.current = null
-      }
+  // Memoize the full filter pass so re-renders (and rapid keystrokes that
+  // revisit the same query/franchise combo) don't re-scan allHeroes.
+  const filteredResults = useMemo<Hero[]>(() => {
+    let filtered = allHeroes
+    if (selectedFranchise !== 'All') {
+      filtered = filtered.filter((h) => h.franchise === selectedFranchise)
     }
-  }, [])
-
-  const performSearch = useCallback(
-    (searchQuery: string, franchise: string) => {
-      setIsSearching(true)
-      setHasSearched(true)
-
-      const mySeq = ++searchSeqRef.current
-      pendingTimeoutRef.current = setTimeout(() => {
-        if (mySeq !== searchSeqRef.current) return
-        pendingTimeoutRef.current = null
-
-        let filtered = allHeroes
-        if (franchise !== 'All') {
-          filtered = filtered.filter((h) => h.franchise === franchise)
-        }
-        if (searchQuery.trim()) {
-          const lowerQuery = searchQuery.toLowerCase()
-          filtered = filtered.filter(
-            (h) =>
-              h.name.toLowerCase().includes(lowerQuery) ||
-              h.alias.toLowerCase().includes(lowerQuery) ||
-              h.origin_world.toLowerCase().includes(lowerQuery) ||
-              h.powers?.some((p) => p.toLowerCase().includes(lowerQuery)),
-          )
-        }
-        setResults(filtered)
-        setVisibleCount(PAGE_SIZE)
-        setIsSearching(false)
-      }, 150)
-    },
-    [allHeroes],
-  )
+    if (query.trim()) {
+      const lowerQuery = query.toLowerCase()
+      filtered = filtered.filter(
+        (h) =>
+          h.name.toLowerCase().includes(lowerQuery) ||
+          h.alias.toLowerCase().includes(lowerQuery) ||
+          h.origin_world.toLowerCase().includes(lowerQuery) ||
+          h.powers?.some((p) => p.toLowerCase().includes(lowerQuery)),
+      )
+    }
+    return filtered
+  }, [query, selectedFranchise, allHeroes])
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
+      setIsSearching(true)
+      setHasSearched(true)
       if (query || selectedFranchise !== 'All') {
-        performSearch(query, selectedFranchise)
+        setResults(filteredResults)
+        setVisibleCount(PAGE_SIZE)
       } else {
         setResults([])
         setHasSearched(false)
       }
+      setIsSearching(false)
     }, 300)
     return () => clearTimeout(timeoutId)
-  }, [query, selectedFranchise, performSearch])
+  }, [query, selectedFranchise, filteredResults])
 
   const visibleResults = results.slice(0, visibleCount)
 
