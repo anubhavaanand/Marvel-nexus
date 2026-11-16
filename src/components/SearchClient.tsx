@@ -135,6 +135,7 @@ export default function SearchPage({
                   <button
                     key={franchise}
                     onClick={() => setSelectedFranchise(franchise)}
+                    aria-pressed={selectedFranchise === franchise}
                     className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all ${
                       selectedFranchise === franchise
                         ? 'bg-[var(--accent)] text-[var(--accent-on)]'
