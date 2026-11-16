@@ -116,6 +116,7 @@ export default function TimelineSlider({ movies, title = 'MCU Timeline' }: Timel
                   }
                 : {}
             }
+            aria-label="Scroll timeline left"
           >
             <ChevronLeft className="w-5 h-5 text-cyan-400" />
           </motion.button>
@@ -143,6 +144,7 @@ export default function TimelineSlider({ movies, title = 'MCU Timeline' }: Timel
                   }
                 : {}
             }
+            aria-label="Scroll timeline right"
           >
             <ChevronRight className="w-5 h-5 text-cyan-400" />
           </motion.button>

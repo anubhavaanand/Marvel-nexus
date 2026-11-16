@@ -151,6 +151,7 @@ export default function Navbar() {
                   }`}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  aria-label={item.label}
                 >
                   <item.icon className="w-5 h-5" />
                 </motion.div>
