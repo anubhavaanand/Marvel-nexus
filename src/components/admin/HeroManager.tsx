@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import type { Hero } from '@/lib/supabase'
-import { updateHeroAction, deleteHeroAction } from '@/app/actions/admin'
+import { updateHeroAction, deleteHeroAction, createHeroAction } from '@/app/actions/admin'
 
 interface HeroManagerProps {
   initialHeroes: Hero[]
@@ -41,9 +41,10 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
 
     setIsSaving(true)
     setSaveError(null)
-    setInFlightIds((prev) => new Set(prev).add(editingHero.id))
+    const isNew = !editingHero.id
+    if (!isNew) setInFlightIds((prev) => new Set(prev).add(editingHero.id))
     try {
-      const updated = await updateHeroAction(editingHero.id, {
+      const payload = {
         alias: editingHero.alias,
         name: editingHero.name,
         image_url: editingHero.image_url,
@@ -53,24 +54,31 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
         actor_name: editingHero.actor_name,
         powers: editingHero.powers,
         weaknesses: editingHero.weaknesses,
-      })
+      }
+      const result = isNew ? await createHeroAction(payload) : await updateHeroAction(editingHero.id, payload)
 
-      if (updated) {
-        setHeroes(heroes.map((h) => (h.id === updated.id ? updated : h)))
+      if (result) {
+        if (isNew) {
+          setHeroes([result, ...heroes])
+        } else {
+          setHeroes(heroes.map((h) => (h.id === result.id ? result : h)))
+        }
         setEditingHero(null)
       } else {
         setSaveError('Save did not land — the server returned no update. Your edits are preserved.')
       }
     } catch (error) {
-      console.error('Failed to update hero:', error)
+      console.error('Failed to save hero:', error)
       setSaveError('Save failed — your edits are preserved and the form is still open.')
     }
     setIsSaving(false)
-    setInFlightIds((prev) => {
-      const next = new Set(prev)
-      next.delete(editingHero.id)
-      return next
-    })
+    if (!isNew) {
+      setInFlightIds((prev) => {
+        const next = new Set(prev)
+        next.delete(editingHero.id)
+        return next
+      })
+    }
   }
 
   const handleDelete = async (id: string) => {
@@ -152,6 +160,25 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
         <Badge variant="outline" className="h-10 px-4 border-cyan-500/30 text-cyan-400 font-mono">
           {filteredHeroes.length} Heroes
         </Badge>
+        <Button
+          className="bg-cyan-600 hover:bg-cyan-700 text-white"
+          onClick={() =>
+            setEditingHero({
+              id: '',
+              name: '',
+              alias: '',
+              slug: '',
+              franchise: 'MCU',
+              origin_world: '',
+              powers: [],
+              weaknesses: [],
+              image_url: '',
+              is_locked_content: false,
+            })
+          }
+        >
+          Add Hero
+        </Button>
       </div>
 
       {saveError && (
@@ -181,7 +208,9 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
           >
             <div className="bg-neutral-800/80 border border-cyan-500/30 rounded-xl p-6 space-y-4 shadow-2xl shadow-black/50">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-orbitron text-cyan-400">Edit Hero</h3>
+                <h3 className="text-lg font-orbitron text-cyan-400">
+  {editingHero.id ? 'Edit Hero' : 'Add Hero'}
+</h3>
                 <Button size="icon" variant="ghost" onClick={() => setEditingHero(null)}>
                   <X className="w-4 h-4" />
                 </Button>
