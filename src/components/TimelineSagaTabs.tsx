@@ -18,6 +18,7 @@ function getPhaseColor(phase: string): string {
     'Phase 4': 'bg-[var(--success)]',
     'Phase 5': 'bg-[var(--franchise-anime)]',
     'Phase 6': 'bg-[var(--accent)]',
+    Unphased: 'bg-[var(--meta)]',
   }
   return colors[phase] || 'bg-[var(--meta)]'
 }
@@ -29,6 +30,7 @@ export default function TimelineSagaTabs({ phases }: { phases: Record<string, Mo
     if (movies.length === 0) return false
     if (saga === 'infinity') return INFINITY.includes(phase)
     if (saga === 'multiverse') return MULTIVERSE.includes(phase)
+    // 'all' shows everything including Unphased
     return true
   })
 

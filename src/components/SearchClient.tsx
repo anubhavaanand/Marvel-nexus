@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import type { Hero, SearchHero } from '@/lib/supabase'
 
 interface SearchClientProps {
-  initialAllHeroes: SearchHero[]
+  allHeroes: SearchHero[]
   loadError?: string | null
   isDemoMode?: boolean
 }
@@ -20,7 +20,7 @@ const PAGE_SIZE = 24
 const MAX_RENDERED = 96
 
 export default function SearchPage({
-  initialAllHeroes,
+  allHeroes,
   loadError = null,
   isDemoMode = false,
 }: SearchClientProps) {
@@ -29,7 +29,6 @@ export default function SearchPage({
   const [isSearching, setIsSearching] = useState(false)
   const [selectedFranchise, setSelectedFranchise] = useState('All')
   const [hasSearched, setHasSearched] = useState(false)
-  const [allHeroes] = useState<SearchHero[]>(initialAllHeroes)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
   // Memoize the full filter pass so re-renders (and rapid keystrokes that

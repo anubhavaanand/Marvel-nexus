@@ -349,7 +349,7 @@ export default async function TimelinePage() {
     'Phase 4': movies.filter((m) => m.phase === 'Phase 4'),
     'Phase 5': movies.filter((m) => m.phase === 'Phase 5'),
     'Phase 6': movies.filter((m) => m.phase === 'Phase 6'),
-    'Unphased / Other': movies.filter((m) => m.phase == null),
+    Unphased: movies.filter((m) => m.phase == null),
   }
 
   return (

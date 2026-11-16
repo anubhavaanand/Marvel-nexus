@@ -9,7 +9,13 @@ const inter = Inter({
   display: 'swap',
 })
 
+const SITE_URL: string =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '') ||
+  'https://multiversearchive.vercel.app'
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: 'Multiverse Archive | Hero Database',
   description:
     'Explore heroes across the Multiverse — Marvel, DC, Anime and beyond. Powers, timelines, and canon events from every universe.',
@@ -25,6 +31,14 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Multiverse Archive',
     description: 'The Ultimate Hero Database',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
   },
 }
 
