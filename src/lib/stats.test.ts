@@ -8,6 +8,7 @@ function makeHero(id: string, overrides: Partial<Hero> = {}): Hero {
     id,
     name: id,
     alias: id,
+    slug: id,
     franchise: 'MCU',
     origin_world: 'Earth-616',
     powers: [],
