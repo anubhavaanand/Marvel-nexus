@@ -207,6 +207,8 @@ export default function TimelineSlider({ movies, title = 'MCU Timeline' }: Timel
                     fill
                     className="object-cover"
                     sizes="224px"
+                    loading="lazy"
+                    decoding="async"
                   />
                 ) : (
                   <div className="w-full h-full skeleton flex items-center justify-center">
