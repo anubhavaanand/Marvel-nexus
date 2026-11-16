@@ -1,7 +1,7 @@
 'use server'
 
 import crypto from 'crypto'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { Hero } from '@/lib/supabase'
 import { sanitizeHeroUpdate } from '@/lib/hero-update'
@@ -48,10 +48,20 @@ export async function loginAdminAction(password: string): Promise<LoginAdminResu
   if (secureCompare(password, correctPassword)) {
     const token = await createSessionToken()
     const cookieStore = await cookies()
+    const headersList = await headers()
+    const forwardedProto = headersList.get('x-forwarded-proto')
+    // Secure flag: mark the cookie Secure whenever the request arrived over
+    // HTTPS (x-forwarded-proto: https), regardless of NODE_ENV. In local dev
+    // (plain HTTP) we intentionally leave Secure off so the cookie can be set
+    // without TLS. SameSite lax: strict silently drops the cookie on any
+    // cross-site navigation (e.g. logging in from another subdomain), forcing
+    // a fresh login. Lax still protects against CSRF on POST requests while
+    // allowing the cookie to survive top-level navigations.
+    const isSecure = forwardedProto === 'https'
     cookieStore.set('admin_session', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: isSecure,
+      sameSite: 'lax',
       maxAge: 60 * 60 * 8, // 8 hours, matching the session TTL
       path: '/',
     })
