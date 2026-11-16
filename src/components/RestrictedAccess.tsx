@@ -11,7 +11,14 @@ import { Button } from '@/components/ui/button'
 export default function RestrictedAccess() {
   return (
     <main className="min-h-screen bg-black flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[url('https://media.giphy.com/media/xT9IgusfDcqpPFzjdS/giphy.gif')] bg-cover bg-center opacity-10" />
+      <div
+        className="absolute inset-0 opacity-20"
+        style={{
+          backgroundImage:
+            'repeating-linear-gradient(0deg, rgba(34,211,238,0.08) 0, rgba(34,211,238,0.08) 1px, transparent 1px, transparent 40px), repeating-linear-gradient(90deg, rgba(34,211,238,0.08) 0, rgba(34,211,238,0.08) 1px, transparent 1px, transparent 40px)',
+          maskImage: 'radial-gradient(ellipse at center, black 30%, transparent 75%)',
+        }}
+      />
 
       <motion.div
         className="glass-panel max-w-md w-full p-8 rounded-2xl text-center relative z-10 border-cyan-500/30"
