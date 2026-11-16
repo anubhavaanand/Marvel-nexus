@@ -9,26 +9,19 @@
  * Usage: node scripts/sync-tmdb-movies.js
  */
 
-const { createClient } = require('@supabase/supabase-js')
+const { createSupabaseClient } = require('./lib/supabase')
 const dotenv = require('dotenv')
 
 dotenv.config({ path: '.env.local' })
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 const tmdbApiKey = process.env.TMDB_API_KEY
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('❌ Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.local')
-  process.exit(1)
-}
 
 if (!tmdbApiKey) {
   console.error('❌ Missing TMDB_API_KEY in .env.local')
-  process.exit(1)
+  throw new Error('Missing TMDB_API_KEY in .env.local')
 }
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
+const supabase = createSupabaseClient({ loadEnv: false })
 const TMDB_BASE = 'https://api.themoviedb.org/3'
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w500'
 
@@ -200,5 +193,5 @@ async function syncMovies() {
 
 syncMovies().catch((err) => {
   console.error('Fatal error:', err)
-  process.exit(1)
+  process.exitCode = 1
 })

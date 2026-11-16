@@ -1,20 +1,7 @@
-const { createClient } = require('@supabase/supabase-js')
-require('dotenv').config({ path: '.env.local' })
-
+const { createSupabaseClient } = require('./lib/supabase')
 const guard = require('./seed-guard')
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('❌ Missing Supabase credentials in .env.local')
-  console.log('\nPlease set:')
-  console.log('  NEXT_PUBLIC_SUPABASE_URL=your_supabase_url')
-  console.log('  SUPABASE_SERVICE_ROLE_KEY=your_service_role_key')
-  process.exit(1)
-}
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
+const supabase = createSupabaseClient()
 
 // Safety gate: this script previously wiped canon_events + heroes with no
 // confirmation. It now requires an explicit --confirm flag and upserts by
@@ -566,8 +553,9 @@ const heroes = [
 ]
 
 async function seed() {
+  const supabase = createSupabaseClient()
   console.log('🚀 Starting Multiverse Archive database seeding...')
-  console.log('📍 Database URL:', supabaseUrl)
+  console.log('📍 Database URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
   console.log(`📊 Total heroes to seed: ${heroes.length}`)
   console.log('')
 
@@ -597,4 +585,7 @@ async function seed() {
   console.log('🌐 Refresh your browser to see the heroes!')
 }
 
-seed().catch(console.error)
+seed().catch((err) => {
+  console.error(err)
+  process.exitCode = 1
+})
