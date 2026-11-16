@@ -48,7 +48,13 @@ export async function loginAdminAction(password: string): Promise<LoginAdminResu
     return { ok: false, error: 'Login failed' }
   }
   if (secureCompare(password, correctPassword)) {
-    const token = await createSessionToken()
+    let token: string
+    try {
+      token = await createSessionToken()
+    } catch (err) {
+      console.error('loginAdminAction: session creation failed:', err)
+      return { ok: false, error: 'Login failed' }
+    }
     const cookieStore = await cookies()
     const headersList = await headers()
     const forwardedProto = headersList.get('x-forwarded-proto')
