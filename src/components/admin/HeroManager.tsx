@@ -288,6 +288,7 @@ export default function HeroManager() {
                   className="h-8 w-8 text-neutral-400 hover:text-cyan-400 hover:bg-cyan-950/30"
                   onClick={() => setEditingHero(hero)}
                   disabled={inFlightIds.has(hero.id)}
+                  aria-label={`Edit ${hero.alias}`}
                 >
                   <Pencil className="w-4 h-4" />
                 </Button>
@@ -297,6 +298,7 @@ export default function HeroManager() {
                   className={`h-8 w-8 ${deleteConfirm === hero.id ? 'text-red-500 bg-red-950/30 ring-1 ring-red-500' : 'text-neutral-400 hover:text-red-400 hover:bg-red-950/30'}`}
                   onClick={() => handleDelete(hero.id)}
                   disabled={inFlightIds.has(hero.id)}
+                  aria-label={`Delete ${hero.alias}`}
                 >
                   {deleteConfirm === hero.id ? (
                     inFlightIds.has(hero.id) ? (

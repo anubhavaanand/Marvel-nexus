@@ -2,13 +2,12 @@
 
 import crypto from 'crypto'
 import { cookies, headers } from 'next/headers'
-import { createClient } from '@supabase/supabase-js'
 import { Hero } from '@/lib/supabase'
 import { sanitizeHeroUpdate } from '@/lib/hero-update'
 import { isRateLimited, parseClientIp } from '@/lib/rate-limit'
+import { getServiceSupabase as getAdminSupabase } from '@/lib/service-supabase'
+import { createSessionToken, revokeSessionToken, validateSessionToken } from '@/lib/admin-sessions'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 const MAX_LOGIN_ATTEMPTS_PER_MINUTE = 5
 
 async function getClientIp(): Promise<string> {
@@ -16,27 +15,6 @@ async function getClientIp(): Promise<string> {
   const forwarded = parseClientIp(requestHeaders.get('x-forwarded-for'))
   if (forwarded !== 'unknown') return forwarded
   return parseClientIp(requestHeaders.get('x-real-ip'))
-}
-
-// Helper to get admin client (bypasses RLS using service key)
-function getAdminSupabase() {
-  if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error('Supabase URL or Service Role Key is missing')
-  }
-  return createClient(supabaseUrl, supabaseServiceKey)
-}
-
-// Generate the secure session token hash
-function getSessionToken() {
-  const password = process.env.ADMIN_PASSWORD
-  if (!password) {
-    throw new Error('ADMIN_PASSWORD environment variable is not set')
-  }
-  const salt = process.env.ADMIN_SESSION_SALT || 'marvel-nexus-salt-987'
-  return crypto
-    .createHash('sha256')
-    .update(password + salt)
-    .digest('hex')
 }
 
 /**
@@ -72,13 +50,13 @@ export async function loginAdminAction(password: string): Promise<LoginAdminResu
     return { ok: false, error: 'Login failed' }
   }
   if (secureCompare(password, correctPassword)) {
-    const token = getSessionToken()
+    const token = await createSessionToken()
     const cookieStore = await cookies()
     cookieStore.set('admin_session', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 60 * 60 * 24, // 1 day
+      maxAge: 60 * 60 * 8, // 8 hours, matching the session TTL
       path: '/',
     })
     return { ok: true }
@@ -95,8 +73,7 @@ export async function checkAdminAuthAction(): Promise<boolean> {
     const sessionCookie = cookieStore.get('admin_session')
     if (!sessionCookie) return false
 
-    const expectedToken = getSessionToken()
-    return secureCompare(sessionCookie.value, expectedToken)
+    return validateSessionToken(sessionCookie.value)
   } catch {
     return false
   }
@@ -106,8 +83,14 @@ export async function checkAdminAuthAction(): Promise<boolean> {
  * Logs out the admin by deleting the session cookie
  */
 export async function logoutAdminAction(): Promise<void> {
-  const cookieStore = await cookies()
-  cookieStore.delete('admin_session')
+  try {
+    const cookieStore = await cookies()
+    const sessionCookie = cookieStore.get('admin_session')
+    if (sessionCookie) await revokeSessionToken(sessionCookie.value)
+    cookieStore.delete('admin_session')
+  } catch {
+    // Logout must never fail because revocation failed.
+  }
 }
 
 /**
