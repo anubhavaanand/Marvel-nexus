@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import WatchOrderClient from '@/components/WatchOrderClient'
+import WatchOrderClient from '@/components/watch-order/WatchOrderClient'
 
 export const metadata: Metadata = {
   title: 'Watch Order | Multiverse Archive',

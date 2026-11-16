@@ -1,11 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import HeroImage from './HeroImage'
-import { Calendar, Clock, Star, Tv, Film, ArrowUpDown } from 'lucide-react'
-
-interface WatchItem {
+export interface WatchItem {
   id: number
   title: string
   franchise: 'MCU' | 'DC'
@@ -20,7 +15,7 @@ interface WatchItem {
   description: string
 }
 
-const watchOrderData: WatchItem[] = [
+export const watchOrderData: WatchItem[] = [
   {
     id: 1,
     franchise: 'MCU',
@@ -737,7 +732,7 @@ const watchOrderData: WatchItem[] = [
   },
 ]
 
-const phaseColors: Record<string, { primary: string; bg: string; text: string }> = {
+export const phaseColors: Record<string, { primary: string; bg: string; text: string }> = {
   'Phase 1': {
     primary: 'var(--franchise-mcu)',
     bg: 'bg-[var(--franchise-mcu)]/10',
@@ -770,227 +765,4 @@ const phaseColors: Record<string, { primary: string; bg: string; text: string }>
     text: 'text-[var(--franchise-dc)]',
   },
   Elseworlds: { primary: 'var(--meta)', bg: 'bg-[var(--surface)]', text: 'text-[var(--muted)]' },
-}
-
-export default function WatchOrderPage() {
-  const [activeTab, setActiveTab] = useState<'MCU' | 'DC'>('MCU')
-  const [sortBy, setSortBy] = useState<'chronological' | 'release'>('chronological')
-
-  const filteredItems = watchOrderData.filter((item) => item.franchise === activeTab)
-
-  const totalMinutes = filteredItems.reduce((sum, item) => {
-    const match = item.runtime?.match(/^(\d+)h (\d+)m$/)
-    return match ? sum + parseInt(match[1], 10) * 60 + parseInt(match[2], 10) : sum
-  }, 0)
-  const totalHours = Math.floor(totalMinutes / 60)
-
-  const sortedItems = [...filteredItems].sort((a, b) => {
-    if (sortBy === 'chronological') {
-      return a.chronologicalOrder - b.chronologicalOrder
-    }
-    return a.releaseOrder - b.releaseOrder
-  })
-
-  const accentColor = activeTab === 'MCU' ? 'var(--franchise-mcu)' : 'var(--franchise-dc)'
-
-  return (
-    <main className="min-h-screen">
-      <section className="relative bg-[var(--bg)] overflow-hidden">
-        <div className="absolute inset-0 bg-grid opacity-[0.15]" />
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `radial-gradient(ellipse at center, ${accentColor}15 0%, transparent 60%)`,
-          }}
-        />
-
-        <div className="relative container-wide py-28 sm:py-36">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="flex items-center justify-center gap-2 mb-6">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium glass text-[var(--fg-2)]">
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: accentColor }} />
-                Official Watch Order
-              </span>
-            </div>
-
-            <h1 className="text-hero mb-6 leading-[1.05]">
-              <span className="text-[var(--fg)]">{activeTab}</span>
-              <br />
-              <span
-                className="text-gradient"
-                style={{ backgroundImage: `linear-gradient(135deg, ${accentColor}, #60a5fa)` }}
-              >
-                Watch Order
-              </span>
-            </h1>
-
-            <p className="text-lg sm:text-xl text-[var(--fg-2)] max-w-2xl mx-auto mb-10 leading-relaxed">
-              The complete guide to watching the{' '}
-              {activeTab === 'MCU' ? 'Marvel Cinematic Universe' : 'DC Universe'} in perfect order.
-            </p>
-
-            <div className="flex justify-center mb-8">
-              <div className="tabs-list">
-                <button
-                  onClick={() => setActiveTab('MCU')}
-                  className={`tab-trigger ${activeTab === 'MCU' ? 'active' : ''}`}
-                >
-                  MCU
-                </button>
-                <button
-                  onClick={() => setActiveTab('DC')}
-                  className={`tab-trigger ${activeTab === 'DC' ? 'active' : ''}`}
-                >
-                  DC
-                </button>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap justify-center gap-3">
-              <div className="stat-pill">
-                <Film className="w-3.5 h-3.5" style={{ color: accentColor }} />
-                <span className="stat-value">{filteredItems.length}</span>
-                <span className="stat-label">Movies</span>
-              </div>
-              <div className="stat-pill">
-                <Clock className="w-3.5 h-3.5 text-purple-500" />
-                <span className="stat-value">{totalHours}</span>
-                <span className="stat-label">Hours</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div className="container-wide">
-        <div className="divider" />
-      </div>
-
-      <section className="section bg-[var(--bg)]">
-        <div className="container-wide">
-          <div className="flex justify-center mb-10">
-            <div className="tabs-list">
-              <button
-                onClick={() => setSortBy('chronological')}
-                className={`tab-trigger ${sortBy === 'chronological' ? 'active' : ''}`}
-              >
-                <ArrowUpDown className="w-4 h-4" />
-                <span className="hidden sm:inline">Chronological</span>
-                <span className="sm:hidden">Story</span>
-              </button>
-              <button
-                onClick={() => setSortBy('release')}
-                className={`tab-trigger ${sortBy === 'release' ? 'active' : ''}`}
-              >
-                <Calendar className="w-4 h-4" />
-                <span className="hidden sm:inline">Release Date</span>
-                <span className="sm:hidden">Release</span>
-              </button>
-            </div>
-          </div>
-
-          <p className="text-center text-[var(--meta)] text-sm mb-10">
-            {sortBy === 'chronological'
-              ? 'Watch in story timeline order (recommended for rewatches)'
-              : 'Watch in the order movies were released (recommended for first-timers)'}
-          </p>
-
-          <div className="max-w-4xl mx-auto">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab + sortBy}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                {sortedItems.map((item, index) => {
-                  const colors = phaseColors[item.phase] || phaseColors['Phase 1']
-
-                  return (
-                    <motion.div
-                      key={item.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: index * 0.03 }}
-                      className="mb-4"
-                    >
-                      <div className="card-glass overflow-hidden">
-                        <div className="flex flex-col sm:flex-row">
-                          <div
-                            className={`flex sm:flex-col items-center justify-center p-4 sm:p-5 ${colors.bg} sm:w-16`}
-                          >
-                            <span className={`text-xl sm:text-2xl font-semibold ${colors.text}`}>
-                              {index + 1}
-                            </span>
-                          </div>
-
-                          <div className="relative w-full sm:w-28 h-44 sm:h-auto flex-shrink-0 bg-[var(--surface)]">
-                            <HeroImage imageUrl={null} alias={item.title} name={item.title} />
-                          </div>
-
-                          <div className="flex-1 p-4 sm:p-5 flex flex-col justify-between">
-                            <div>
-                              <div className="flex flex-wrap items-center gap-2 mb-2">
-                                <span
-                                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium ${colors.bg} ${colors.text}`}
-                                >
-                                  {item.phase}
-                                </span>
-                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium glass text-[var(--muted)]">
-                                  {item.type === 'movie' ? (
-                                    <Film className="w-3 h-3" />
-                                  ) : (
-                                    <Tv className="w-3 h-3" />
-                                  )}
-                                  {item.type}
-                                </span>
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium glass text-[var(--muted)]">
-                                  {item.year}
-                                </span>
-                              </div>
-
-                              <h3 className="text-base sm:text-lg font-semibold text-[var(--fg)] mb-1.5">
-                                {item.title}
-                              </h3>
-
-                              <p className="text-sm text-[var(--muted)] mb-2 line-clamp-2">
-                                {item.description}
-                              </p>
-                            </div>
-
-                            <div className="flex flex-wrap items-center gap-4 text-sm mt-2">
-                              {item.runtime && (
-                                <div className="flex items-center gap-1 text-[var(--meta)]">
-                                  <Clock className="w-3.5 h-3.5" />
-                                  <span className="text-xs">{item.runtime}</span>
-                                </div>
-                              )}
-                              {item.rating && (
-                                <div className="flex items-center gap-1 text-[#ca8a04]">
-                                  <Star className="w-3.5 h-3.5 fill-[#ca8a04]" />
-                                  <span className="text-xs">{item.rating}</span>
-                                </div>
-                              )}
-                              <div
-                                className="flex items-center gap-1 text-xs"
-                                style={{ color: accentColor }}
-                              >
-                                <Tv className="w-3.5 h-3.5" />
-                                <span>{item.platform}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )
-                })}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
-      </section>
-    </main>
-  )
 }
