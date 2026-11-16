@@ -42,10 +42,13 @@ function getMCUPhase(releaseDate) {
 
 // ─── TMDB Fetch Helpers ───────────────────────────────────────────────────────
 async function tmdbFetch(path, retries = 3) {
-  const url = `${TMDB_BASE}${path}${path.includes('?') ? '&' : '?'}api_key=${tmdbApiKey}`
+  const url = `${TMDB_BASE}${path}`
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(10000) })
+      const res = await fetch(url, {
+        signal: AbortSignal.timeout(10000),
+        headers: { Authorization: `Bearer ${tmdbApiKey}` },
+      })
       if (!res.ok) throw new Error(`TMDB error ${res.status} for ${path}`)
       return res.json()
     } catch (err) {
