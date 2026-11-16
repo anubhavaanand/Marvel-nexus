@@ -36,7 +36,7 @@ export async function seedDemoHeroesAction() {
     console.error('seedDemoHeroesAction: Supabase service client is not configured')
     return { ok: false as const, error: 'Service not configured' }
   }
-  const rows = SEED_HEROES.map((hero) => ({
+  const heroRows = SEED_HEROES.map((hero) => ({
     id: hero.id,
     name: hero.name,
     alias: hero.alias,
@@ -47,15 +47,87 @@ export async function seedDemoHeroesAction() {
     image_url: hero.image_url,
     is_locked_content: hero.is_locked_content,
   }))
-  const { error } = await supabase.from('heroes').upsert(rows, { onConflict: 'id' })
-  if (error) {
-    console.error('seedDemoHeroesAction upsert failed:', error)
-    return { ok: false as const, error: getSafeErrorMessage(error, 'Hero seed failed') }
+  const { error: heroError } = await supabase.from('heroes').upsert(heroRows, { onConflict: 'id' })
+  if (heroError) {
+    console.error('seedDemoHeroesAction upsert failed:', heroError)
+    return { ok: false as const, error: getSafeErrorMessage(heroError, 'Hero seed failed') }
   }
+
+  // Seed movies too so hero_movie links and canon events can resolve.
+  const movieRows = SEED_MOVIES.map((movie) => ({
+    id: movie.id,
+    title: movie.title,
+    release_date: movie.release_date,
+    phase: movie.phase,
+    poster_url: movie.poster_url,
+  }))
+  const { error: movieError } = await supabase
+    .from('movies')
+    .upsert(movieRows, { onConflict: 'id' })
+  if (movieError) {
+    console.error('seedDemoHeroesAction movie upsert failed:', movieError)
+    return { ok: false as const, error: getSafeErrorMessage(movieError, 'Movie seed failed') }
+  }
+
+  // Seed canon events + hero_movies links (idempotent via upsert).
+  const [{ data: heroes }, { data: movies }] = await Promise.all([
+    supabase.from('heroes').select('id, name, alias'),
+    supabase.from('movies').select('id, title'),
+  ])
+  const heroKey = new Map<string, string>()
+  for (const hero of heroes ?? []) heroKey.set(`${hero.name}|${hero.alias}`, hero.id)
+  const movieIds = new Map<string, string>()
+  for (const movie of movies ?? []) movieIds.set(movie.title, movie.id)
+
+  const eventRows: Array<Record<string, unknown>> = []
+  const links: Array<Record<string, unknown>> = []
+  for (const event of SEED_EVENTS) {
+    const hero = heroKey.get(`${event.heroName}|${event.heroAlias}`)
+    const movieId = movieIds.get(event.movieTitle)
+    if (!hero || !movieId) continue
+    eventRows.push({
+      id: event.id,
+      hero_id: hero,
+      movie_id: movieId,
+      description: event.description,
+      is_fixed_point: event.is_fixed_point,
+      glitch_level: event.glitch_level,
+    })
+    links.push({ hero_id: hero, movie_id: movieId, role: 'main' })
+  }
+
+  if (eventRows.length > 0) {
+    const { error: eventError } = await supabase
+      .from('canon_events')
+      .upsert(eventRows, { onConflict: 'id' })
+    if (eventError) {
+      console.error('seedDemoHeroesAction canon events upsert failed:', eventError)
+      return {
+        ok: false as const,
+        error: getSafeErrorMessage(eventError, 'Canon events seed failed'),
+      }
+    }
+  }
+  if (links.length > 0) {
+    await supabase
+      .from('hero_movies')
+      .upsert(links, { onConflict: 'hero_id,movie_id', ignoreDuplicates: true })
+  }
+
   revalidatePath('/')
   revalidatePath('/admin')
-  log(`seeded ${rows.length} heroes`)
-  return { ok: true as const, seeded: rows.length }
+  revalidatePath('/timeline')
+  revalidatePath('/watch-order')
+  log(
+    `seeded ${heroRows.length} heroes, ${movieRows.length} movies, ${eventRows.length} canon events`,
+  )
+  return {
+    ok: true as const,
+    seeded: heroRows.length,
+    movies: movieRows.length,
+    events: eventRows.length,
+    links: links.length,
+  }
 }
 
 /**
