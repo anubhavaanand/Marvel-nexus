@@ -83,15 +83,30 @@ export function getRateLimiterSize(): number {
   return buckets.size
 }
 
-export function parseClientIp(headerValue: string | null): string {
-  return headerValue?.split(',')[0]?.trim() || 'unknown'
+function trustedProxyDepth(): number {
+  const raw = process.env.TRUST_PROXY_DEPTH
+  const n = raw ? Number.parseInt(raw, 10) : NaN
+  return Number.isFinite(n) && n >= 0 ? n : 1
+}
+
+export function parseClientIp(headerValue: string | null, trustedProxyCount: number = 1): string {
+  if (!headerValue) return 'unknown'
+  const entries = headerValue
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean)
+  if (entries.length === 0) return 'unknown'
+  const depth = Math.max(0, Math.min(trustedProxyCount, entries.length - 1))
+  const index = entries.length - depth - 1
+  return entries[index] || 'unknown'
 }
 
 export function resolveClientIp(forwardedFor: string | null, realIp: string | null): string {
   if (process.env.TRUST_PROXY === 'true') {
-    const fromForwarded = parseClientIp(forwardedFor)
+    const depth = trustedProxyDepth()
+    const fromForwarded = parseClientIp(forwardedFor, depth)
     if (fromForwarded !== 'unknown') return fromForwarded
-    return parseClientIp(realIp)
+    return parseClientIp(realIp, depth)
   }
   if (!trustProxyWarned && (forwardedFor || realIp)) {
     trustProxyWarned = true

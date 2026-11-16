@@ -44,9 +44,18 @@ export function isSafeErrorMessage(message: string): boolean {
   return SAFE_ERROR_MESSAGES.has(message)
 }
 
+function redactedErrorSummary(error: unknown): string {
+  if (error instanceof Error) {
+    const name = error.constructor?.name || 'Error'
+    const code = (error as { code?: unknown }).code
+    return code != null ? `${name} (code: ${String(code)})` : name
+  }
+  return typeof error
+}
+
 export function getSafeErrorMessage(error: unknown, fallback = DEFAULT_SAFE_MESSAGE): string {
   if (error) {
-    console.error('Error suppressed from UI:', error)
+    console.error('Error suppressed from UI:', redactedErrorSummary(error))
   }
 
   const candidate = typeof fallback === 'string' ? fallback : DEFAULT_SAFE_MESSAGE
