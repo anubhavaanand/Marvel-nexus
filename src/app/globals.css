@@ -32,7 +32,7 @@
   --color-destructive: var(--danger);
   --color-destructive-foreground: var(--accent-on);
 
-  --color-muted-foreground: var(--fg);
+  --color-muted-foreground: var(--fg-2);
 
   --color-popover: var(--surface);
   --color-popover-foreground: var(--fg);
