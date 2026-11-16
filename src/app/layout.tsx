@@ -43,7 +43,7 @@ export default function RootLayout({
         className={`${inter.variable} antialiased min-h-screen bg-[var(--bg)] text-[var(--fg)]`}
       >
         <Navbar />
-        <main className="relative z-10 pt-16">{children}</main>
+        <div className="relative z-10 pt-16">{children}</div>
         <footer className="relative z-10 border-t border-[var(--border)] py-6 px-4 text-center text-xs text-[var(--muted)]">
           <p>
             This product uses the TMDB API but is not endorsed or certified by TMDB.{' '}
