@@ -1,13 +1,22 @@
 'use server'
 
 import crypto from 'crypto'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { createClient } from '@supabase/supabase-js'
 import { Hero } from '@/lib/supabase'
 import { sanitizeHeroUpdate } from '@/lib/hero-update'
+import { isRateLimited, parseClientIp } from '@/lib/rate-limit'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+const MAX_LOGIN_ATTEMPTS_PER_MINUTE = 5
+
+async function getClientIp(): Promise<string> {
+  const requestHeaders = await headers()
+  const forwarded = parseClientIp(requestHeaders.get('x-forwarded-for'))
+  if (forwarded !== 'unknown') return forwarded
+  return parseClientIp(requestHeaders.get('x-real-ip'))
+}
 
 // Helper to get admin client (bypasses RLS using service key)
 function getAdminSupabase() {
@@ -52,6 +61,12 @@ export interface LoginAdminResult {
  * failure message without revealing whether config or credentials failed.
  */
 export async function loginAdminAction(password: string): Promise<LoginAdminResult> {
+  const clientIp = await getClientIp()
+  if (isRateLimited(`admin-login:${clientIp}`, MAX_LOGIN_ATTEMPTS_PER_MINUTE, 60_000)) {
+    console.warn(`Admin login throttled for ${clientIp}`)
+    return { ok: false, error: 'Too many attempts. Please try again later.' }
+  }
+
   const correctPassword = process.env.ADMIN_PASSWORD
   if (!correctPassword) {
     return { ok: false, error: 'Login failed' }
