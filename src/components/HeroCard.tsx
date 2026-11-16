@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { useRef } from 'react'
 import { useSharedInView } from '@/hooks/useSharedInView'
 import Link from 'next/link'
-import { Zap, Globe, ArrowRight } from 'lucide-react'
+import { Zap, Globe, ArrowRight, Lock } from 'lucide-react'
 import type { Hero } from '@/lib/supabase'
 import { slugifyAlias } from '@/lib/slugs'
 import HeroImage from './HeroImage'
@@ -90,6 +90,15 @@ export default function HeroCard({ hero, index = 0 }: HeroCardProps) {
               <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium glass text-[var(--fg)]">
                 <Zap className="w-3 h-3 text-[var(--accent)]" />
                 {hero.powers.length}
+              </span>
+            </div>
+          )}
+
+          {hero.is_locked_content && (
+            <div className="absolute top-3 right-3">
+              <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium glass text-[var(--fg)]">
+                <Lock className="w-3 h-3" />
+                Premium
               </span>
             </div>
           )}

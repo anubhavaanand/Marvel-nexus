@@ -11,7 +11,14 @@ interface HeroImageProps {
   className?: string
 }
 
-export default function HeroImage({ imageUrl, alias, name = '', className = '' }: HeroImageProps) {
+export default function HeroImage(props: HeroImageProps) {
+  // Remount the inner component whenever the source image changes so its
+  // transient state (error flag / TMDB fallback) resets without effect-based
+  // prop synchronization.
+  return <HeroImageInner key={props.imageUrl ?? ''} {...props} />
+}
+
+function HeroImageInner({ imageUrl, alias, name = '', className = '' }: HeroImageProps) {
   const [currentSrc, setCurrentSrc] = useState(imageUrl || '')
   const [imageError, setImageError] = useState(false)
   const [tmdbAttempted, setTmdbAttempted] = useState(false)
@@ -22,12 +29,6 @@ export default function HeroImage({ imageUrl, alias, name = '', className = '' }
       mountedRef.current = false
     }
   }, [])
-
-  useEffect(() => {
-    setCurrentSrc(imageUrl || '')
-    setImageError(false)
-    setTmdbAttempted(false)
-  }, [imageUrl])
 
   // Proactive client-side TMDB lookups disabled (#155): mock images resolve
   // server-side via enrichMockHeroesWithTmdb, so per-hero client fetches
