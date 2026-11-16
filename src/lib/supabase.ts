@@ -37,11 +37,19 @@ function setTmdbImageCache(key: string, value: string | null): void {
   tmdbImageCache.set(key, { value, expiresAt: Date.now() + TMDB_IMAGE_CACHE_TTL_MS })
 }
 
-export function needsImageEnrichment(hero: Hero): boolean {
+export function needsImageEnrichment(hero: { image_url?: string }): boolean {
   return !hero.image_url || hero.image_url.trim() === ''
 }
 
-async function enrichMockHeroesWithTmdb(heroes: Hero[]): Promise<Hero[]> {
+interface EnrichableHero {
+  id: string
+  image_url: string
+  actor_name?: string
+  alias?: string
+  name?: string
+}
+
+async function enrichHeroesWithTmdb<T extends EnrichableHero>(heroes: T[]): Promise<T[]> {
   const apiKey = process.env.TMDB_API_KEY
   if (!apiKey) return heroes
 
@@ -55,7 +63,7 @@ async function enrichMockHeroesWithTmdb(heroes: Hero[]): Promise<Hero[]> {
   // caching; no second unbounded cache is introduced.
   const inflight = new Map<string, Promise<string | null>>()
 
-  const lookup = (cacheKey: string, hero: Hero): Promise<string | null> => {
+  const lookup = (cacheKey: string, hero: EnrichableHero): Promise<string | null> => {
     const cached = getTmdbImageCache(cacheKey)
     if (cached !== undefined) {
       return Promise.resolve(cached)
@@ -631,7 +639,7 @@ export async function getAllHeroes(options?: GetAllHeroesOptions): Promise<Hero[
   if (!supabase) {
     const start = (page - 1) * pageSize
     const slice = mockHeroes.slice(start, start + pageSize)
-    return enrichMockHeroesWithTmdb([...slice])
+    return enrichHeroesWithTmdb([...slice])
   }
 
   let query = supabase.from('heroes').select('*').order('name')
@@ -648,7 +656,7 @@ export async function getAllHeroes(options?: GetAllHeroesOptions): Promise<Hero[
     console.error('Error fetching heroes:', error)
     throw new Error('Failed to load heroes')
   }
-  return data || []
+  return enrichHeroesWithTmdb(data || [])
 }
 
 export async function getHeroesCount(): Promise<number> {
@@ -667,7 +675,7 @@ export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | n
   if (!supabase) {
     const hero = resolveMockHeroBySlug(slug)
     if (!hero) return null
-    const enriched = await enrichMockHeroesWithTmdb([hero])
+    const enriched = await enrichHeroesWithTmdb([hero])
     return enriched[0] || null
   }
 
@@ -804,7 +812,7 @@ export type SearchHero = Pick<
  */
 export async function getSearchHeroes(): Promise<SearchHero[]> {
   if (!supabase) {
-    const enriched = await enrichMockHeroesWithTmdb([...mockHeroes])
+    const enriched = await enrichHeroesWithTmdb([...mockHeroes])
     return enriched.map(
       ({
         id,
@@ -836,7 +844,7 @@ export async function getSearchHeroes(): Promise<SearchHero[]> {
     console.error('Error fetching search heroes:', error)
     throw new Error('Failed to load heroes')
   }
-  return (data || []) as SearchHero[]
+  return enrichHeroesWithTmdb((data || []) as SearchHero[])
 }
 
 /** Full hero list for the admin panel (includes locked content). */
