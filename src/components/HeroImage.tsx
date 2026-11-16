@@ -10,6 +10,7 @@ interface HeroImageProps {
   name?: string
   className?: string
   sizes?: string
+  priority?: boolean
 }
 
 export default function HeroImage(props: HeroImageProps) {
@@ -25,6 +26,7 @@ function HeroImageInner({
   name = '',
   className = '',
   sizes = '(max-width: 768px) 50vw, 25vw',
+  priority = false,
 }: HeroImageProps) {
   const [currentSrc, setCurrentSrc] = useState(imageUrl || '')
   const [imageError, setImageError] = useState(false)
@@ -83,6 +85,7 @@ function HeroImageInner({
       alt={alias}
       fill
       sizes={sizes}
+      priority={priority}
       className={`object-cover ${className}`}
       onError={handleError}
     />
