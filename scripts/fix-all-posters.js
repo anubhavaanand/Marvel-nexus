@@ -1,6 +1,8 @@
 const { createClient } = require('@supabase/supabase-js')
 require('dotenv').config({ path: '.env.local' })
 
+const guard = require('./seed-guard')
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -70,6 +72,20 @@ const imageUpdates = {
 
 async function fixAllPosters() {
   console.log('🎨 Fixing ALL hero posters with verified URLs...\n')
+
+  const flags = guard.parseArgs(process.argv.slice(2))
+  guard.requireConfirm(
+    flags,
+    {
+      title: 'overwrite hero image_url fields — existing rows are updated, nothing is deleted',
+      destructive: [],
+      safe: [
+        'UPDATE image_url on heroes that match the listed aliases',
+        'No DELETE/TRUNCATE — existing rows are left untouched',
+      ],
+    },
+    'fix-all-posters.js',
+  )
 
   let updated = 0
   let failed = 0

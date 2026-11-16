@@ -379,23 +379,20 @@ async function seedMaster() {
   console.log('🚀 Starting MASTER SEED process...')
 
   const flags = guard.parseArgs(process.argv.slice(2))
+  guard.requireConfirm(
+    flags,
+    {
+      title: 'full database reseed — wipes existing data before inserting',
+      destructive: [
+        'DELETE all existing rows from heroes (table is truncated via .delete().neq(id, ...))',
+      ],
+      safe: ['INSERT heroes from the master list'],
+    },
+    'seed-master.js',
+  )
 
   // 1. DELETE ALL EXISTING HEROES — destructive, requires explicit opt-in
   console.log('🗑️  Clearing existing heroes...')
-  if (!flags.confirm) {
-    console.log('')
-    console.log('⚠️  seed-master.js — full database reseed (DESTRUCTIVE)')
-    console.log('')
-    console.log('This script will:')
-    console.log('   🗑️  DELETE all existing rows from heroes')
-    console.log('   ✅  Insert heroes from the master list')
-    console.log('')
-    console.log('To proceed, re-run with --confirm:')
-    console.log('   node scripts/seed-master.js --confirm')
-    console.log('   OR set SEED_CONFIRM=1 in your environment')
-    throw new Error('Refusing to run: destructive operations require an explicit --confirm flag.')
-  }
-
   const { error: deleteError } = await supabase
     .from('heroes')
     .delete()
