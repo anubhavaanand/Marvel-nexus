@@ -2,6 +2,7 @@
 
 import crypto from 'crypto'
 import { cookies } from 'next/headers'
+import { revalidatePath } from 'next/cache'
 import { Hero } from '@/lib/supabase'
 import { sanitizeHeroUpdate } from '@/lib/hero-update'
 import { getServiceSupabase as getAdminSupabase } from '@/lib/service-supabase'
@@ -120,6 +121,12 @@ export async function updateHeroAction(id: string, updates: Partial<Hero>): Prom
     console.error('Error updating hero via server action:', error)
     return null
   }
+
+  revalidatePath('/')
+  revalidatePath('/admin')
+  revalidatePath('/hero/[slug]', 'layout')
+  revalidatePath('/search')
+  revalidatePath('/timeline')
   return data
 }
 
@@ -145,6 +152,12 @@ export async function deleteHeroAction(id: string): Promise<boolean> {
     console.error('Error deleting hero via server action:', error)
     return false
   }
+
+  revalidatePath('/')
+  revalidatePath('/admin')
+  revalidatePath('/hero/[slug]', 'layout')
+  revalidatePath('/search')
+  revalidatePath('/timeline')
   return true
 }
 
