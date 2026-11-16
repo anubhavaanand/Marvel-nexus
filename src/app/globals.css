@@ -46,8 +46,8 @@
 
   --color-fg: #f5f5f7;
   --color-fg-2: #a1a1a6;
-  --color-muted: #6e6e73;
-  --color-meta: #48484a;
+  --color-muted: #7a7a7a;
+  --color-meta: #757575;
 
   --color-border: rgba(255, 255, 255, 0.06);
   --color-border-subtle: rgba(255, 255, 255, 0.03);
@@ -108,8 +108,8 @@
 
   --fg: #f5f5f7;
   --fg-2: #a1a1a6;
-  --muted: #6e6e73;
-  --meta: #48484a;
+  --muted: #7a7a7a;
+  --meta: #757575;
 
   --border: rgba(255, 255, 255, 0.06);
   --border-subtle: rgba(255, 255, 255, 0.03);
