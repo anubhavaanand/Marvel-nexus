@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -31,6 +31,10 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
   const [deleteErrors, setDeleteErrors] = useState<Record<string, string>>({})
   const [inFlightIds, setInFlightIds] = useState<Set<string>>(new Set())
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [newPower, setNewPower] = useState('')
+  const [newWeakness, setNewWeakness] = useState('')
+  const powersInputRef = useRef<HTMLInputElement>(null)
+  const weaknessesInputRef = useRef<HTMLInputElement>(null)
 
   const handleSave = async () => {
     if (!editingHero) return
@@ -45,6 +49,10 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
         image_url: editingHero.image_url,
         franchise: editingHero.franchise,
         origin_world: editingHero.origin_world,
+        is_locked_content: editingHero.is_locked_content,
+        actor_name: editingHero.actor_name,
+        powers: editingHero.powers,
+        weaknesses: editingHero.weaknesses,
       })
 
       if (updated) {
@@ -211,6 +219,149 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                     <option value="X-Men">X-Men</option>
                     <option value="Spider-Verse">Spider-Verse</option>
                   </select>
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="hero-origin" className="text-xs text-neutral-400">
+                    Origin World
+                  </label>
+                  <input
+                    id="hero-origin"
+                    value={editingHero.origin_world}
+                    onChange={(e) =>
+                      setEditingHero({ ...editingHero, origin_world: e.target.value })
+                    }
+                    className="w-full p-2 bg-black/40 border border-neutral-700 rounded text-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label
+                    htmlFor="hero-locked"
+                    className="text-xs text-neutral-400 flex items-center gap-2"
+                  >
+                    Locked Content
+                    <input
+                      id="hero-locked"
+                      type="checkbox"
+                      checked={editingHero.is_locked_content}
+                      onChange={(e) =>
+                        setEditingHero({ ...editingHero, is_locked_content: e.target.checked })
+                      }
+                      className="w-4 h-4 bg-black/40 border border-neutral-700 rounded text-cyan-500 focus:ring-cyan-500"
+                    />
+                  </label>
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="hero-actor" className="text-xs text-neutral-400">
+                    Actor Name
+                  </label>
+                  <input
+                    id="hero-actor"
+                    value={editingHero.actor_name ?? ''}
+                    onChange={(e) =>
+                      setEditingHero({ ...editingHero, actor_name: e.target.value || undefined })
+                    }
+                    className="w-full p-2 bg-black/40 border border-neutral-700 rounded text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="space-y-1">
+                  <label htmlFor="hero-powers" className="text-xs text-neutral-400">
+                    Powers
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {editingHero.powers.map((power, i) => (
+                      <span
+                        key={i}
+                        className="inline-flex items-center gap-2 px-2 py-1 bg-neutral-700/50 border border-neutral-600 rounded text-xs text-neutral-300"
+                      >
+                        {power}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            setEditingHero({
+                              ...editingHero,
+                              powers: editingHero.powers.filter((_, j) => j !== i),
+                            })
+                          }}
+                          className="hover:text-red-400"
+                          aria-label={`Remove power ${power}`}
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+                    <input
+                      id="hero-powers-input"
+                      ref={powersInputRef}
+                      value={newPower}
+                      onChange={(e) => setNewPower(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          const val = newPower.trim()
+                          if (val && !editingHero.powers.includes(val)) {
+                            setEditingHero({ ...editingHero, powers: [...editingHero.powers, val] })
+                            setNewPower('')
+                          }
+                        }
+                      }}
+                      placeholder="Add power… Enter to add"
+                      className="w-full p-2 bg-black/40 border border-neutral-700 rounded text-white text-xs"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label htmlFor="hero-weaknesses" className="text-xs text-neutral-400">
+                    Weaknesses
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {editingHero.weaknesses.map((weakness, i) => (
+                      <span
+                        key={i}
+                        className="inline-flex items-center gap-2 px-2 py-1 bg-neutral-700/50 border border-neutral-600 rounded text-xs text-neutral-300"
+                      >
+                        {weakness}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            setEditingHero({
+                              ...editingHero,
+                              weaknesses: editingHero.weaknesses.filter((_, j) => j !== i),
+                            })
+                          }}
+                          className="hover:text-red-400"
+                          aria-label={`Remove weakness ${weakness}`}
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+                    <input
+                      id="hero-weaknesses-input"
+                      ref={weaknessesInputRef}
+                      value={newWeakness}
+                      onChange={(e) => setNewWeakness(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          const val = newWeakness.trim()
+                          if (val && !editingHero.weaknesses.includes(val)) {
+                            setEditingHero({
+                              ...editingHero,
+                              weaknesses: [...editingHero.weaknesses, val],
+                            })
+                            setNewWeakness('')
+                          }
+                        }
+                      }}
+                      placeholder="Add weakness… Enter to add"
+                      className="w-full p-2 bg-black/40 border border-neutral-700 rounded text-white text-xs"
+                    />
+                  </div>
                 </div>
               </div>
 
