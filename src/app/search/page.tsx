@@ -4,9 +4,11 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, X, Loader2, Sparkles } from 'lucide-react'
 import HeroCard from '@/components/HeroCard'
+import { Button } from '@/components/ui/button'
 import { getAllHeroes, type Hero } from '@/lib/supabase'
 
 const franchises = ['All', 'MCU', 'X-Men', 'Spider-Verse', 'DC', 'Anime', 'The Boys']
+const PAGE_SIZE = 24
 
 export default function SearchPage() {
   const [query, setQuery] = useState('')
@@ -15,6 +17,7 @@ export default function SearchPage() {
   const [selectedFranchise, setSelectedFranchise] = useState('All')
   const [hasSearched, setHasSearched] = useState(false)
   const [allHeroes, setAllHeroes] = useState<Hero[]>([])
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
   useEffect(() => {
     async function loadHeroes() {
@@ -50,6 +53,7 @@ export default function SearchPage() {
           )
         }
         setResults(filtered)
+        setVisibleCount(PAGE_SIZE)
         setIsSearching(false)
       }, 150)
     },
@@ -67,6 +71,8 @@ export default function SearchPage() {
     }, 300)
     return () => clearTimeout(timeoutId)
   }, [query, selectedFranchise, performSearch])
+
+  const visibleResults = results.slice(0, visibleCount)
 
   return (
     <main className="min-h-screen">
@@ -181,11 +187,24 @@ export default function SearchPage() {
                 </div>
 
                 {results.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                    {results.map((hero, index) => (
-                      <HeroCard key={hero.id} hero={hero} index={index} />
-                    ))}
-                  </div>
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                      {visibleResults.map((hero, index) => (
+                        <HeroCard key={hero.id} hero={hero} index={index} />
+                      ))}
+                    </div>
+
+                    {results.length > visibleCount && (
+                      <div className="flex justify-center mt-10">
+                        <Button
+                          variant="outline"
+                          onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
+                        >
+                          Load more ({results.length - visibleCount} remaining)
+                        </Button>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="flex flex-col items-center justify-center py-20">
                     <div className="w-14 h-14 rounded-2xl glass flex items-center justify-center mb-4">
