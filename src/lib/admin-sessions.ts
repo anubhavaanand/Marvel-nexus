@@ -137,7 +137,7 @@ export async function createSessionToken(): Promise<string> {
   }
 
   // Best-effort cleanup of expired rows; never blocks the login path.
-  void pruneExpiredSessions()
+  void pruneExpiredSessions().catch(() => {})
   return token
 }
 
