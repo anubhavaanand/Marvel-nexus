@@ -768,18 +768,27 @@ export async function getAllHeroesForAdmin(): Promise<Hero[]> {
   return data || []
 }
 
-export async function getAllMovies(): Promise<Movie[]> {
+export async function getAllMovies(options?: { allowEmpty?: boolean }): Promise<Movie[]> {
   if (!supabase) return []
 
-  const { data, error } = await supabase
-    .from('movies')
-    .select('*')
-    .order('release_date', { ascending: true })
+  try {
+    const { data, error } = await supabase
+      .from('movies')
+      .select('*')
+      .order('release_date', { ascending: true })
 
-  if (error) {
-    // Do not silently serve empty data when the real database fails.
-    console.error('Error fetching movies:', error)
-    throw new Error('Failed to load movies')
+    if (error) {
+      // Do not silently serve empty data when the real database fails, unless
+      // the caller explicitly opts in (build-time/static generation), where an
+      // outage must not break the whole deployment.
+      console.error('Error fetching movies:', error)
+      if (options?.allowEmpty) return []
+      throw new Error('Failed to load movies')
+    }
+    return data || []
+  } catch (err) {
+    console.error('Error fetching movies:', err)
+    if (options?.allowEmpty) return []
+    throw err instanceof Error ? err : new Error('Failed to load movies')
   }
-  return data || []
 }

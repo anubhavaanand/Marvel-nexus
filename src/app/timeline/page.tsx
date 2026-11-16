@@ -319,8 +319,8 @@ const mockMovies: Movie[] = [
   },
 ]
 
-async function getMoviesData() {
-  const movies = await getAllMovies()
+async function getMoviesData(options?: { allowEmpty?: boolean }) {
+  const movies = await getAllMovies(options)
   if (!isSupabaseConfigured) {
     // No database configured: sample data keeps the page usable in demo mode.
     return mockMovies
@@ -337,7 +337,9 @@ export const metadata = {
 }
 
 export default async function TimelinePage() {
-  const movies = await getMoviesData()
+  const movies = await getMoviesData({
+    allowEmpty: process.env.NEXT_PHASE === 'phase-production-build',
+  })
   const isEmpty = isSupabaseConfigured && movies.length === 0
 
   const phases: Record<string, Movie[]> = {
