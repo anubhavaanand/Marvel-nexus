@@ -1,21 +1,15 @@
 'use server'
 
 import crypto from 'crypto'
-import { cookies, headers } from 'next/headers'
+import { cookies } from 'next/headers'
 import { Hero } from '@/lib/supabase'
 import { sanitizeHeroUpdate } from '@/lib/hero-update'
-import { isRateLimited, parseClientIp } from '@/lib/rate-limit'
 import { getServiceSupabase as getAdminSupabase } from '@/lib/service-supabase'
 import { createSessionToken, revokeSessionToken, validateSessionToken } from '@/lib/admin-sessions'
+import { checkActionRateLimit, getClientIp } from '@/lib/action-rate-limit'
+import { isRateLimited } from '@/lib/rate-limit'
 
 const MAX_LOGIN_ATTEMPTS_PER_MINUTE = 5
-
-async function getClientIp(): Promise<string> {
-  const requestHeaders = await headers()
-  const forwarded = parseClientIp(requestHeaders.get('x-forwarded-for'))
-  if (forwarded !== 'unknown') return forwarded
-  return parseClientIp(requestHeaders.get('x-real-ip'))
-}
 
 /**
  * Securely compares two strings to prevent timing attacks.
@@ -102,6 +96,12 @@ export async function updateHeroAction(id: string, updates: Partial<Hero>): Prom
     throw new Error('Unauthorized admin access')
   }
 
+  const rateLimit = await checkActionRateLimit('UPDATE_HERO')
+  if (!rateLimit.ok) {
+    console.warn(`updateHeroAction rate-limited: ${rateLimit.error}`)
+    return null
+  }
+
   const supabase = getAdminSupabase()
   const sanitized = sanitizeHeroUpdate(updates)
   if (!sanitized || Object.keys(sanitized).length === 0) {
@@ -132,6 +132,12 @@ export async function deleteHeroAction(id: string): Promise<boolean> {
     throw new Error('Unauthorized admin access')
   }
 
+  const rateLimit = await checkActionRateLimit('DELETE_HERO')
+  if (!rateLimit.ok) {
+    console.warn(`deleteHeroAction rate-limited: ${rateLimit.error}`)
+    return false
+  }
+
   const supabase = getAdminSupabase()
   const { error } = await supabase.from('heroes').delete().eq('id', id)
 
@@ -156,6 +162,15 @@ export async function testDatabaseConnectionAction(): Promise<TestDatabaseConnec
   const isAuthenticated = await checkAdminAuthAction()
   if (!isAuthenticated) {
     throw new Error('Unauthorized admin access')
+  }
+
+  const rateLimit = await checkActionRateLimit('TEST_DB_CONNECTION')
+  if (!rateLimit.ok) {
+    console.warn(`testDatabaseConnectionAction rate-limited: ${rateLimit.error}`)
+    return {
+      ok: false,
+      error: rateLimit.error ?? 'Too many requests. Please try again later.',
+    }
   }
 
   const started = Date.now()
