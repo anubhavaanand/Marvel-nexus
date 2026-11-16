@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Home, Clock, Search, Play, Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -21,6 +21,71 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const isScrolledRef = useRef(isScrolled)
   const rafRef = useRef<number | null>(null)
+  const toggleRef = useRef<HTMLButtonElement | null>(null)
+  const menuRef = useRef<HTMLDivElement | null>(null)
+  const previouslyFocused = useRef<HTMLElement | null>(null)
+
+  const closeMenu = useCallback(() => setIsMobileMenuOpen(false), [])
+
+  // Lock body scroll while open
+  useEffect(() => {
+    if (!isMobileMenuOpen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [isMobileMenuOpen])
+
+  // Focus management: store trigger, focus first focusable, restore on close
+  useEffect(() => {
+    if (!isMobileMenuOpen) {
+      if (previouslyFocused.current) {
+        previouslyFocused.current.focus()
+        previouslyFocused.current = null
+      }
+      return
+    }
+    previouslyFocused.current = (document.activeElement as HTMLElement) || null
+    const container = menuRef.current
+    if (!container) return
+    const focusables = container.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    )
+    const first = focusables[0]
+    if (first) first.focus()
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        closeMenu()
+        return
+      }
+      if (e.key !== 'Tab') return
+      const items = Array.from(
+        container.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      )
+      if (items.length === 0) return
+      const firstEl = items[0]
+      const lastEl = items[items.length - 1]
+      const active = document.activeElement as HTMLElement
+      if (e.shiftKey) {
+        if (active === firstEl) {
+          e.preventDefault()
+          lastEl.focus()
+        }
+      } else {
+        if (active === lastEl) {
+          e.preventDefault()
+          firstEl.focus()
+        }
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isMobileMenuOpen, closeMenu])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -88,9 +153,12 @@ export default function Navbar() {
 
             {/* Mobile menu button */}
             <button
+              ref={toggleRef}
               className="md:hidden p-2 rounded-lg hover:bg-[var(--surface)] transition-colors"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="Toggle menu"
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-menu"
             >
               {isMobileMenuOpen ? (
                 <X className="w-5 h-5 text-[var(--fg)]" />
@@ -106,6 +174,11 @@ export default function Navbar() {
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
+            ref={menuRef}
+            id="mobile-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Mobile navigation"
             className="fixed inset-0 z-40 md:hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
