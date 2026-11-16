@@ -5,6 +5,16 @@
 --
 -- Every block is guarded so re-running never creates duplicates.
 -- Schema changes belong in supabase/migrations/, not here.
+--
+-- origin_world should use the controlled vocabulary:
+--   Earth-616, Earth-10005, Earth-199999, Earth-1610, Earth-65,
+--   Earth-616B, Earth-928, Earth-TRN414, Earth-96283, Earth-120703,
+--   Asgard, Wakanda, Vought Universe, Gotham, Metropolis, Central City,
+--   Star City, Coast City, Atlantis, Themyscira, Krypton, Titan,
+--   Zen-Whoberi, Halfworld, Planet X, Shinobi World, Grand Line,
+--   Universe 7, Dragon Ball, One Piece, My Hero Academia, Attack on Titan,
+--   Death Note, Demon Slayer, Bleach, Jujutsu Kaisen, Hunter x Hunter,
+--   OPM, Cowboy Bebop, Naruto
 -- ============================================
 
 -- Movies (timeline + watch order need these)
@@ -82,6 +92,26 @@ DO $$ BEGIN
      WHERE h.name = 'Miles Morales' AND m.title = 'Spider-Man: Into the Spider-Verse';
   END IF;
 END $$;
+
+-- First appearances (only where the movie list makes the answer unambiguous)
+UPDATE heroes h SET first_appearance_movie_id = m.id
+  FROM movies m
+ WHERE (h.name, m.title) IN (
+    ('Tony Stark', 'Iron Man'),
+    ('Steve Rogers', 'The Avengers'),
+    ('Thor Odinson', 'The Avengers'),
+    ('Bruce Banner', 'The Avengers'),
+    ('Natasha Romanoff', 'Iron Man'),
+    ('Clint Barton', 'The Avengers'),
+    ('Peter Parker', 'Spider-Man: Homecoming'),
+    ('Logan', 'X-Men'),
+    ('Diana Prince', 'Wonder Woman'),
+    ('Miles Morales', 'Spider-Man: Into the Spider-Verse')
+ );
+
+-- Normalize The Boys origin world to match the seed scripts
+UPDATE heroes SET origin_world = 'Vought Universe'
+ WHERE franchise = 'The Boys' AND origin_world = 'Earth';
 
 -- Canon events (powers the timeline page)
 DO $$ BEGIN
