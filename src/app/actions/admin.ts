@@ -40,13 +40,21 @@ function secureCompare(a: string, b: string): boolean {
   return crypto.timingSafeEqual(hashA, hashB)
 }
 
+export interface LoginAdminResult {
+  ok: boolean
+  error?: string
+}
+
 /**
- * Validates the password and sets a secure HttpOnly cookie
+ * Validates the password and sets a secure HttpOnly cookie.
+ * Returns a result object instead of throwing for expected conditions
+ * (missing config or wrong password) so callers can surface a generic
+ * failure message without revealing whether config or credentials failed.
  */
-export async function loginAdminAction(password: string): Promise<boolean> {
+export async function loginAdminAction(password: string): Promise<LoginAdminResult> {
   const correctPassword = process.env.ADMIN_PASSWORD
   if (!correctPassword) {
-    throw new Error('ADMIN_PASSWORD environment variable is not set')
+    return { ok: false, error: 'Login failed' }
   }
   if (secureCompare(password, correctPassword)) {
     const token = getSessionToken()
@@ -58,9 +66,9 @@ export async function loginAdminAction(password: string): Promise<boolean> {
       maxAge: 60 * 60 * 24, // 1 day
       path: '/',
     })
-    return true
+    return { ok: true }
   }
-  return false
+  return { ok: false, error: 'Login failed' }
 }
 
 /**

@@ -70,13 +70,21 @@ export default function AdminPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    const success = await loginAdminAction(password)
+    let success = false
+    try {
+      const result = await loginAdminAction(password)
+      success = result.ok
+    } catch {
+      // Unexpected server-action failure (e.g. misconfiguration): surface a
+      // generic failure message without revealing the cause.
+      success = false
+    }
     if (success) {
       setIsAuthenticated(true)
       sessionStorage.setItem('admin_auth', 'true')
       setError('')
     } else {
-      setError('Incorrect password')
+      setError('Login failed. Please try again.')
       setPassword('')
     }
   }
