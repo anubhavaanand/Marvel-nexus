@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Hero } from '@/lib/supabase'
-import { bucketHeroes } from './stats'
+import { FRANCHISE_VALUES } from './hero-update'
+import { EMPTY_HERO_BUCKETS, bucketHeroes, type HeroBuckets } from './stats'
 
 function makeHero(id: string, overrides: Partial<Hero> = {}): Hero {
   return {
@@ -17,16 +18,26 @@ function makeHero(id: string, overrides: Partial<Hero> = {}): Hero {
   }
 }
 
-function allBucketedIds(buckets: ReturnType<typeof bucketHeroes>): string[] {
-  return [
-    ...buckets.mcu,
-    ...buckets.xmen,
-    ...buckets.spider,
-    ...buckets.dc,
-    ...buckets.anime,
-    ...buckets.theBoys,
-    ...buckets.peacemaker,
-  ].map((hero) => hero.id)
+function allBucketedIds(buckets: HeroBuckets): string[] {
+  return Object.values(buckets)
+    .flat()
+    .map((hero) => hero.id)
+}
+
+// Every schema-allowed franchise value must have exactly one home bucket,
+// listed in the same order as FRANCHISE_VALUES so the two stay in sync.
+const FRANCHISE_BUCKET: Record<string, keyof HeroBuckets> = {
+  MCU: 'mcu',
+  'X-Men': 'xmen',
+  'Spider-Verse': 'spider',
+  Defenders: 'defenders',
+  DC: 'dc',
+  Anime: 'anime',
+  'The Boys': 'theBoys',
+  Invincible: 'invincible',
+  Peacemaker: 'peacemaker',
+  Gaming: 'gaming',
+  Other: 'other',
 }
 
 describe('bucketHeroes', () => {
@@ -47,13 +58,14 @@ describe('bucketHeroes', () => {
       makeHero('batman', { alias: 'Batman', franchise: 'DC' }),
       makeHero('goku', { alias: 'Goku', franchise: 'Anime' }),
       makeHero('homelander', { alias: 'Homelander', franchise: 'The Boys' }),
-      makeHero('other', { alias: 'Other Hero', franchise: 'Invincible' }),
+      makeHero('invincible', { alias: 'Invincible', franchise: 'Invincible' }),
     ])
 
     const ids = allBucketedIds(buckets)
     expect(new Set(ids).size).toBe(ids.length)
-    // Invincible has no tab, so only five heroes are bucketed.
-    expect(ids).toHaveLength(5)
+    // Every schema-allowed franchise has a tab, so all six are bucketed.
+    expect(ids).toHaveLength(6)
+    expect(buckets.invincible.map((h) => h.id)).toEqual(['invincible'])
   })
 
   it('keeps Peacemaker out of the DC bucket', () => {
@@ -65,5 +77,42 @@ describe('bucketHeroes', () => {
 
     expect(buckets.peacemaker.map((h) => h.id)).toEqual(['peacemaker', 'vigilante'])
     expect(buckets.dc.map((h) => h.id)).toEqual(['batman'])
+  })
+
+  it('buckets Peacemaker-franchise heroes by franchise value too', () => {
+    const buckets = bucketHeroes([
+      makeHero('christopher', { alias: 'Christopher Smith', franchise: 'Peacemaker' }),
+    ])
+
+    expect(buckets.peacemaker.map((h) => h.id)).toEqual(['christopher'])
+    expect(buckets.dc).toHaveLength(0)
+  })
+})
+
+describe('bucketHeroes franchise coverage', () => {
+  it('maps every schema-allowed franchise value to a real bucket', () => {
+    const bucketKeys = new Set<string>(Object.keys(EMPTY_HERO_BUCKETS))
+
+    expect(Object.keys(FRANCHISE_BUCKET)).toEqual([...FRANCHISE_VALUES])
+
+    for (const franchise of FRANCHISE_VALUES) {
+      const bucketKey = FRANCHISE_BUCKET[franchise]
+      expect(bucketKey).toBeTruthy()
+      expect(bucketKeys.has(bucketKey)).toBe(true)
+    }
+  })
+
+  it('places every franchise value in its own bucket with no leftovers', () => {
+    const heroes = FRANCHISE_VALUES.map((franchise, index) => makeHero(`h-${index}`, { franchise }))
+
+    const buckets = bucketHeroes(heroes)
+    const ids = allBucketedIds(buckets)
+
+    expect(ids).toHaveLength(FRANCHISE_VALUES.length)
+    expect(new Set(ids).size).toBe(FRANCHISE_VALUES.length)
+
+    for (const franchise of FRANCHISE_VALUES) {
+      expect(buckets[FRANCHISE_BUCKET[franchise]]).toHaveLength(1)
+    }
   })
 })

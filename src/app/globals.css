@@ -65,6 +65,10 @@
   --color-franchise-dc: #3b82f6;
   --color-franchise-anime: #f97316;
   --color-franchise-theboys: #dc2626;
+  --color-franchise-defenders: #a855f7;
+  --color-franchise-invincible: #eab308;
+  --color-franchise-gaming: #22c55e;
+  --color-franchise-other: #6b7280;
 
   --color-success: #22c55e;
   --color-warn: #eab308;
@@ -127,6 +131,10 @@
   --franchise-dc: #3b82f6;
   --franchise-anime: #f97316;
   --franchise-theboys: #dc2626;
+  --franchise-defenders: #a855f7;
+  --franchise-invincible: #eab308;
+  --franchise-gaming: #22c55e;
+  --franchise-other: #6b7280;
 
   --success: #22c55e;
   --warn: #eab308;
@@ -505,6 +513,18 @@
   }
   .franchise-theboys {
     --franchise-color: var(--franchise-theboys);
+  }
+  .franchise-defenders {
+    --franchise-color: var(--franchise-defenders);
+  }
+  .franchise-invincible {
+    --franchise-color: var(--franchise-invincible);
+  }
+  .franchise-gaming {
+    --franchise-color: var(--franchise-gaming);
+  }
+  .franchise-other {
+    --franchise-color: var(--franchise-other);
   }
 
   .franchise-badge {
