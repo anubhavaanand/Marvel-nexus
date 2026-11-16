@@ -624,12 +624,11 @@ export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | n
  */
 export async function getHeroVisibility(
   slug: string,
-): Promise<{ id: string; alias: string; slug: string; is_locked_content: boolean } | null> {
+): Promise<{ is_locked_content: boolean } | null> {
   if (!supabase) {
     const hero = resolveMockHeroBySlug(slug)
-    return hero
-      ? { id: '', alias: hero.alias, slug: hero.slug, is_locked_content: hero.is_locked_content }
-      : null
+    // Ambiguous: missing and locked are indistinguishable to anonymous callers.
+    return { is_locked_content: hero ? hero.is_locked_content : true }
   }
   let client: SupabaseClient
   try {
@@ -639,7 +638,7 @@ export async function getHeroVisibility(
     // not visible so the page renders a 404 instead of a 500 or a wrongfully
     // unlocked hero. Never surface the env-var name.
     console.error('getHeroVisibility: Supabase service client is not configured')
-    return null
+    return { is_locked_content: true }
   }
   const { data, error } = await client
     .from('heroes')
@@ -650,7 +649,7 @@ export async function getHeroVisibility(
     console.error('Error resolving hero visibility:', error)
     throw new Error('Failed to resolve hero')
   }
-  return data as { id: string; alias: string; slug: string; is_locked_content: boolean } | null
+  return { is_locked_content: data ? data.is_locked_content : true }
 }
 
 /** Service-role lookup used by authenticated admins, including locked heroes. */

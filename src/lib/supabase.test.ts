@@ -98,6 +98,6 @@ describe('duplicate-alias slug resolution', () => {
   it('uses the same tie-break rule for visibility lookups', async () => {
     const visibility = await getHeroVisibility('spider-man')
     expect(visibility).not.toBeNull()
-    expect(visibility?.alias).toBe('Spider-Man')
+    expect(visibility?.is_locked_content).toBe(false)
   })
 })

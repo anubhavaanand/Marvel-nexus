@@ -125,7 +125,6 @@ describe('indexed slug lookup (#144)', () => {
     const { getHeroVisibility } = await import('./supabase')
     const visibility = await getHeroVisibility('iron-man')
     expect(visibility).not.toBeNull()
-    expect(visibility?.slug).toBe('iron-man')
     expect(visibility?.is_locked_content).toBe(false)
   })
 
