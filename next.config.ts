@@ -2,10 +2,16 @@ import type { NextConfig } from 'next'
 
 const isProd = process.env.NODE_ENV === 'production'
 
+// CSP script-src: 'unsafe-eval' removed (issue #325). 'unsafe-inline' retained
+// as a documented fallback because Next.js 16 emits inline bootstrap scripts
+// (and dev HMR) that are not nonce-tagged by default; a full nonce-based
+// policy would require middleware + nonce propagation into <Script>/layout,
+// which risks breaking SSR/dev. TODO(#325): migrate to nonce/hash-based
+// allowances and drop 'unsafe-inline'.
 const cspHeader = [
   "default-src 'self'",
   "img-src 'self' https://image.tmdb.org https://*.supabase.co https://cdn.myanimelist.net https://images.unsplash.com https://static.wikia.nocookie.net data:",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com",
   "connect-src 'self' https://*.supabase.co https://vitals.vercel-insights.com",
