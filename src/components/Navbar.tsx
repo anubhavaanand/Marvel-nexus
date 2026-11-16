@@ -142,7 +142,7 @@ export default function Navbar() {
           {navItems.map((item) => {
             const isActive = pathname === item.href
             return (
-              <Link key={item.href} href={item.href}>
+              <Link key={item.href} href={item.href} aria-label={item.label}>
                 <motion.div
                   className={`relative flex items-center justify-center w-11 h-11 rounded-full transition-colors ${
                     isActive
