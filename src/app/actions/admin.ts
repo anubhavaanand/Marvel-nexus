@@ -107,7 +107,7 @@ export async function logoutAdminAction(): Promise<void> {
 export async function updateHeroAction(id: string, updates: Partial<Hero>): Promise<Hero | null> {
   const isAuthenticated = await checkAdminAuthAction()
   if (!isAuthenticated) {
-    throw new Error('Unauthorized admin access')
+    return null
   }
 
   const rateLimit = await checkActionRateLimit('UPDATE_HERO')
@@ -186,7 +186,7 @@ export async function updateHeroAction(id: string, updates: Partial<Hero>): Prom
 export async function createHeroAction(updates: Partial<Hero>): Promise<Hero | null> {
   const isAuthenticated = await checkAdminAuthAction()
   if (!isAuthenticated) {
-    throw new Error('Unauthorized admin access')
+    return null
   }
 
   const rateLimit = await checkActionRateLimit('CREATE_HERO')
@@ -257,7 +257,7 @@ export async function createHeroAction(updates: Partial<Hero>): Promise<Hero | n
 export async function deleteHeroAction(id: string): Promise<boolean> {
   const isAuthenticated = await checkAdminAuthAction()
   if (!isAuthenticated) {
-    throw new Error('Unauthorized admin access')
+    return false
   }
 
   const rateLimit = await checkActionRateLimit('DELETE_HERO')
@@ -316,7 +316,7 @@ export interface TestDatabaseConnectionResult {
 export async function testDatabaseConnectionAction(): Promise<TestDatabaseConnectionResult> {
   const isAuthenticated = await checkAdminAuthAction()
   if (!isAuthenticated) {
-    throw new Error('Unauthorized admin access')
+    return { ok: false, error: 'Unauthorized' }
   }
 
   const rateLimit = await checkActionRateLimit('TEST_DB_CONNECTION')
