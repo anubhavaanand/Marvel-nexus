@@ -1,5 +1,12 @@
 const { createClient } = require('@supabase/supabase-js')
+const crypto = require('node:crypto')
 require('dotenv').config({ path: '.env.local' })
+
+function fingerprint(key) {
+  if (!key) return 'undefined'
+  const hash = crypto.createHash('sha256').update(key).digest('hex')
+  return `sha256:${hash.slice(0, 8)}`
+}
 
 console.log('🔍 Checking Supabase Environment Variables...\n')
 
@@ -11,10 +18,16 @@ console.log('NEXT_PUBLIC_SUPABASE_URL:', url ? '✅ Set' : '❌ Missing')
 console.log('  Value:', url || 'undefined')
 
 console.log('\nSUPABASE_SERVICE_ROLE_KEY:', serviceKey ? '✅ Set' : '❌ Missing')
-console.log('  Value:', serviceKey ? `${serviceKey.substring(0, 20)}...` : 'undefined')
+console.log(
+  '  Value:',
+  serviceKey ? `${fingerprint(serviceKey)} (length ${serviceKey.length})` : 'undefined',
+)
 
 console.log('\nNEXT_PUBLIC_SUPABASE_ANON_KEY:', anonKey ? '✅ Set' : '❌ Missing')
-console.log('  Value:', anonKey ? `${anonKey.substring(0, 20)}...` : 'undefined')
+console.log(
+  '  Value:',
+  anonKey ? `${fingerprint(anonKey)} (length ${anonKey.length})` : 'undefined',
+)
 
 console.log('\n' + '='.repeat(60))
 
