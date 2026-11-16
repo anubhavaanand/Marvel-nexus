@@ -80,10 +80,13 @@ export async function syncMoviesAction() {
   let enriched = 0
   for (const movie of rows) {
     try {
-      const url = new URL('https://api.themoviedb.org/3/search/movie')
-      url.searchParams.set('api_key', apiKey)
-      url.searchParams.set('query', movie.title)
-      const response = await fetch(url, { next: { revalidate: 86400 } })
+      const response = await fetch(
+        `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(movie.title)}`,
+        {
+          headers: { Authorization: `Bearer ${apiKey}` },
+          next: { revalidate: 86400 },
+        },
+      )
       if (!response.ok) continue
       const payload = (await response.json()) as { results?: Array<Record<string, unknown>> }
       const match = payload.results?.[0]

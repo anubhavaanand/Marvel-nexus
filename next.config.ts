@@ -37,6 +37,11 @@ const nextConfig: NextConfig = {
         hostname: 'images.unsplash.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'static.wikia.nocookie.net',
+        pathname: '/**',
+      },
     ],
     // Performance optimization: Image quality and formats
     formats: ['image/avif', 'image/webp'],
