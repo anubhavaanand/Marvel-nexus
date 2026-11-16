@@ -25,16 +25,26 @@ export default function TimelineSlider({ movies, title = 'MCU Timeline' }: Timel
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
+  const canScrollLeftRef = useRef(canScrollLeft)
+  const canScrollRightRef = useRef(canScrollRight)
+  const rafRef = useRef<number | null>(null)
+  const scrollSettleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const checkScrollPosition = () => {
+  const updateScrollButtons = () => {
     const container = scrollContainerRef.current
-    if (container) {
-      setCanScrollLeft(container.scrollLeft > 0)
-      setCanScrollRight(container.scrollLeft < container.scrollWidth - container.clientWidth - 10)
+    if (!container) return
+    const nextLeft = container.scrollLeft > 0
+    const nextRight = container.scrollLeft < container.scrollWidth - container.clientWidth - 10
+    // Only trigger a re-render when the enabled/disabled state actually flips.
+    if (nextLeft !== canScrollLeftRef.current) {
+      canScrollLeftRef.current = nextLeft
+      setCanScrollLeft(nextLeft)
+    }
+    if (nextRight !== canScrollRightRef.current) {
+      canScrollRightRef.current = nextRight
+      setCanScrollRight(nextRight)
     }
   }
-
-  const scrollSettleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const scroll = (direction: 'left' | 'right') => {
     const container = scrollContainerRef.current
@@ -45,7 +55,7 @@ export default function TimelineSlider({ movies, title = 'MCU Timeline' }: Timel
         behavior: 'smooth',
       })
       if (scrollSettleTimeoutRef.current) clearTimeout(scrollSettleTimeoutRef.current)
-      scrollSettleTimeoutRef.current = setTimeout(checkScrollPosition, 100)
+      scrollSettleTimeoutRef.current = setTimeout(updateScrollButtons, 100)
     }
   }
 
@@ -54,13 +64,21 @@ export default function TimelineSlider({ movies, title = 'MCU Timeline' }: Timel
     if (!container) return
     let idleTimeout: ReturnType<typeof setTimeout> | null = null
     const onScroll = () => {
+      // Coalesce scroll events: at most one state update per animation frame,
+      // and only when the nav-button enabled state actually changes.
+      if (rafRef.current !== null) return
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = null
+        updateScrollButtons()
+      })
       if (idleTimeout) clearTimeout(idleTimeout)
-      idleTimeout = setTimeout(checkScrollPosition, 100)
+      idleTimeout = setTimeout(updateScrollButtons, 100)
     }
     container.addEventListener('scroll', onScroll, { passive: true })
     return () => {
       if (idleTimeout) clearTimeout(idleTimeout)
       if (scrollSettleTimeoutRef.current) clearTimeout(scrollSettleTimeoutRef.current)
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
       container.removeEventListener('scroll', onScroll)
     }
   }, [])
@@ -157,7 +175,6 @@ export default function TimelineSlider({ movies, title = 'MCU Timeline' }: Timel
       {/* Scrollable Container */}
       <div
         ref={scrollContainerRef}
-        onScroll={checkScrollPosition}
         className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide scroll-smooth"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
