@@ -34,6 +34,34 @@ function sign(value: string, secret: Buffer): string {
   return crypto.createHmac('sha256', secret).update(value).digest('hex')
 }
 
+/** Maximum number of fingerprints held in the in-memory revocation list. */
+const MAX_REVOCATION_ENTRIES = 4096
+
+/**
+ * Process-local revocation set keyed by token fingerprint (never the raw
+ * token). Survives logout and cookie clearing in stateless fallback mode
+ * when the admin_sessions table is unavailable. Pruned on insert and bounded
+ * so a compromised process cannot be turned into an unbounded memory sink.
+ */
+const revokedFingerprints = new Set<string>()
+
+function fingerprintOf(token: string): string {
+  return hashToken(token)
+}
+
+function pruneRevokedFingerprints(): void {
+  if (revokedFingerprints.size <= MAX_REVOCATION_ENTRIES) return
+  // Evict oldest entries first; Set iteration order is insertion order, so
+  // dropping the head of the set approximates FIFO eviction.
+  const overflow = revokedFingerprints.size - MAX_REVOCATION_ENTRIES
+  let dropped = 0
+  for (const fp of revokedFingerprints) {
+    revokedFingerprints.delete(fp)
+    dropped += 1
+    if (dropped >= overflow) break
+  }
+}
+
 /**
  * Creates a new session token and stores its hash when the admin_sessions
  * table exists. Returns a signed token (expiry + signature + random) otherwise.
@@ -62,7 +90,7 @@ export async function createSessionToken(): Promise<string> {
 
 /**
  * Validates a session token against the database (when available) or verifies
- * the signed fallback format.
+ * the signed fallback format. Revoked tokens are rejected in both modes.
  */
 export async function validateSessionToken(token: string): Promise<boolean> {
   if (!token) return false
@@ -78,6 +106,10 @@ export async function validateSessionToken(token: string): Promise<boolean> {
     return new Date(data.expires_at).getTime() > Date.now()
   }
 
+  // Stateless fallback: reject revoked fingerprints first, then verify the
+  // signed payload. This is what makes logout meaningful without a shared store.
+  if (revokedFingerprints.has(fingerprintOf(token))) return false
+
   const parts = token.split('.')
   if (parts.length !== 3) return false
   const [expiresAt, random, signature] = parts
@@ -91,17 +123,26 @@ export async function validateSessionToken(token: string): Promise<boolean> {
 }
 
 /**
- * Revokes a session server-side. In stateless fallback mode there is no shared
- * store, so revocation happens implicitly on process restart.
+ * Revokes a session server-side. In stateless fallback mode this records the
+ * token fingerprint in the process-local revocation set, so logout actually
+ * invalidates the token until its TTL expires or the process restarts.
  */
 export async function revokeSessionToken(token: string): Promise<void> {
-  if (!(await canUseSessionsTable())) return
-  try {
-    const supabase = getServiceSupabase()
-    await supabase.from('admin_sessions').delete().eq('token_hash', hashToken(token))
-  } catch {
-    // Best effort: a failed revoke must not break logout.
+  if (!token) return
+
+  if (await canUseSessionsTable()) {
+    try {
+      const supabase = getServiceSupabase()
+      await supabase.from('admin_sessions').delete().eq('token_hash', hashToken(token))
+    } catch {
+      // Best effort: a failed revoke must not break logout.
+    }
+    return
   }
+
+  // Fallback mode: record the fingerprint so validateSessionToken rejects it.
+  revokedFingerprints.add(fingerprintOf(token))
+  pruneRevokedFingerprints()
 }
 
 /** Removes expired rows; called opportunistically when creating a session. */
