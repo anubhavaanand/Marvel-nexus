@@ -813,15 +813,15 @@ export async function getAllHeroesForAdmin(): Promise<Hero[]> {
   try {
     client = getServiceSupabase()
   } catch {
-    // Service-role credentials are missing: degrade to empty admin list
-    // instead of surfacing a 500.
+    // Service-role credentials are missing: fail so admins see an error
+    // state instead of an apparently empty database.
     console.error('getAllHeroesForAdmin: Supabase service client is not configured')
-    return []
+    throw new Error('Database query failed')
   }
   const { data, error } = await client.from('heroes').select('*').order('name')
   if (error) {
     console.error('Error fetching heroes for admin:', error)
-    throw new Error('Failed to load heroes')
+    throw new Error('Database query failed')
   }
   return data || []
 }
