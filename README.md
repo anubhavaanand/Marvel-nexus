@@ -52,6 +52,10 @@ Marvel-nexus/
 
 ---
 
+## 🔒 Rate Limiting & TRUST_PROXY
+
+When deployed behind a trusted reverse proxy (Vercel, Netlify, nginx, ...), set `TRUST_PROXY=true` so per-client IP rate-limit buckets work. When unset/false, proxy headers are ignored (spoofable) and all clients share one conservative bucket; a warning is logged if headers are present. See DEPLOYMENT.md.
+
 ## 📝 Documentation Links
 
 - **Contribution Guidelines**: Explore coding standards and branching flows in [CONTRIBUTING.md](./CONTRIBUTING.md).

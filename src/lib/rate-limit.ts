@@ -10,6 +10,8 @@ interface Bucket {
 const buckets = new Map<string, Bucket>()
 let lastPrune = Date.now()
 
+let trustProxyWarned = false
+
 function prune(now: number): void {
   // Drop entries whose window has fully elapsed so stale keys never linger.
   for (const [key, bucket] of buckets) {
@@ -93,6 +95,23 @@ export function resolveClientIp(forwardedFor: string | null, realIp: string | nu
     const fromForwarded = parseClientIp(forwardedFor)
     if (fromForwarded !== 'unknown') return fromForwarded
     return parseClientIp(realIp)
+  }
+  // Fail closed: without a trusted proxy we cannot verify any client-supplied
+  // address, so we must NOT trust X-Forwarded-For / X-Real-IP (spoofable).
+  // Returning a single shared bucket keeps the limiter conservative and
+  // prevents header spoofing from bypassing per-IP limits. Deployments that
+  // sit behind a reverse proxy MUST set TRUST_PROXY=true (see DEPLOYMENT.md);
+  // otherwise all clients share this bucket and login limiting is effectively
+  // global. We deliberately do not derive a "fingerprint" from spoofable
+  // headers (User-Agent etc.) because that would create a false sense of
+  // isolation while remaining trivially bypassable.
+  if (!trustProxyWarned && (forwardedFor || realIp)) {
+    trustProxyWarned = true
+    console.warn(
+      '[rate-limit] TRUST_PROXY is not enabled; ignoring X-Forwarded-For/X-Real-IP ' +
+        'and using a single shared client bucket. Set TRUST_PROXY=true when running ' +
+        'behind a trusted reverse proxy, otherwise all clients share one rate-limit budget.',
+    )
   }
   return 'unknown'
 }

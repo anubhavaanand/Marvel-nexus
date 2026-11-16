@@ -57,8 +57,37 @@ describe('sanitizeHeroUpdate', () => {
   it('accepts an empty image url but rejects non-http urls', () => {
     expect(sanitizeHeroUpdate(partial({ image_url: '' }))).toEqual({ image_url: '' })
     expect(sanitizeHeroUpdate(partial({ image_url: 'javascript:alert(1)' }))).toBeNull()
-    expect(sanitizeHeroUpdate(partial({ image_url: 'https://example.com/a.jpg' }))).toEqual({
-      image_url: 'https://example.com/a.jpg',
+    expect(sanitizeHeroUpdate(partial({ image_url: 'data:image/png;base64,AAAA' }))).toBeNull()
+    expect(
+      sanitizeHeroUpdate(partial({ image_url: 'https://image.tmdb.org/t/p/w500/x.jpg' })),
+    ).toEqual({
+      image_url: 'https://image.tmdb.org/t/p/w500/x.jpg',
+    })
+  })
+
+  it('rejects SSRF targets and disallowed hosts', () => {
+    expect(
+      sanitizeHeroUpdate(partial({ image_url: 'http://169.254.169.254/latest/meta-data/' })),
+    ).toBeNull()
+    expect(sanitizeHeroUpdate(partial({ image_url: 'http://localhost/x.jpg' }))).toBeNull()
+    expect(sanitizeHeroUpdate(partial({ image_url: 'http://127.0.0.1/x.jpg' }))).toBeNull()
+    expect(sanitizeHeroUpdate(partial({ image_url: 'https://evil.com/x.jpg' }))).toBeNull()
+    expect(
+      sanitizeHeroUpdate(partial({ image_url: 'https://image.tmdb.org.evil.com/x.jpg' })),
+    ).toBeNull()
+    expect(
+      sanitizeHeroUpdate(partial({ image_url: 'https://user:pass@image.tmdb.org/x.jpg' })),
+    ).toBeNull()
+  })
+
+  it('accepts allowed hosts and subdomains', () => {
+    expect(
+      sanitizeHeroUpdate(partial({ image_url: 'https://images.unsplash.com/photo-123' })),
+    ).toEqual({
+      image_url: 'https://images.unsplash.com/photo-123',
+    })
+    expect(sanitizeHeroUpdate(partial({ image_url: 'https://unsplash.com/photo-123' }))).toEqual({
+      image_url: 'https://unsplash.com/photo-123',
     })
   })
 
