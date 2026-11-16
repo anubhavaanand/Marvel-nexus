@@ -170,6 +170,21 @@ All environment variables required by the application. Set these in your deploym
 2. **Use environment variables** in your deployment platform
 3. **Rotate Supabase keys** if they're ever exposed
 4. **Enable RLS (Row Level Security)** in Supabase for production
+5. **Supabase CLI network restrictions** - `supabase/config.toml` defaults the
+   Postgres port to loopback-only (`127.0.0.1/32`, `::1/128`) with SSL
+   enforcement enabled. See the comment block in that file for the rationale.
+
+### Granting temporary public access safely
+
+If a production/self-hosted Supabase instance ever needs to accept
+connections from a specific host or subnet (e.g. a bastion, a VPN exit node,
+or a managed proxy), do **not** re-enable `0.0.0.0/0`. Instead:
+
+1. Add only the exact CIDR that needs access, e.g.
+   `allowed_cidrs = ["203.0.113.5/32"]`.
+2. Verify the connection works, then **remove** that CIDR again before the
+   change is committed or promoted.
+3. Never commit a wide-open CIDR (`0.0.0.0/0`, `::/0`) to version control.
 
 ---
 
