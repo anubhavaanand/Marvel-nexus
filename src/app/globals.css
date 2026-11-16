@@ -216,9 +216,20 @@
     *::before,
     *::after {
       animation-duration: 0.01ms !important;
+      animation-delay: 0ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
+      transition-delay: 0ms !important;
       scroll-behavior: auto !important;
+    }
+
+    /* Keep content instantly visible when entrance animations are disabled */
+    .animate-fade-in,
+    .animate-slide-up,
+    .animate-scale-in {
+      opacity: 1 !important;
+      transform: none !important;
+      animation: none !important;
     }
   }
 
