@@ -5,6 +5,7 @@ import { getServiceSupabase } from '@/lib/service-supabase'
 import { SEED_EVENTS, SEED_HEROES, SEED_MOVIES } from '@/lib/seed-data'
 import { checkActionRateLimit } from '@/lib/action-rate-limit'
 import { checkAdminAuthAction } from './admin'
+import { getSafeErrorMessage } from '@/lib/error'
 
 async function requireAdmin(): Promise<void> {
   const authed = await checkAdminAuthAction()
@@ -25,7 +26,15 @@ export async function seedDemoHeroesAction() {
     console.warn(`seedDemoHeroesAction rate-limited: ${rateLimit.error}`)
     return { ok: false as const, error: rateLimit.error }
   }
-  const supabase = getServiceSupabase()
+  let supabase: ReturnType<typeof getServiceSupabase>
+  try {
+    supabase = getServiceSupabase()
+  } catch {
+    // Service-role credentials are missing: cannot seed. Return a clean,
+    // typed failure instead of a 500.
+    console.error('seedDemoHeroesAction: Supabase service client is not configured')
+    return { ok: false as const, error: 'Service not configured' }
+  }
   const rows = SEED_HEROES.map((hero) => ({
     id: hero.id,
     name: hero.name,
@@ -38,7 +47,10 @@ export async function seedDemoHeroesAction() {
     is_locked_content: hero.is_locked_content,
   }))
   const { error } = await supabase.from('heroes').upsert(rows, { onConflict: 'id' })
-  if (error) return { ok: false as const, error: error.message }
+  if (error) {
+    console.error('seedDemoHeroesAction upsert failed:', error)
+    return { ok: false as const, error: getSafeErrorMessage(error, 'Hero seed failed') }
+  }
   revalidatePath('/')
   revalidatePath('/admin')
   log(`seeded ${rows.length} heroes`)
@@ -56,7 +68,13 @@ export async function syncMoviesAction() {
     console.warn(`syncMoviesAction rate-limited: ${rateLimit.error}`)
     return { ok: false as const, error: rateLimit.error }
   }
-  const supabase = getServiceSupabase()
+  let supabase: ReturnType<typeof getServiceSupabase>
+  try {
+    supabase = getServiceSupabase()
+  } catch {
+    console.error('syncMoviesAction: Supabase service client is not configured')
+    return { ok: false as const, error: 'Service not configured' }
+  }
   const rows = SEED_MOVIES.map((movie) => ({
     id: movie.id,
     title: movie.title,
@@ -65,7 +83,10 @@ export async function syncMoviesAction() {
     poster_url: movie.poster_url,
   }))
   const { error } = await supabase.from('movies').upsert(rows, { onConflict: 'id' })
-  if (error) return { ok: false as const, error: error.message }
+  if (error) {
+    console.error('syncMoviesAction upsert failed:', error)
+    return { ok: false as const, error: getSafeErrorMessage(error, 'Movie sync failed') }
+  }
 
   const apiKey = process.env.TMDB_API_KEY
   if (!apiKey) {
@@ -128,7 +149,13 @@ export async function createCanonEventsAction() {
     console.warn(`createCanonEventsAction rate-limited: ${rateLimit.error}`)
     return { ok: false as const, error: rateLimit.error }
   }
-  const supabase = getServiceSupabase()
+  let supabase: ReturnType<typeof getServiceSupabase>
+  try {
+    supabase = getServiceSupabase()
+  } catch {
+    console.error('createCanonEventsAction: Supabase service client is not configured')
+    return { ok: false as const, error: 'Service not configured' }
+  }
 
   const [{ data: heroes }, { data: movies }] = await Promise.all([
     supabase.from('heroes').select('id, name, alias'),
@@ -164,7 +191,13 @@ export async function createCanonEventsAction() {
 
   if (rows.length > 0) {
     const { error } = await supabase.from('canon_events').upsert(rows, { onConflict: 'id' })
-    if (error) return { ok: false as const, error: error.message }
+    if (error) {
+      console.error('createCanonEventsAction upsert failed:', error)
+      return {
+        ok: false as const,
+        error: getSafeErrorMessage(error, 'Canon events creation failed'),
+      }
+    }
     await supabase
       .from('hero_movies')
       .upsert(links, { onConflict: 'hero_id,movie_id', ignoreDuplicates: true })
@@ -197,7 +230,13 @@ export async function getAdminStatsAction(): Promise<
     console.warn(`getAdminStatsAction rate-limited: ${rateLimit.error}`)
     return { ok: false, error: rateLimit.error ?? 'Too many requests. Please try again later.' }
   }
-  const supabase = getServiceSupabase()
+  let supabase: ReturnType<typeof getServiceSupabase>
+  try {
+    supabase = getServiceSupabase()
+  } catch {
+    console.error('getAdminStatsAction: Supabase service client is not configured')
+    return { ok: false, error: 'Service not configured' }
+  }
   const startedAt = Date.now()
   const [heroes, movies, canonEvents, heroMovieLinks, franchiseRows] = await Promise.all([
     supabase.from('heroes').select('*', { count: 'exact', head: true }),
@@ -207,7 +246,10 @@ export async function getAdminStatsAction(): Promise<
     supabase.from('heroes').select('franchise'),
   ])
   const error = heroes.error ?? movies.error ?? canonEvents.error ?? heroMovieLinks.error
-  if (error) return { ok: false, error: error.message }
+  if (error) {
+    console.error('getAdminStatsAction query failed:', error)
+    return { ok: false, error: getSafeErrorMessage(error, 'Failed to load admin stats') }
+  }
   const franchises = new Set((franchiseRows.data ?? []).map((row) => row.franchise)).size
   return {
     ok: true,

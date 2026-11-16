@@ -9,6 +9,7 @@ import { getServiceSupabase as getAdminSupabase } from '@/lib/service-supabase'
 import { createSessionToken, revokeSessionToken, validateSessionToken } from '@/lib/admin-sessions'
 import { checkActionRateLimit, getClientIp } from '@/lib/action-rate-limit'
 import { isRateLimited } from '@/lib/rate-limit'
+import { getSafeErrorMessage } from '@/lib/error'
 
 const MAX_LOGIN_ATTEMPTS_PER_MINUTE = 5
 
@@ -103,7 +104,14 @@ export async function updateHeroAction(id: string, updates: Partial<Hero>): Prom
     return null
   }
 
-  const supabase = getAdminSupabase()
+  let supabase: ReturnType<typeof getAdminSupabase>
+  try {
+    supabase = getAdminSupabase()
+  } catch {
+    console.error('updateHeroAction: Supabase service client is not configured')
+    return null
+  }
+
   const sanitized = sanitizeHeroUpdate(updates)
   if (!sanitized || Object.keys(sanitized).length === 0) {
     console.error('Rejected hero update: invalid or empty payload')
@@ -145,7 +153,14 @@ export async function deleteHeroAction(id: string): Promise<boolean> {
     return false
   }
 
-  const supabase = getAdminSupabase()
+  let supabase: ReturnType<typeof getAdminSupabase>
+  try {
+    supabase = getAdminSupabase()
+  } catch {
+    console.error('deleteHeroAction: Supabase service client is not configured')
+    return false
+  }
+
   const { error } = await supabase.from('heroes').delete().eq('id', id)
 
   if (error) {
@@ -197,6 +212,7 @@ export async function testDatabaseConnectionAction(): Promise<TestDatabaseConnec
 
     return { ok: true, latencyMs: Date.now() - started }
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : 'Database connection failed' }
+    console.error('testDatabaseConnectionAction failed:', err)
+    return { ok: false, error: getSafeErrorMessage(err, 'Database connection failed') }
   }
 }
