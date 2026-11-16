@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import TimelineSlider from '@/components/TimelineSlider'
 import { TimelineSkeleton } from '@/components/Skeleton'
-import { getAllMovies, type Movie } from '@/lib/supabase'
+import { getAllMovies, isSupabaseConfigured, type Movie } from '@/lib/supabase'
 import { Film, Sparkles } from 'lucide-react'
 
 // Movie data lives in Supabase and changes without a rebuild; render per request.
@@ -318,11 +318,13 @@ const mockMovies: Movie[] = [
 
 async function getMoviesData() {
   const movies = await getAllMovies()
-  if (!movies || movies.length === 0) {
+  if (!isSupabaseConfigured) {
     // No database configured: sample data keeps the page usable in demo mode.
     return mockMovies
   }
-  return movies
+  // Supabase is configured but has no movies yet: return empty array so the
+  // page can render an explicit unseeded state instead of masking it with mocks.
+  return movies || []
 }
 
 export const metadata = {
@@ -333,6 +335,7 @@ export const metadata = {
 
 export default async function TimelinePage() {
   const movies = await getMoviesData()
+  const isEmpty = isSupabaseConfigured && movies.length === 0
 
   const phases: Record<string, Movie[]> = {
     'Phase 1': movies.filter((m) => m.phase === 'Phase 1'),
@@ -375,6 +378,19 @@ export default async function TimelinePage() {
               <span className="stat-value">{movies.length}</span>
               <span className="stat-label">Movies in the MCU</span>
             </div>
+
+            {isEmpty && (
+              <div className="mt-12 flex flex-col items-center justify-center gap-3 py-12">
+                <Film className="w-10 h-10 rounded-2xl glass flex items-center justify-center text-[var(--meta)]" />
+                <p className="text-lg font-medium text-[var(--fg)]">
+                  No movies yet — database not seeded
+                </p>
+                <p className="text-sm text-[var(--meta)] max-w-xs text-center">
+                  Supabase is configured but the movies table is empty. Run the seed script to
+                  populate the timeline.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -383,52 +399,54 @@ export default async function TimelinePage() {
         <div className="divider" />
       </div>
 
-      <section className="section bg-[var(--bg)]">
-        <div className="container-wide">
-          <div className="text-center mb-12">
-            <span className="text-eyebrow mb-4 block">Explore by Phase</span>
-            <h2 className="text-title mb-4">Saga Timeline</h2>
-            <p className="text-body max-w-xl mx-auto">
-              From the Infinity Stones to the Multiverse, explore every chapter of the MCU.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-2 mb-12">
-            <button className="tab-trigger active">
-              <Sparkles className="w-4 h-4" />
-              All Phases
-            </button>
-            <button className="tab-trigger">
-              <span className="w-2 h-2 rounded-full bg-purple-500" />
-              Infinity Saga
-            </button>
-            <button className="tab-trigger">
-              <span className="w-2 h-2 rounded-full bg-red-500" />
-              Multiverse Saga
-            </button>
-          </div>
-
-          <Suspense fallback={<TimelineSkeleton />}>
-            <div className="space-y-16">
-              {Object.entries(phases).map(
-                ([phase, phaseMovies]) =>
-                  phaseMovies.length > 0 && (
-                    <div key={phase} className="space-y-6">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-2.5 h-2.5 rounded-full ${getPhaseColor(phase)}`} />
-                        <div>
-                          <h2 className="text-xl font-semibold text-[var(--fg)]">{phase}</h2>
-                          <p className="text-sm text-[var(--meta)]">{phaseMovies.length} films</p>
-                        </div>
-                      </div>
-                      <TimelineSlider movies={phaseMovies} title="" />
-                    </div>
-                  ),
-              )}
+      {isEmpty ? null : (
+        <section className="section bg-[var(--bg)]">
+          <div className="container-wide">
+            <div className="text-center mb-12">
+              <span className="text-eyebrow mb-4 block">Explore by Phase</span>
+              <h2 className="text-title mb-4">Saga Timeline</h2>
+              <p className="text-body max-w-xl mx-auto">
+                From the Infinity Stones to the Multiverse, explore every chapter of the MCU.
+              </p>
             </div>
-          </Suspense>
-        </div>
-      </section>
+
+            <div className="flex flex-wrap justify-center gap-2 mb-12">
+              <button className="tab-trigger active">
+                <Sparkles className="w-4 h-4" />
+                All Phases
+              </button>
+              <button className="tab-trigger">
+                <span className="w-2 h-2 rounded-full bg-purple-500" />
+                Infinity Saga
+              </button>
+              <button className="tab-trigger">
+                <span className="w-2 h-2 rounded-full bg-red-500" />
+                Multiverse Saga
+              </button>
+            </div>
+
+            <Suspense fallback={<TimelineSkeleton />}>
+              <div className="space-y-16">
+                {Object.entries(phases).map(
+                  ([phase, phaseMovies]) =>
+                    phaseMovies.length > 0 && (
+                      <div key={phase} className="space-y-6">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-2.5 h-2.5 rounded-full ${getPhaseColor(phase)}`} />
+                          <div>
+                            <h2 className="text-xl font-semibold text-[var(--fg)]">{phase}</h2>
+                            <p className="text-sm text-[var(--meta)]">{phaseMovies.length} films</p>
+                          </div>
+                        </div>
+                        <TimelineSlider movies={phaseMovies} title="" />
+                      </div>
+                    ),
+                )}
+              </div>
+            </Suspense>
+          </div>
+        </section>
+      )}
     </main>
   )
 }

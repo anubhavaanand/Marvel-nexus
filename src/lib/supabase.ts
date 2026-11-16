@@ -573,7 +573,16 @@ export async function getHeroVisibility(
     const hero = mockHeroes.find((h) => compareSlug(h.alias, slug))
     return hero ? { id: '', alias: hero.alias, is_locked_content: hero.is_locked_content } : null
   }
-  const client = getServiceSupabase()
+  let client: SupabaseClient
+  try {
+    client = getServiceSupabase()
+  } catch {
+    // Service-role credentials are missing: fail closed. Treat the hero as
+    // not visible so the page renders a 404 instead of a 500 or a wrongfully
+    // unlocked hero. Never surface the env-var name.
+    console.error('getHeroVisibility: Supabase service client is not configured')
+    return null
+  }
   const { data: candidates, error } = await client
     .from('heroes')
     .select('id, alias, is_locked_content')
@@ -614,7 +623,15 @@ async function fetchHeroWithRelations(
 /** Service-role lookup used by authenticated admins, including locked heroes. */
 export async function getHeroBySlugForAdmin(slug: string): Promise<HeroWithRelations | null> {
   if (!supabase) return getHeroBySlug(slug)
-  const client = getServiceSupabase()
+  let client: SupabaseClient
+  try {
+    client = getServiceSupabase()
+  } catch {
+    // Service-role credentials are missing: cannot serve real admin data.
+    // Fail closed so an admin never sees a 500 or partial locked content.
+    console.error('getHeroBySlugForAdmin: Supabase service client is not configured')
+    return null
+  }
   const { data: candidates, error } = await client.from('heroes').select('id, alias')
   if (error) {
     console.error('Error fetching heroes for admin slug lookup:', error)
@@ -628,7 +645,15 @@ export async function getHeroBySlugForAdmin(slug: string): Promise<HeroWithRelat
 /** Full hero list for the admin panel (includes locked content). */
 export async function getAllHeroesForAdmin(): Promise<Hero[]> {
   if (!supabase) return getAllHeroes()
-  const client = getServiceSupabase()
+  let client: SupabaseClient
+  try {
+    client = getServiceSupabase()
+  } catch {
+    // Service-role credentials are missing: degrade to empty admin list
+    // instead of surfacing a 500.
+    console.error('getAllHeroesForAdmin: Supabase service client is not configured')
+    return []
+  }
   const { data, error } = await client.from('heroes').select('*').order('name')
   if (error) {
     console.error('Error fetching heroes for admin:', error)
