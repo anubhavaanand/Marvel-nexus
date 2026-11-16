@@ -241,7 +241,9 @@ export default function TimelineSlider({ movies, title = 'MCU Timeline' }: Timel
               <div className="p-4 space-y-2">
                 <h4 className="font-orbitron text-sm text-white truncate">{movie.title}</h4>
                 <p className="text-xs text-neutral-500 font-mono">
-                  {movie.release_date ? new Date(movie.release_date).getFullYear() : 'TBA'}
+                  {movie.release_date
+                    ? new Date(`${movie.release_date}T00:00:00Z`).getUTCFullYear()
+                    : 'TBA'}
                 </p>
               </div>
             </motion.div>
