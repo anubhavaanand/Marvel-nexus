@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import { getTmdbImageUrl } from '@/lib/client-tmdb'
 
 interface HeroImageProps {
@@ -90,7 +91,13 @@ export default function HeroImage({ imageUrl, alias, name = '', className = '' }
   }
 
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={currentSrc} alt={alias} className={className} onError={handleError} />
+    <Image
+      src={currentSrc}
+      alt={alias}
+      fill
+      sizes="100vw"
+      className={`object-cover ${className}`}
+      onError={handleError}
+    />
   )
 }
