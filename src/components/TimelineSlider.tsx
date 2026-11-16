@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import Image from 'next/image'
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, Calendar, Star } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import type { Movie } from '@/lib/supabase'
@@ -34,6 +34,8 @@ export default function TimelineSlider({ movies, title = 'MCU Timeline' }: Timel
     }
   }
 
+  const scrollSettleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const scroll = (direction: 'left' | 'right') => {
     const container = scrollContainerRef.current
     if (container) {
@@ -42,9 +44,26 @@ export default function TimelineSlider({ movies, title = 'MCU Timeline' }: Timel
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth',
       })
-      setTimeout(checkScrollPosition, 300)
+      if (scrollSettleTimeoutRef.current) clearTimeout(scrollSettleTimeoutRef.current)
+      scrollSettleTimeoutRef.current = setTimeout(checkScrollPosition, 100)
     }
   }
+
+  useEffect(() => {
+    const container = scrollContainerRef.current
+    if (!container) return
+    let idleTimeout: ReturnType<typeof setTimeout> | null = null
+    const onScroll = () => {
+      if (idleTimeout) clearTimeout(idleTimeout)
+      idleTimeout = setTimeout(checkScrollPosition, 100)
+    }
+    container.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      if (idleTimeout) clearTimeout(idleTimeout)
+      if (scrollSettleTimeoutRef.current) clearTimeout(scrollSettleTimeoutRef.current)
+      container.removeEventListener('scroll', onScroll)
+    }
+  }, [])
 
   if (!movies || movies.length === 0) {
     return (
