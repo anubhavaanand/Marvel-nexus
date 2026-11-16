@@ -22,7 +22,7 @@ describe('getSafeErrorMessage', () => {
   it('logs the raw error to the console so it is not silently lost', () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
     getSafeErrorMessage(new Error('schema leak'))
-    expect(spy).toHaveBeenCalledWith('Error suppressed from UI:', expect.any(Error))
+    expect(spy).toHaveBeenCalledWith('Error suppressed from UI:', 'Error')
     spy.mockRestore()
   })
 })

@@ -24,8 +24,23 @@ describe('isRateLimited', () => {
     expect(isRateLimited('b', 1, 1000)).toBe(false)
   })
 
+  it('does not extend lockout expiry on rejected attempts', () => {
+    vi.useFakeTimers()
+    resetRateLimiter()
+    expect(isRateLimited('k', 1, 100)).toBe(false)
+    // Repeated rejected attempts must not slide the window.
+    vi.advanceTimersByTime(50)
+    expect(isRateLimited('k', 1, 100)).toBe(true)
+    vi.advanceTimersByTime(30)
+    expect(isRateLimited('k', 1, 100)).toBe(true)
+    // Original window (100ms) has elapsed; bucket should be unlocked.
+    vi.advanceTimersByTime(25)
+    expect(isRateLimited('k', 1, 100)).toBe(false)
+  })
+
   it('resets after the window passes', () => {
     vi.useFakeTimers()
+    resetRateLimiter()
     expect(isRateLimited('c', 1, 20)).toBe(false)
     expect(isRateLimited('c', 1, 20)).toBe(true)
     vi.advanceTimersByTime(25)
@@ -36,6 +51,13 @@ describe('isRateLimited', () => {
 describe('parseClientIp', () => {
   it('takes the first entry of a forwarded-for list', () => {
     expect(parseClientIp('203.0.113.7, 10.0.0.1')).toBe('203.0.113.7')
+  })
+
+  it('takes the untrusted entry before trusted proxies (multi-hop)', () => {
+    // client, proxy1, proxy2 with 2 trusted proxies -> client
+    expect(parseClientIp('203.0.113.7, 10.0.0.1, 10.0.0.2', 2)).toBe('203.0.113.7')
+    // single trusted proxy -> the entry just before it
+    expect(parseClientIp('203.0.113.7, 10.0.0.1, 10.0.0.2', 1)).toBe('10.0.0.1')
   })
 
   it('falls back to unknown when absent', () => {
