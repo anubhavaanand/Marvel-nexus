@@ -507,6 +507,36 @@ const mockHeroes: Hero[] = [
 ]
 
 // Helper Functions
+/**
+ * Resolves a slug against the mock hero list used when Supabase is unconfigured.
+ *
+ * Duplicate aliases are legal in the mock data: three distinct Spider-Men share
+ * the alias "Spider-Man", so they all slugify to "spider-man". A plain
+ * `Array.find` would silently return whichever hero happens to come first, so
+ * this helper makes the choice explicit and stable:
+ *
+ *   1. No match -> null (the page 404s).
+ *   2. One match -> that hero.
+ *   3. Several   -> the first in mock array order, with a warning so the
+ *                  ambiguity is visible in dev instead of being silently
+ *                  resolved to an arbitrary pick.
+ *
+ * Mock array order is the definition of record here; it is fixed in source and
+ * must not be reordered without updating this rule. The production path
+ * (issue #144) resolves duplicates differently and is unaffected by this.
+ */
+function resolveMockHeroBySlug(slug: string): Hero | null {
+  const matches = mockHeroes.filter((h) => compareSlug(h.alias, slug))
+  if (matches.length === 0) return null
+  if (matches.length === 1) return matches[0]
+  console.warn(
+    `getHeroBySlug: slug "${slug}" matched ${matches.length} mock heroes ` +
+      `(${matches.map((h) => `${h.name} (${h.franchise})`).join(', ')}); ` +
+      `returning the first in mock array order.`,
+  )
+  return matches[0]
+}
+
 export async function getAllHeroes(): Promise<Hero[]> {
   if (!supabase) return enrichMockHeroesWithTmdb([...mockHeroes])
 
@@ -522,7 +552,7 @@ export async function getAllHeroes(): Promise<Hero[]> {
 
 export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | null> {
   if (!supabase) {
-    const hero = mockHeroes.find((h) => compareSlug(h.alias, slug))
+    const hero = resolveMockHeroBySlug(slug)
     if (!hero) return null
     const enriched = await enrichMockHeroesWithTmdb([hero])
     return enriched[0] || null
@@ -570,7 +600,7 @@ export async function getHeroVisibility(
   slug: string,
 ): Promise<{ id: string; alias: string; is_locked_content: boolean } | null> {
   if (!supabase) {
-    const hero = mockHeroes.find((h) => compareSlug(h.alias, slug))
+    const hero = resolveMockHeroBySlug(slug)
     return hero ? { id: '', alias: hero.alias, is_locked_content: hero.is_locked_content } : null
   }
   let client: SupabaseClient
