@@ -135,6 +135,7 @@ export default function HeroManager() {
           <input
             type="text"
             placeholder="Search heroes..."
+            aria-label="Search heroes"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-neutral-900/50 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-cyan-500 font-mono text-sm"
@@ -180,32 +181,44 @@ export default function HeroManager() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-xs text-neutral-400">Alias (Hero Name)</label>
+                  <label htmlFor="hero-alias" className="text-xs text-neutral-400">
+                    Alias (Hero Name)
+                  </label>
                   <input
+                    id="hero-alias"
                     value={editingHero.alias}
                     onChange={(e) => setEditingHero({ ...editingHero, alias: e.target.value })}
                     className="w-full p-2 bg-black/40 border border-neutral-700 rounded text-white"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs text-neutral-400">Real Name</label>
+                  <label htmlFor="hero-name" className="text-xs text-neutral-400">
+                    Real Name
+                  </label>
                   <input
+                    id="hero-name"
                     value={editingHero.name}
                     onChange={(e) => setEditingHero({ ...editingHero, name: e.target.value })}
                     className="w-full p-2 bg-black/40 border border-neutral-700 rounded text-white"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs text-neutral-400">Image URL</label>
+                  <label htmlFor="hero-image" className="text-xs text-neutral-400">
+                    Image URL
+                  </label>
                   <input
+                    id="hero-image"
                     value={editingHero.image_url}
                     onChange={(e) => setEditingHero({ ...editingHero, image_url: e.target.value })}
                     className="w-full p-2 bg-black/40 border border-neutral-700 rounded text-white font-mono text-xs"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs text-neutral-400">Franchise</label>
+                  <label htmlFor="hero-franchise" className="text-xs text-neutral-400">
+                    Franchise
+                  </label>
                   <select
+                    id="hero-franchise"
                     value={editingHero.franchise}
                     onChange={(e) => setEditingHero({ ...editingHero, franchise: e.target.value })}
                     className="w-full p-2 bg-black/40 border border-neutral-700 rounded text-white"
