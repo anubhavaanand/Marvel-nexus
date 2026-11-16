@@ -4,8 +4,11 @@ import { TimelineSkeleton } from '@/components/Skeleton'
 import { getAllMovies, isSupabaseConfigured, type Movie } from '@/lib/supabase'
 import { Film, Sparkles } from 'lucide-react'
 
-// Movie data lives in Supabase and changes without a rebuild; render per request.
-export const dynamic = 'force-dynamic'
+// Movie data is public and changes infrequently. Cache at the edge with ISR
+// (revalidate = 3600s / 1 hour) instead of force-dynamic so getAllMovies()
+// doesn't hit Supabase on every request. Short TTL keeps the empty→seeded
+// transition from #132 from being cached forever.
+export const revalidate = 3600
 
 const mockMovies: Movie[] = [
   {

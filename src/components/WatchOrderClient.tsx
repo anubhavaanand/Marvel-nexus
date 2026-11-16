@@ -830,6 +830,12 @@ export default function WatchOrderPage() {
 
   const filteredItems = watchOrderData.filter((item) => item.franchise === activeTab)
 
+  const totalMinutes = filteredItems.reduce((sum, item) => {
+    const match = item.runtime?.match(/^(\d+)h (\d+)m$/)
+    return match ? sum + parseInt(match[1], 10) * 60 + parseInt(match[2], 10) : sum
+  }, 0)
+  const totalHours = Math.floor(totalMinutes / 60)
+
   const sortedItems = [...filteredItems].sort((a, b) => {
     if (sortBy === 'chronological') {
       return a.chronologicalOrder - b.chronologicalOrder
@@ -900,7 +906,7 @@ export default function WatchOrderPage() {
               </div>
               <div className="stat-pill">
                 <Clock className="w-3.5 h-3.5 text-purple-500" />
-                <span className="stat-value">{activeTab === 'MCU' ? '60+' : '30+'}</span>
+                <span className="stat-value">{totalHours}</span>
                 <span className="stat-label">Hours</span>
               </div>
             </div>
