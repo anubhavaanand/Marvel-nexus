@@ -55,7 +55,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Performance optimization: Experimental features
   experimental: {
-    optimizePackageImports: ['lucide-react'],
+    optimizePackageImports: ['lucide-react', 'framer-motion'],
   },
 }
 
