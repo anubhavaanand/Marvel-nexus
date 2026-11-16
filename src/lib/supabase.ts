@@ -674,7 +674,19 @@ export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | n
     console.error('Error fetching hero by slug:', error)
     throw new Error('Failed to load hero')
   }
-  return data as HeroWithRelations | null
+  if (!data) return null
+
+  // Runtime validation: tolerate schema drift (missing relation arrays, null
+  // fields) without crashing. Only the core hero identity fields are required.
+  const row = data as Record<string, unknown>
+  const canonEvents = Array.isArray(row.canon_events) ? (row.canon_events as unknown[]) : []
+  const heroMovies = Array.isArray(row.hero_movies) ? (row.hero_movies as unknown[]) : []
+
+  return {
+    ...(row as unknown as Hero),
+    canon_events: canonEvents as CanonEvent[],
+    hero_movies: heroMovies as { movies: Movie }[],
+  } as HeroWithRelations
 }
 
 /**
