@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { getServiceSupabase } from '@/lib/service-supabase'
 import { SEED_EVENTS, SEED_HEROES, SEED_MOVIES } from '@/lib/seed-data'
+import { checkActionRateLimit } from '@/lib/action-rate-limit'
 import { checkAdminAuthAction } from './admin'
 
 async function requireAdmin(): Promise<void> {
@@ -19,6 +20,11 @@ function log(message: string) {
  */
 export async function seedDemoHeroesAction() {
   await requireAdmin()
+  const rateLimit = await checkActionRateLimit('SEED_DEMO_HEROES')
+  if (!rateLimit.ok) {
+    console.warn(`seedDemoHeroesAction rate-limited: ${rateLimit.error}`)
+    return { ok: false as const, error: rateLimit.error }
+  }
   const supabase = getServiceSupabase()
   const rows = SEED_HEROES.map((hero) => ({
     id: hero.id,
@@ -45,6 +51,11 @@ export async function seedDemoHeroesAction() {
  */
 export async function syncMoviesAction() {
   await requireAdmin()
+  const rateLimit = await checkActionRateLimit('SYNC_MOVIES')
+  if (!rateLimit.ok) {
+    console.warn(`syncMoviesAction rate-limited: ${rateLimit.error}`)
+    return { ok: false as const, error: rateLimit.error }
+  }
   const supabase = getServiceSupabase()
   const rows = SEED_MOVIES.map((movie) => ({
     id: movie.id,
@@ -109,6 +120,11 @@ export async function syncMoviesAction() {
  */
 export async function createCanonEventsAction() {
   await requireAdmin()
+  const rateLimit = await checkActionRateLimit('CREATE_CANON_EVENTS')
+  if (!rateLimit.ok) {
+    console.warn(`createCanonEventsAction rate-limited: ${rateLimit.error}`)
+    return { ok: false as const, error: rateLimit.error }
+  }
   const supabase = getServiceSupabase()
 
   const [{ data: heroes }, { data: movies }] = await Promise.all([
@@ -173,6 +189,11 @@ export async function getAdminStatsAction(): Promise<
   { ok: true; stats: AdminStats } | { ok: false; error: string }
 > {
   await requireAdmin()
+  const rateLimit = await checkActionRateLimit('GET_ADMIN_STATS')
+  if (!rateLimit.ok) {
+    console.warn(`getAdminStatsAction rate-limited: ${rateLimit.error}`)
+    return { ok: false, error: rateLimit.error ?? 'Too many requests. Please try again later.' }
+  }
   const supabase = getServiceSupabase()
   const startedAt = Date.now()
   const [heroes, movies, canonEvents, heroMovieLinks, franchiseRows] = await Promise.all([
