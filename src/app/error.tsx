@@ -1,18 +1,32 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { AlertTriangle, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
-import { getSafeErrorMessage } from '@/lib/error'
 
 interface ErrorPageProps {
-  error: Error
+  error: Error & { digest?: string }
   reset: () => void
 }
 
+function makeReferenceId(): string {
+  try {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID().slice(0, 8).toUpperCase()
+    }
+  } catch {
+    // fall through
+  }
+  return Math.random().toString(36).slice(2, 10).toUpperCase()
+}
+
 export default function Error({ error, reset }: ErrorPageProps) {
-  // Never ship raw error text to the UI. Log the full error to the console
-  // (server-side in production) and return a fixed, generic message instead.
-  const safeMessage = getSafeErrorMessage(error, "We couldn't load this reality. Please try again.")
+  const [refId] = useState<string>(() => makeReferenceId())
+
+  useEffect(() => {
+    // Log the full error details for operators; never render them to users.
+    console.error(`[error-boundary] reference=${refId}`, error)
+  }, [error, refId])
 
   return (
     <main className="min-h-screen flex items-center justify-center px-4 bg-[var(--bg)]">
@@ -32,11 +46,12 @@ export default function Error({ error, reset }: ErrorPageProps) {
         </h2>
         {/* Message */}
         <p
-          className="text-[var(--muted)] max-w-md mx-auto mb-10"
+          className="text-[var(--muted)] max-w-md mx-auto mb-4"
           style={{ fontFamily: 'var(--font-body)', lineHeight: 1.47 }}
         >
-          {safeMessage}
+          We couldn&apos;t load this reality. Please try again.
         </p>
+        <p className="text-xs text-[var(--muted)] mb-10 font-mono">Reference: {refId}</p>
         {/* Retry action */}
         <button onClick={reset} className="btn btn-primary">
           <RefreshCw className="w-4 h-4 mr-2" /> Retry
