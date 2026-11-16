@@ -33,6 +33,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [newPower, setNewPower] = useState('')
   const [newWeakness, setNewWeakness] = useState('')
+  const [visibleCount, setVisibleCount] = useState(50)
   const powersInputRef = useRef<HTMLInputElement>(null)
   const weaknessesInputRef = useRef<HTMLInputElement>(null)
 
@@ -55,7 +56,9 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
         powers: editingHero.powers,
         weaknesses: editingHero.weaknesses,
       }
-      const result = isNew ? await createHeroAction(payload) : await updateHeroAction(editingHero.id, payload)
+      const result = isNew
+        ? await createHeroAction(payload)
+        : await updateHeroAction(editingHero.id, payload)
 
       if (result) {
         if (isNew) {
@@ -133,6 +136,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
   ) {
     setPrevResetCtx({ searchQuery, editingId: editingHero?.id ?? '' })
     setDeleteConfirm(null)
+    setVisibleCount(50)
   }
 
   const filteredHeroes = heroes.filter(
@@ -209,8 +213,8 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
             <div className="bg-neutral-800/80 border border-cyan-500/30 rounded-xl p-6 space-y-4 shadow-2xl shadow-black/50">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-lg font-orbitron text-cyan-400">
-  {editingHero.id ? 'Edit Hero' : 'Add Hero'}
-</h3>
+                  {editingHero.id ? 'Edit Hero' : 'Add Hero'}
+                </h3>
                 <Button size="icon" variant="ghost" onClick={() => setEditingHero(null)}>
                   <X className="w-4 h-4" />
                 </Button>
@@ -447,7 +451,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
         </div>
 
         <div className="divide-y divide-white/5 max-h-[600px] overflow-y-auto custom-scrollbar">
-          {filteredHeroes.map((hero) => (
+          {filteredHeroes.slice(0, visibleCount).map((hero) => (
             <div
               key={hero.id}
               className="grid grid-cols-[auto_1fr_1fr_1fr_auto] gap-4 p-4 items-center hover:bg-white/5 transition-colors group"
@@ -515,6 +519,18 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
               </div>
             </div>
           ))}
+
+          {visibleCount < filteredHeroes.length && (
+            <div className="p-4 text-center border-t border-white/5">
+              <Button
+                variant="outline"
+                onClick={() => setVisibleCount((c) => Math.min(c + 50, filteredHeroes.length))}
+                aria-label="Show more heroes"
+              >
+                Show more ({filteredHeroes.length - visibleCount} remaining)
+              </Button>
+            </div>
+          )}
 
           {filteredHeroes.length === 0 && (
             <div className="p-8 text-center text-neutral-500">
