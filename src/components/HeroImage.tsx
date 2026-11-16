@@ -9,6 +9,7 @@ interface HeroImageProps {
   alias: string
   name?: string
   className?: string
+  sizes?: string
 }
 
 export default function HeroImage(props: HeroImageProps) {
@@ -18,7 +19,13 @@ export default function HeroImage(props: HeroImageProps) {
   return <HeroImageInner key={props.imageUrl ?? ''} {...props} />
 }
 
-function HeroImageInner({ imageUrl, alias, name = '', className = '' }: HeroImageProps) {
+function HeroImageInner({
+  imageUrl,
+  alias,
+  name = '',
+  className = '',
+  sizes = '(max-width: 768px) 50vw, 25vw',
+}: HeroImageProps) {
   const [currentSrc, setCurrentSrc] = useState(imageUrl || '')
   const [imageError, setImageError] = useState(false)
   const [tmdbAttempted, setTmdbAttempted] = useState(false)
@@ -75,7 +82,7 @@ function HeroImageInner({ imageUrl, alias, name = '', className = '' }: HeroImag
       src={currentSrc}
       alt={alias}
       fill
-      sizes="100vw"
+      sizes={sizes}
       className={`object-cover ${className}`}
       onError={handleError}
     />
