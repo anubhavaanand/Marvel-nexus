@@ -53,8 +53,8 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
         origin_world: editingHero.origin_world,
         is_locked_content: editingHero.is_locked_content,
         actor_name: editingHero.actor_name,
-        powers: editingHero.powers,
-        weaknesses: editingHero.weaknesses,
+        powers: editingHero.powers ?? [],
+        weaknesses: editingHero.weaknesses ?? [],
       }
       const result = isNew
         ? await createHeroAction(payload)
@@ -254,7 +254,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                   </label>
                   <input
                     id="hero-image"
-                    value={editingHero.image_url}
+                    value={editingHero.image_url ?? ''}
                     onChange={(e) => setEditingHero({ ...editingHero, image_url: e.target.value })}
                     className="w-full p-2 bg-black/40 border border-neutral-700 rounded text-white font-mono text-xs"
                   />
@@ -284,7 +284,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                   </label>
                   <input
                     id="hero-origin"
-                    value={editingHero.origin_world}
+                    value={editingHero.origin_world ?? ''}
                     onChange={(e) =>
                       setEditingHero({ ...editingHero, origin_world: e.target.value })
                     }
@@ -300,7 +300,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                     <input
                       id="hero-locked"
                       type="checkbox"
-                      checked={editingHero.is_locked_content}
+                      checked={editingHero.is_locked_content ?? false}
                       onChange={(e) =>
                         setEditingHero({ ...editingHero, is_locked_content: e.target.checked })
                       }
@@ -329,7 +329,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                     Powers
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {editingHero.powers.map((power, i) => (
+                    {(editingHero.powers ?? []).map((power, i) => (
                       <span
                         key={i}
                         className="inline-flex items-center gap-2 px-2 py-1 bg-neutral-700/50 border border-neutral-600 rounded text-xs text-neutral-300"
@@ -341,7 +341,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                             e.preventDefault()
                             setEditingHero({
                               ...editingHero,
-                              powers: editingHero.powers.filter((_, j) => j !== i),
+                              powers: (editingHero.powers ?? []).filter((_, j) => j !== i),
                             })
                           }}
                           className="hover:text-red-400"
@@ -360,8 +360,11 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                         if (e.key === 'Enter') {
                           e.preventDefault()
                           const val = newPower.trim()
-                          if (val && !editingHero.powers.includes(val)) {
-                            setEditingHero({ ...editingHero, powers: [...editingHero.powers, val] })
+                          if (val && !(editingHero.powers ?? []).includes(val)) {
+                            setEditingHero({
+                              ...editingHero,
+                              powers: [...(editingHero.powers ?? []), val],
+                            })
                             setNewPower('')
                           }
                         }
@@ -376,7 +379,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                     Weaknesses
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {editingHero.weaknesses.map((weakness, i) => (
+                    {(editingHero.weaknesses ?? []).map((weakness, i) => (
                       <span
                         key={i}
                         className="inline-flex items-center gap-2 px-2 py-1 bg-neutral-700/50 border border-neutral-600 rounded text-xs text-neutral-300"
@@ -388,7 +391,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                             e.preventDefault()
                             setEditingHero({
                               ...editingHero,
-                              weaknesses: editingHero.weaknesses.filter((_, j) => j !== i),
+                              weaknesses: (editingHero.weaknesses ?? []).filter((_, j) => j !== i),
                             })
                           }}
                           className="hover:text-red-400"
@@ -407,10 +410,10 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                         if (e.key === 'Enter') {
                           e.preventDefault()
                           const val = newWeakness.trim()
-                          if (val && !editingHero.weaknesses.includes(val)) {
+                          if (val && !(editingHero.weaknesses ?? []).includes(val)) {
                             setEditingHero({
                               ...editingHero,
-                              weaknesses: [...editingHero.weaknesses, val],
+                              weaknesses: [...(editingHero.weaknesses ?? []), val],
                             })
                             setNewWeakness('')
                           }

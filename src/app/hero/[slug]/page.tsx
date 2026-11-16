@@ -1,7 +1,7 @@
 import { cache } from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import PowerRadarChart from '@/components/PowerRadarChart'
+import PowerRadarChart from '@/components/PowerRadarChartDynamic'
 import CanonEventAlert from '@/components/CanonEventAlert'
 import RestrictedAccess from '@/components/RestrictedAccess'
 import HeroImage from '@/components/HeroImage'
@@ -98,6 +98,7 @@ export default async function HeroPage({ params }: PageProps) {
                   alias={hero.alias}
                   name={hero.actor_name || hero.name}
                   sizes="(max-width: 1024px) 100vw, 380px"
+                  priority
                   className="absolute inset-0 w-full h-full object-cover"
                 />
 
