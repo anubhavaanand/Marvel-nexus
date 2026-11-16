@@ -21,20 +21,31 @@ export default async function AdminPage() {
   }
 
   let initialHeroes: Hero[] = []
+  let heroesError: string | null = null
   try {
     initialHeroes = await getAllHeroesForAdmin()
   } catch (error) {
     console.error('Failed to load heroes for admin page:', error)
-    initialHeroes = []
+    heroesError = 'Failed to load heroes. The database may be unavailable.'
   }
 
   let initialStats: AdminStats | null = null
+  let statsError: string | null = null
   try {
     const result = await getAdminStatsAction()
     if (result.ok) initialStats = result.stats
-  } catch {
-    initialStats = null
+    else statsError = result.error || 'Failed to load admin stats.'
+  } catch (error) {
+    console.error('Failed to load admin stats:', error)
+    statsError = 'Failed to load admin stats. The database may be unavailable.'
   }
 
-  return <AdminClient initialHeroes={initialHeroes} initialStats={initialStats} />
+  return (
+    <AdminClient
+      initialHeroes={initialHeroes}
+      initialStats={initialStats}
+      heroesError={heroesError}
+      statsError={statsError}
+    />
+  )
 }

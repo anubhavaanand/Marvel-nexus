@@ -72,7 +72,7 @@ export interface Movie {
   tmdb_id: number
   title: string
   release_date: string
-  phase: 'Phase 1' | 'Phase 2' | 'Phase 3' | 'Phase 4' | 'Phase 5' | 'Phase 6'
+  phase: 'Phase 1' | 'Phase 2' | 'Phase 3' | 'Phase 4' | 'Phase 5' | 'Phase 6' | null
   poster_url: string
   imdb_rating: number
 }
@@ -532,7 +532,7 @@ export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | n
 
   if (listError) {
     console.error('Error fetching heroes for slug lookup:', listError)
-    return null
+    throw new Error('Failed to load hero')
   }
 
   const match = (candidates || []).find((h) => compareSlug(h.alias, slug))
@@ -557,7 +557,7 @@ export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | n
 
   if (error) {
     console.error('Error fetching hero:', error)
-    return null
+    throw new Error('Failed to load hero')
   }
   return data
 }
@@ -579,7 +579,7 @@ export async function getHeroVisibility(
     .select('id, alias, is_locked_content')
   if (error) {
     console.error('Error resolving hero visibility:', error)
-    return null
+    throw new Error('Failed to resolve hero')
   }
   return (candidates || []).find((h) => compareSlug(h.alias, slug)) ?? null
 }
@@ -606,7 +606,7 @@ async function fetchHeroWithRelations(
     .single()
   if (error) {
     console.error('Error fetching hero:', error)
-    return null
+    throw new Error('Failed to load hero')
   }
   return data as HeroWithRelations
 }
@@ -618,7 +618,7 @@ export async function getHeroBySlugForAdmin(slug: string): Promise<HeroWithRelat
   const { data: candidates, error } = await client.from('heroes').select('id, alias')
   if (error) {
     console.error('Error fetching heroes for admin slug lookup:', error)
-    return null
+    throw new Error('Failed to load hero')
   }
   const match = (candidates || []).find((h) => compareSlug(h.alias, slug))
   if (!match) return null
@@ -651,41 +651,4 @@ export async function getAllMovies(): Promise<Movie[]> {
     throw new Error('Failed to load movies')
   }
   return data || []
-}
-
-export function escapeLikePattern(value: string): string {
-  return value.replace(/[\\%_]/g, (char) => `\\${char}`)
-}
-
-export async function searchHeroes(query: string): Promise<Hero[]> {
-  const trimmed = query.trim()
-  const needle = trimmed.toLowerCase()
-  const fallback = () =>
-    mockHeroes.filter(
-      (h) =>
-        h.name.toLowerCase().includes(needle) ||
-        h.alias.toLowerCase().includes(needle) ||
-        h.powers.some((p) => p.toLowerCase().includes(needle)),
-    )
-
-  if (!supabase) return fallback()
-
-  // Query each column separately and merge in memory instead of building an
-  // `or(...)` filter from raw user input, which could alter the filter syntax.
-  const pattern = `%${escapeLikePattern(trimmed)}%`
-  const [byName, byAlias] = await Promise.all([
-    supabase.from('heroes').select('*').ilike('name', pattern).limit(100),
-    supabase.from('heroes').select('*').ilike('alias', pattern).limit(100),
-  ])
-
-  if (byName.error || byAlias.error) {
-    console.error('Error searching heroes:', byName.error?.message ?? byAlias.error?.message)
-    return fallback()
-  }
-
-  const merged = new Map<string, Hero>()
-  for (const hero of [...(byName.data ?? []), ...(byAlias.data ?? [])]) {
-    merged.set(hero.id, hero)
-  }
-  return [...merged.values()].sort((a, b) => a.name.localeCompare(b.name))
 }
