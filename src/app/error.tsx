@@ -56,10 +56,16 @@ export default function Error({ error, reset }: ErrorPageProps) {
         <button onClick={reset} className="btn btn-primary">
           <RefreshCw className="w-4 h-4 mr-2" /> Retry
         </button>
-        {/* Fallback link */}
-        <div className="mt-8">
-          <Link href="/" className="text-[var(--accent)] hover:underline text-sm transition-colors">
-            Return to Archive
+        {/* Recovery links */}
+        <div className="mt-8 flex items-center justify-center gap-4 text-sm">
+          <Link href="/" className="text-[var(--accent)] hover:underline transition-colors">
+            Back home
+          </Link>
+          <span className="text-[var(--muted)]" aria-hidden>
+            ·
+          </span>
+          <Link href="/search" className="text-[var(--accent)] hover:underline transition-colors">
+            Search
           </Link>
         </div>
       </div>
