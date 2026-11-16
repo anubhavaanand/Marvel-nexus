@@ -15,6 +15,9 @@ interface SearchClientProps {
 
 const franchises = ['All', 'MCU', 'X-Men', 'Spider-Verse', 'DC', 'Anime', 'The Boys']
 const PAGE_SIZE = 24
+// Bound the rendered DOM: never render more than this many cards at once,
+// even when the result set (or "load more" accumulation) is larger.
+const MAX_RENDERED = 96
 
 export default function SearchPage({
   initialAllHeroes,
@@ -65,7 +68,7 @@ export default function SearchPage({
     return () => clearTimeout(timeoutId)
   }, [query, selectedFranchise, filteredResults])
 
-  const visibleResults = results.slice(0, visibleCount)
+  const visibleResults = results.slice(0, Math.min(visibleCount, MAX_RENDERED))
 
   return (
     <main className="min-h-screen">
@@ -215,13 +218,16 @@ export default function SearchPage({
                       ))}
                     </div>
 
-                    {results.length > visibleCount && (
+                    {results.length > visibleCount && visibleCount < MAX_RENDERED && (
                       <div className="flex justify-center mt-10">
                         <Button
                           variant="outline"
-                          onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
+                          onClick={() =>
+                            setVisibleCount((count) => Math.min(count + PAGE_SIZE, MAX_RENDERED))
+                          }
                         >
-                          Load more ({results.length - visibleCount} remaining)
+                          Load more ({Math.min(results.length, MAX_RENDERED) - visibleCount}{' '}
+                          remaining)
                         </Button>
                       </div>
                     )}
