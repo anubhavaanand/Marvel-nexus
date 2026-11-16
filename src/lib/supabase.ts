@@ -38,13 +38,13 @@ function setTmdbImageCache(key: string, value: string | null): void {
   tmdbImageCache.set(key, { value, expiresAt: Date.now() + TMDB_IMAGE_CACHE_TTL_MS })
 }
 
-export function needsImageEnrichment(hero: { image_url?: string }): boolean {
+export function needsImageEnrichment(hero: { image_url?: string | null }): boolean {
   return !hero.image_url || hero.image_url.trim() === ''
 }
 
 interface EnrichableHero {
   id: string
-  image_url: string
+  image_url: string | null
   actor_name?: string
   alias?: string
   name?: string
@@ -141,11 +141,11 @@ export interface Hero {
   slug: string
   actor_name?: string
   franchise: 'MCU' | 'X-Men' | 'Spider-Verse' | 'Defenders' | 'DC' | 'Anime' | string
-  origin_world: string
-  powers: string[]
-  weaknesses: string[]
-  image_url: string
-  is_locked_content: boolean
+  origin_world: string | null
+  powers: string[] | null
+  weaknesses: string[] | null
+  image_url: string | null
+  is_locked_content: boolean | null
   first_appearance_movie_id?: string
 }
 
@@ -729,7 +729,7 @@ export async function getHeroVisibility(
   if (!supabase) {
     const hero = resolveMockHeroBySlug(slug)
     // Ambiguous: missing and locked are indistinguishable to anonymous callers.
-    return { is_locked_content: hero ? hero.is_locked_content : true }
+    return { is_locked_content: hero ? (hero.is_locked_content ?? true) : true }
   }
   let client: SupabaseClient
   try {
