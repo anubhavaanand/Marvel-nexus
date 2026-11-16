@@ -71,9 +71,8 @@ export default function AdminPage({ initialHeroes, initialStats = null }: AdminC
       const isAuth = await checkAdminAuthAction()
       if (isAuth) {
         setIsAuthenticated(true)
-        sessionStorage.setItem('admin_auth', 'true')
       } else {
-        sessionStorage.removeItem('admin_auth')
+        setIsAuthenticated(false)
       }
     }
     requestAnimationFrame(() => {
@@ -95,7 +94,6 @@ export default function AdminPage({ initialHeroes, initialStats = null }: AdminC
     }
     if (success) {
       setIsAuthenticated(true)
-      sessionStorage.setItem('admin_auth', 'true')
       setError('')
     } else {
       setError('Login failed. Please try again.')
@@ -106,7 +104,6 @@ export default function AdminPage({ initialHeroes, initialStats = null }: AdminC
   const handleLogout = async () => {
     await logoutAdminAction()
     setIsAuthenticated(false)
-    sessionStorage.removeItem('admin_auth')
   }
 
   // If not authenticated, show login screen
