@@ -19,11 +19,13 @@ export const metadata: Metadata = {
 
 export default async function SearchPage() {
   let initialAllHeroes: Hero[] = []
+  let loadError: string | null = null
   try {
     initialAllHeroes = await getAllHeroes()
   } catch (error) {
+    // Log the raw driver error server-side; never leak it to the UI.
     console.error('Failed to load heroes for search page:', error)
-    initialAllHeroes = []
+    loadError = 'Live hero database is unreachable.'
   }
-  return <SearchClient initialAllHeroes={initialAllHeroes} />
+  return <SearchClient initialAllHeroes={initialAllHeroes} loadError={loadError} />
 }
