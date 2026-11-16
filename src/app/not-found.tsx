@@ -40,12 +40,15 @@ export default function NotFound() {
         </p>
 
         {/* Action Button */}
-        <Link href="/">
-          <Button className="bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-medium gap-2 px-6 py-3 rounded-full">
+        <Button
+          asChild
+          className="bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-medium gap-2 px-6 py-3 rounded-full"
+        >
+          <Link href="/">
             <Home className="w-4 h-4" />
             Return to Archive
-          </Button>
-        </Link>
+          </Link>
+        </Button>
 
         {/* Decorative dots */}
         <div className="mt-16 flex justify-center gap-1.5">
