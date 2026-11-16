@@ -26,7 +26,15 @@ export async function seedDemoHeroesAction() {
     console.warn(`seedDemoHeroesAction rate-limited: ${rateLimit.error}`)
     return { ok: false as const, error: rateLimit.error }
   }
-  const supabase = getServiceSupabase()
+  let supabase: ReturnType<typeof getServiceSupabase>
+  try {
+    supabase = getServiceSupabase()
+  } catch {
+    // Service-role credentials are missing: cannot seed. Return a clean,
+    // typed failure instead of a 500.
+    console.error('seedDemoHeroesAction: Supabase service client is not configured')
+    return { ok: false as const, error: 'Service not configured' }
+  }
   const rows = SEED_HEROES.map((hero) => ({
     id: hero.id,
     name: hero.name,
@@ -60,7 +68,13 @@ export async function syncMoviesAction() {
     console.warn(`syncMoviesAction rate-limited: ${rateLimit.error}`)
     return { ok: false as const, error: rateLimit.error }
   }
-  const supabase = getServiceSupabase()
+  let supabase: ReturnType<typeof getServiceSupabase>
+  try {
+    supabase = getServiceSupabase()
+  } catch {
+    console.error('syncMoviesAction: Supabase service client is not configured')
+    return { ok: false as const, error: 'Service not configured' }
+  }
   const rows = SEED_MOVIES.map((movie) => ({
     id: movie.id,
     title: movie.title,
@@ -135,7 +149,13 @@ export async function createCanonEventsAction() {
     console.warn(`createCanonEventsAction rate-limited: ${rateLimit.error}`)
     return { ok: false as const, error: rateLimit.error }
   }
-  const supabase = getServiceSupabase()
+  let supabase: ReturnType<typeof getServiceSupabase>
+  try {
+    supabase = getServiceSupabase()
+  } catch {
+    console.error('createCanonEventsAction: Supabase service client is not configured')
+    return { ok: false as const, error: 'Service not configured' }
+  }
 
   const [{ data: heroes }, { data: movies }] = await Promise.all([
     supabase.from('heroes').select('id, name, alias'),
@@ -210,7 +230,13 @@ export async function getAdminStatsAction(): Promise<
     console.warn(`getAdminStatsAction rate-limited: ${rateLimit.error}`)
     return { ok: false, error: rateLimit.error ?? 'Too many requests. Please try again later.' }
   }
-  const supabase = getServiceSupabase()
+  let supabase: ReturnType<typeof getServiceSupabase>
+  try {
+    supabase = getServiceSupabase()
+  } catch {
+    console.error('getAdminStatsAction: Supabase service client is not configured')
+    return { ok: false, error: 'Service not configured' }
+  }
   const startedAt = Date.now()
   const [heroes, movies, canonEvents, heroMovieLinks, franchiseRows] = await Promise.all([
     supabase.from('heroes').select('*', { count: 'exact', head: true }),
