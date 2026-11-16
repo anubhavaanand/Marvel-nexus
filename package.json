@@ -13,7 +13,12 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "seed": "node scripts/seed-heroes.js",
+    "sync:tmdb": "node scripts/sync-tmdb-movies.js",
+    "health": "node scripts/database-health-check.js",
+    "count:heroes": "node scripts/count-heroes.js",
+    "check-env": "node scripts/check-env.js"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",
