@@ -782,7 +782,7 @@ export async function getHeroBySlugForAdmin(slug: string): Promise<HeroWithRelat
 
 /** Fields the search UI actually renders (HeroCard + client-side filter). */
 const SEARCH_HERO_FIELDS =
-  'id,slug,name,alias,franchise,origin_world,powers,image_url,is_locked_content' as const
+  'id,slug,name,alias,actor_name,franchise,origin_world,powers,weaknesses,image_url,is_locked_content' as const
 
 /** Lightweight hero shape for search results — omits heavy/unused columns. */
 export type SearchHero = Pick<
@@ -791,9 +791,11 @@ export type SearchHero = Pick<
   | 'slug'
   | 'name'
   | 'alias'
+  | 'actor_name'
   | 'franchise'
   | 'origin_world'
   | 'powers'
+  | 'weaknesses'
   | 'image_url'
   | 'is_locked_content'
 >
@@ -814,6 +816,7 @@ export async function getSearchHeroes(): Promise<SearchHero[]> {
         franchise,
         origin_world,
         powers,
+        weaknesses,
         image_url,
         is_locked_content,
       }) => ({
@@ -824,6 +827,7 @@ export async function getSearchHeroes(): Promise<SearchHero[]> {
         franchise,
         origin_world,
         powers,
+        weaknesses,
         image_url,
         is_locked_content,
       }),
@@ -836,7 +840,12 @@ export async function getSearchHeroes(): Promise<SearchHero[]> {
     console.error('Error fetching search heroes:', error)
     throw new Error('Failed to load heroes')
   }
-  return (data || []) as SearchHero[]
+
+  // Apply bounded TMDB enrichment to Supabase heroes missing images,
+  // reusing the same cache helper from #230/#249 (via enrichMockHeroesWithTmdb).
+  const heroes = (data || []) as SearchHero[]
+  const enriched = await enrichMockHeroesWithTmdb(heroes)
+  return enriched
 }
 
 /** Full hero list for the admin panel (includes locked content). */
