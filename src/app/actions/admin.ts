@@ -65,7 +65,14 @@ export async function loginAdminAction(password: string): Promise<LoginAdminResu
     // cross-site navigation (e.g. logging in from another subdomain), forcing
     // a fresh login. Lax still protects against CSRF on POST requests while
     // allowing the cookie to survive top-level navigations.
-    const isSecure = forwardedProto === 'https'
+    // SECURITY FLOOR: in production (NODE_ENV=production) the cookie is ALWAYS
+    // Secure regardless of x-forwarded-proto. The forwarded-proto header is
+    // only trusted as a positive signal in non-production; proxies MUST strip
+    // any client-supplied x-forwarded-proto before forwarding so it cannot be
+    // spoofed to downgrade a Secure cookie to non-Secure (MitM exposure) or
+    // upgrade a non-Secure cookie to Secure (self-lockout). Production enforces
+    // Secure unconditionally as a defense-in-depth floor.
+    const isSecure = process.env.NODE_ENV === 'production' || forwardedProto === 'https'
     cookieStore.set('admin_session', token, {
       httpOnly: true,
       secure: isSecure,
