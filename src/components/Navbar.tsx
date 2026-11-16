@@ -142,7 +142,7 @@ export default function Navbar() {
           {navItems.map((item) => {
             const isActive = pathname === item.href
             return (
-              <Link key={item.href} href={item.href}>
+              <Link key={item.href} href={item.href} aria-label={item.label}>
                 <motion.div
                   className={`relative flex items-center justify-center w-11 h-11 rounded-full transition-colors ${
                     isActive
@@ -151,7 +151,6 @@ export default function Navbar() {
                   }`}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  aria-label={item.label}
                 >
                   <item.icon className="w-5 h-5" />
                 </motion.div>
