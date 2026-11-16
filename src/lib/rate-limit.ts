@@ -24,3 +24,8 @@ export function isRateLimited(key: string, limit: number, windowMs: number): boo
 export function resetRateLimiter(): void {
   buckets.clear()
 }
+
+/** Extract the originating client IP from an X-Forwarded-For style value. */
+export function parseClientIp(headerValue: string | null): string {
+  return headerValue?.split(',')[0]?.trim() || 'unknown'
+}
