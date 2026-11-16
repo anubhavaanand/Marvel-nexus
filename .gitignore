@@ -160,3 +160,6 @@ reports/
 
 # OS metadata
 .directory
+
+# Ignore root-level node_modules even when it is a symlink
+/node_modules
