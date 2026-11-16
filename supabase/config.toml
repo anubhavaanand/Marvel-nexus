@@ -72,17 +72,29 @@ sql_paths = ["./seed.sql"]
 
 [db.network_restrictions]
 # Enable management of network restrictions.
-enabled = false
+enabled = true
 # List of IPv4 CIDR blocks allowed to connect to the database.
 # Defaults to allow all IPv4 connections. Set empty array to block all IPs.
-allowed_cidrs = ["0.0.0.0/0"]
+#
+# SECURITY: Restricted to loopback only. The previous value of "0.0.0.0/0"
+# exposed the Postgres port to every IPv4 address on the host network.
+# If you need to reach the DB from another machine (e.g. a LAN tool or a
+# tunnel), add that specific CIDR here — never re-enable "0.0.0.0/0".
+allowed_cidrs = ["127.0.0.1/32"]
 # List of IPv6 CIDR blocks allowed to connect to the database.
 # Defaults to allow all IPv6 connections. Set empty array to block all IPs.
-allowed_cidrs_v6 = ["::/0"]
+#
+# SECURITY: Restricted to IPv6 loopback only, matching the IPv4 policy.
+allowed_cidrs_v6 = ["::1/128"]
 
-# Uncomment to reject non-secure connections to the database.
-# [db.ssl_enforcement]
-# enabled = true
+# Reject non-secure (plaintext) connections to the database.
+#
+# SECURITY: Enabling this forces TLS for every connection. The Supabase CLI
+# local stack connects over a Unix socket / localhost, so this does not
+# break local development; it only blocks anyone who attempts a raw TCP
+# connection without TLS. Keep this enabled before any non-local deploy.
+[db.ssl_enforcement]
+enabled = true
 
 [realtime]
 enabled = true
