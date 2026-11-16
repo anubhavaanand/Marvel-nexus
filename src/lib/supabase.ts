@@ -1,6 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { searchPerson } from './tmdb'
 import { compareSlug, slugifyAlias } from './slugs'
+import { SEED_MOVIES } from './seed-data'
 import { mapWithConcurrency } from './concurrency'
 import { getServiceSupabase } from './service-supabase'
 
@@ -859,8 +860,21 @@ export async function getAllHeroesForAdmin(): Promise<Hero[]> {
   return data || []
 }
 
+const mockMovies: Movie[] = SEED_MOVIES.map((m) => ({
+  id: m.id,
+  tmdb_id: 0,
+  title: m.title,
+  release_date: m.release_date ?? '',
+  phase: m.phase as Movie['phase'],
+  poster_url: m.poster_url,
+  imdb_rating: 0,
+}))
+
 export async function getAllMovies(options?: { allowEmpty?: boolean }): Promise<Movie[]> {
-  if (!supabase) return []
+  if (!supabase)
+    return [...mockMovies].sort((a, b) =>
+      (a.release_date || '').localeCompare(b.release_date || ''),
+    )
 
   try {
     const { data, error } = await supabase
