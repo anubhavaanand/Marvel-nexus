@@ -1,3 +1,5 @@
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 import { getAllHeroes, isSupabaseConfigured } from '@/lib/supabase'
 import { bucketHeroes, EMPTY_HERO_BUCKETS, type HeroBuckets } from '@/lib/stats'
 import HomeClient from '@/components/HomeClient'
@@ -55,12 +57,16 @@ export default async function Home() {
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
-                <button className="btn btn-primary btn-lg group">
-                  <Sparkles className="w-4 h-4" />
-                  Explore Heroes
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-                </button>
-                <button className="btn btn-secondary btn-lg">View Timeline</button>
+                <Button asChild variant="default" size="lg" className="group">
+                  <Link href="/search">
+                    <Sparkles className="w-4 h-4" />
+                    Explore Heroes
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                  </Link>
+                </Button>
+                <Button asChild variant="secondary" size="lg">
+                  <Link href="/timeline">View Timeline</Link>
+                </Button>
               </div>
 
               <div className="flex flex-wrap justify-center gap-3">
