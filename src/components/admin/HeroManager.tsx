@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -112,9 +112,20 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
     }
   }
 
-  useEffect(() => {
+  // Reset the pending delete confirmation when the search query or edited row
+  // changes, using the documented render-time adjustment pattern (no setState
+  // inside effects, no ref reads during render).
+  const [prevResetCtx, setPrevResetCtx] = useState({
+    searchQuery,
+    editingId: editingHero?.id ?? '',
+  })
+  if (
+    prevResetCtx.searchQuery !== searchQuery ||
+    prevResetCtx.editingId !== (editingHero?.id ?? '')
+  ) {
+    setPrevResetCtx({ searchQuery, editingId: editingHero?.id ?? '' })
     setDeleteConfirm(null)
-  }, [searchQuery, editingHero])
+  }
 
   const filteredHeroes = heroes.filter(
     (h) =>
