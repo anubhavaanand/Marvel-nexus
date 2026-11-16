@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { getAllHeroes, isSupabaseConfigured } from '@/lib/supabase'
+import { getAllHeroes, getHeroesCount, isSupabaseConfigured } from '@/lib/supabase'
 import { bucketHeroes, EMPTY_HERO_BUCKETS, type HeroBuckets } from '@/lib/stats'
 import HomeClient from '@/components/HomeClient'
 import FranchiseTabs from '@/components/FranchiseTabs'
@@ -19,8 +19,8 @@ export default async function Home() {
     const allHeroes = await getAllHeroes()
     if (allHeroes && allHeroes.length > 0) {
       buckets = bucketHeroes(allHeroes)
-      totalHeroes = allHeroes.length
     }
+    totalHeroes = await getHeroesCount()
   } catch {
     // Render the page but tell the visitor the live database is unavailable.
     loadError = 'Live hero database is unreachable. Showing limited sample data.'
