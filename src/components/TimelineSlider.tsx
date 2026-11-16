@@ -242,8 +242,8 @@ export default function TimelineSlider({ movies, title = 'MCU Timeline' }: Timel
       </div>
 
       {/* Fade edges */}
-      <div className="absolute top-0 bottom-0 left-0 w-12 bg-gradient-to-r from-background to-transparent pointer-events-none" />
-      <div className="absolute top-0 bottom-0 right-0 w-12 bg-gradient-to-l from-background to-transparent pointer-events-none" />
+      <div className="absolute top-0 bottom-0 left-0 w-12 bg-gradient-to-r from-[var(--bg)] to-transparent pointer-events-none" />
+      <div className="absolute top-0 bottom-0 right-0 w-12 bg-gradient-to-l from-[var(--bg)] to-transparent pointer-events-none" />
     </motion.div>
   )
 }
