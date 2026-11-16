@@ -214,11 +214,12 @@ export async function createHeroAction(updates: Partial<Hero>): Promise<Hero | n
     return null
   }
 
-  // create requires a name (and alias when available); derive slug from name as fallback
+  // create requires core fields: name, alias, franchise
   const name = (sanitized.name ?? updates.name) as string | undefined
   const alias = (sanitized.alias ?? updates.alias) as string | undefined
-  if (!name && !alias) {
-    console.error('Rejected hero create: missing name/alias')
+  const franchise = (sanitized.franchise ?? updates.franchise) as string | undefined
+  if (!name || !alias || !franchise) {
+    console.error('Rejected hero create: missing core fields (name, alias, franchise)')
     return null
   }
   const slugSource = alias || name
@@ -228,9 +229,9 @@ export async function createHeroAction(updates: Partial<Hero>): Promise<Hero | n
     return null
   }
   const payload: Record<string, unknown> = { ...sanitized }
-  if (!payload.name && name) payload.name = name
-  if (!payload.alias && alias) payload.alias = alias
-  if (!payload.alias && name && !alias) payload.alias = name
+  if (!payload.name) payload.name = name
+  if (!payload.alias) payload.alias = alias
+  if (!payload.franchise) payload.franchise = franchise
   payload.slug = slug
 
   const { data, error } = await supabase.from('heroes').insert(payload).select().maybeSingle()

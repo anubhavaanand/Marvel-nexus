@@ -104,14 +104,22 @@ export default async function HeroPage({ params }: PageProps) {
                 <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg)]/60 via-transparent to-transparent" />
 
                 {hero.is_locked_content && (
-                  <div className="absolute inset-0 bg-[var(--bg)]/70 backdrop-blur-sm flex flex-col items-center justify-center pointer-events-none">
-                    <div className="flex flex-col items-center">
-                      <div className="w-14 h-14 rounded-full glass flex items-center justify-center mb-3">
+                  <div className="absolute inset-0 bg-[var(--bg)]/70 backdrop-blur-sm flex flex-col items-center justify-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-14 h-14 rounded-full glass flex items-center justify-center">
                         <Lock className="w-5 h-5 text-[var(--muted)]" />
                       </div>
                       <span className="text-sm font-medium text-[var(--muted)]">
-                        Premium Unlocked
+                        Locked Content
                       </span>
+                      {isAdmin && (
+                        <Link
+                          href="/admin"
+                          className="pointer-events-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20 hover:bg-[var(--accent)]/20 transition-colors"
+                        >
+                          Edit Hero
+                        </Link>
+                      )}
                     </div>
                   </div>
                 )}
