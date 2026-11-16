@@ -135,9 +135,30 @@ export async function updateHeroAction(id: string, updates: Partial<Hero>): Prom
     return null
   }
 
+  // Recompute slug when alias changes to keep URLs consistent
+  let slug: string | undefined
+  if (sanitized.alias) {
+    slug = slugifyAlias(sanitized.alias)
+    // Check for collision with another hero (exclude current hero by id)
+    const { data: existing } = await supabase
+      .from('heroes')
+      .select('id')
+      .eq('slug', slug)
+      .neq('id', id)
+      .maybeSingle()
+    if (existing) {
+      // Collision: append short unique suffix to keep slug unique
+      const suffix = crypto.randomBytes(2).toString('hex')
+      slug = `${slug}-${suffix}`
+    }
+  }
+
+  const payload: Record<string, unknown> = { ...sanitized }
+  if (slug) payload.slug = slug
+
   const { data, error } = await supabase
     .from('heroes')
-    .update(sanitized)
+    .update(payload)
     .eq('id', id)
     .select()
     .maybeSingle()
