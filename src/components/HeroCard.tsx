@@ -1,9 +1,9 @@
 'use client'
 
 import { motion, useInView } from 'framer-motion'
-import { useRef, useState, useEffect } from 'react'
+import { useRef } from 'react'
 import Link from 'next/link'
-import { Lock, Zap, Globe, ArrowRight } from 'lucide-react'
+import { Zap, Globe, ArrowRight } from 'lucide-react'
 import type { Hero } from '@/lib/supabase'
 import { slugifyAlias } from '@/lib/slugs'
 import HeroImage from './HeroImage'
@@ -31,22 +31,8 @@ export default function HeroCard({ hero, index = 0 }: HeroCardProps) {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-50px' })
 
-  const [isAdmin, setIsAdmin] = useState(false)
-
-  useEffect(() => {
-    requestAnimationFrame(() => {
-      let adminAuth = false
-      try {
-        adminAuth = sessionStorage.getItem('admin_auth') === 'true'
-      } catch (e) {
-        console.warn('sessionStorage is not accessible:', e)
-      }
-      setIsAdmin(adminAuth)
-    })
-  }, [])
-
   return (
-    <Link href={hero.is_locked_content && !isAdmin ? '/admin' : `/hero/${slug}`}>
+    <Link href={`/hero/${slug}`}>
       <motion.article
         ref={ref}
         className="hero-card group"
@@ -104,17 +90,6 @@ export default function HeroCard({ hero, index = 0 }: HeroCardProps) {
                 <Zap className="w-3 h-3 text-[var(--accent)]" />
                 {hero.powers.length}
               </span>
-            </div>
-          )}
-
-          {hero.is_locked_content && !isAdmin && (
-            <div className="absolute inset-0 bg-[var(--bg)]/70 backdrop-blur-sm flex items-center justify-center">
-              <div className="flex flex-col items-center gap-2">
-                <div className="w-10 h-10 rounded-full glass flex items-center justify-center">
-                  <Lock className="w-4 h-4 text-[var(--muted)]" />
-                </div>
-                <span className="text-xs font-medium text-[var(--muted)]">Premium</span>
-              </div>
             </div>
           )}
         </div>

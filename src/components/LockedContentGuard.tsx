@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { Lock, Shield, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { checkAdminAuthAction } from '@/app/actions/admin'
 
 interface LockedContentGuardProps {
   children: React.ReactNode
@@ -16,16 +17,18 @@ export default function LockedContentGuard({ children, isLocked }: LockedContent
   const [isChecking, setIsChecking] = useState(true)
 
   useEffect(() => {
-    let adminAuth = false
-    try {
-      adminAuth = sessionStorage.getItem('admin_auth') === 'true'
-    } catch (e) {
-      console.warn('sessionStorage is not accessible:', e)
+    let mounted = true
+    const checkAuth = async () => {
+      const admin = await checkAdminAuthAction()
+      if (mounted) {
+        setIsAdmin(admin)
+        setIsChecking(false)
+      }
     }
-    requestAnimationFrame(() => {
-      setIsAdmin(adminAuth)
-      setIsChecking(false)
-    })
+    checkAuth()
+    return () => {
+      mounted = false
+    }
   }, [])
 
   if (isChecking) {

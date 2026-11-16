@@ -10,6 +10,7 @@ Ordered SQL migrations for the Multiverse Archive schema. Filenames use a
 | `001_admin_sessions.sql`            | Adds the `admin_sessions` table for revocable admin logins (#7).              |
 | `002_franchise_constraint_full.sql` | Replaces the `heroes.franchise` CHECK with the canonical 11-value list (#40). |
 | `003_add_actor_name.sql`            | Adds the `actor_name` column to `heroes` (#50).                               |
+| `004_locked_content_rls.sql`        | Excludes locked heroes from the public read policy (#116).                    |
 
 ## How to apply
 
