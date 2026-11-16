@@ -54,8 +54,13 @@ for (const franchise of FRANCHISE_VALUES) {
 
 const PEACEMAKER_ALIASES = ['Peacemaker', 'Vigilante', 'Judomaster', 'Eagly']
 
+/**
+ * Franchise-first check: a hero with franchise 'Peacemaker' always goes to
+ * the Peacemaker bucket regardless of alias. Alias-based matching is only
+ * a fallback for heroes whose franchise field differs (e.g., legacy DC entries).
+ */
 function isPeacemaker(hero: Hero): boolean {
-  return PEACEMAKER_ALIASES.includes(hero.alias) || hero.franchise === 'Peacemaker'
+  return hero.franchise === 'Peacemaker' || PEACEMAKER_ALIASES.includes(hero.alias)
 }
 
 function isSpider(hero: Hero): boolean {
