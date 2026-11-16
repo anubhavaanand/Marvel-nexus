@@ -1,9 +1,18 @@
 -- ============================================
--- MULTIVERSE ARCHIVE DATABASE SCHEMA
--- Run this in Supabase SQL Editor
+-- MULTIVERSE ARCHIVE - CANONICAL SCHEMA
+-- Run this in the Supabase SQL Editor to create or
+-- safely upgrade the database schema.
+--
+-- This is the single source of truth for table
+-- definitions. The older scripts/create-tables.sql and
+-- scripts/setup-database.sql were removed because they
+-- described incompatible schemas (missing actor_name,
+-- incomplete franchise lists, non-idempotent policies).
+--
+-- Seed data: supabase/seed.sql
+-- Incremental migrations: supabase/migrations/
 -- ============================================
 
--- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================
@@ -22,16 +31,19 @@ CREATE TABLE IF NOT EXISTS movies (
 
 -- ============================================
 -- HEROES TABLE
+-- actor_name and the full franchise list match what the
+-- application type and UI expect.
 -- ============================================
 CREATE TABLE IF NOT EXISTS heroes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
     alias TEXT NOT NULL,
-    franchise TEXT NOT NULL CHECK (franchise IN ('MCU', 'X-Men', 'Spider-Verse', 'Defenders', 'DC', 'Anime')),
+    actor_name TEXT,
+    franchise TEXT NOT NULL CHECK (franchise IN ('MCU', 'X-Men', 'Spider-Verse', 'Defenders', 'DC', 'Anime', 'The Boys', 'Invincible', 'Other')),
     origin_world TEXT,
     powers TEXT[] DEFAULT '{}',
     weaknesses TEXT[] DEFAULT '{}',
-    image_url TEXT,
+    image_url TEXT DEFAULT '',
     is_locked_content BOOLEAN DEFAULT FALSE,
     first_appearance_movie_id UUID REFERENCES movies(id),
     created_at TIMESTAMPTZ DEFAULT NOW()
@@ -73,25 +85,39 @@ CREATE INDEX IF NOT EXISTS idx_movies_phase ON movies(phase);
 -- ============================================
 -- ROW LEVEL SECURITY (RLS)
 -- ============================================
--- Enable RLS on all tables
 ALTER TABLE movies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE heroes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE canon_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE hero_movies ENABLE ROW LEVEL SECURITY;
 
--- Public read access for all tables
-CREATE POLICY "Public read access" ON movies FOR SELECT USING (true);
-CREATE POLICY "Public read access" ON heroes FOR SELECT USING (true);
-CREATE POLICY "Public read access" ON canon_events FOR SELECT USING (true);
-CREATE POLICY "Public read access" ON hero_movies FOR SELECT USING (true);
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'movies' AND policyname = 'Public read access') THEN
+    CREATE POLICY "Public read access" ON movies FOR SELECT USING (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'heroes' AND policyname = 'Public read access') THEN
+    CREATE POLICY "Public read access" ON heroes FOR SELECT USING (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'canon_events' AND policyname = 'Public read access') THEN
+    CREATE POLICY "Public read access" ON canon_events FOR SELECT USING (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'hero_movies' AND policyname = 'Public read access') THEN
+    CREATE POLICY "Public read access" ON hero_movies FOR SELECT USING (true);
+  END IF;
+END $$;
 
--- Service role can do everything (for admin operations)
-CREATE POLICY "Service role full access" ON movies FOR ALL USING (auth.role() = 'service_role');
-CREATE POLICY "Service role full access" ON heroes FOR ALL USING (auth.role() = 'service_role');
-CREATE POLICY "Service role full access" ON canon_events FOR ALL USING (auth.role() = 'service_role');
-CREATE POLICY "Service role full access" ON hero_movies FOR ALL USING (auth.role() = 'service_role');
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'movies' AND policyname = 'Service role full access') THEN
+    CREATE POLICY "Service role full access" ON movies FOR ALL USING (auth.role() = 'service_role');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'heroes' AND policyname = 'Service role full access') THEN
+    CREATE POLICY "Service role full access" ON heroes FOR ALL USING (auth.role() = 'service_role');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'canon_events' AND policyname = 'Service role full access') THEN
+    CREATE POLICY "Service role full access" ON canon_events FOR ALL USING (auth.role() = 'service_role');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'hero_movies' AND policyname = 'Service role full access') THEN
+    CREATE POLICY "Service role full access" ON hero_movies FOR ALL USING (auth.role() = 'service_role');
+  END IF;
+END $$;
 
--- ============================================
--- SUCCESS MESSAGE
--- ============================================
-SELECT 'Database schema created successfully! 🎉' as message;
+SELECT 'Schema is up to date.' AS message;

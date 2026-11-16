@@ -1,4 +1,12 @@
 -- ============================================
+-- LEGACY DATA EXPORT (pg_dump fragment).
+-- This file contains exported hero data only and is NOT a
+-- schema definition. Create/upgrade tables with
+-- supabase/schema.sql first, then load seed data from
+-- supabase/seed.sql. See issue #38.
+-- ============================================
+
+-- ============================================
 -- CLEANED AND EXTRACTED PUBLIC SCHEMA & DATA
 -- ============================================
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
