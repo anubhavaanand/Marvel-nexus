@@ -70,6 +70,7 @@ function isSpider(hero: Hero): boolean {
 /**
  * Assign every hero to exactly one bucket so displayed counts never overlap.
  * Precedence: Peacemaker, then Spider-Verse/Spider-Man, then franchise.
+ * De-duplicates by hero ID to guarantee a hero lands in exactly one bucket.
  *
  * Every value allowed by the schema CHECK / FRANCHISE_VALUES maps to a bucket,
  * so no stored hero is dropped from the browse-by-universe UI.
@@ -89,7 +90,12 @@ export function bucketHeroes(allHeroes: Hero[]): HeroBuckets {
     other: [],
   }
 
+  const seenIds = new Set<string>()
+
   for (const hero of allHeroes) {
+    if (seenIds.has(hero.id)) continue
+    seenIds.add(hero.id)
+
     if (isPeacemaker(hero)) buckets.peacemaker.push(hero)
     else if (isSpider(hero)) buckets.spider.push(hero)
     else if (hero.franchise === 'MCU') buckets.mcu.push(hero)
@@ -104,4 +110,12 @@ export function bucketHeroes(allHeroes: Hero[]): HeroBuckets {
   }
 
   return buckets
+}
+
+/**
+ * Derives the total hero count from bucket sums, ensuring it matches the
+ * de-duplicated unique hero count used for display.
+ */
+export function totalHeroes(buckets: HeroBuckets): number {
+  return Object.values(buckets).reduce((sum, bucket) => sum + bucket.length, 0)
 }
