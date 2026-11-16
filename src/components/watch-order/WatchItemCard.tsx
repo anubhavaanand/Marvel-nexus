@@ -30,7 +30,12 @@ export default function WatchItemCard({ item, index, accentColor }: WatchItemCar
           </div>
 
           <div className="relative w-full sm:w-28 h-44 sm:h-auto flex-shrink-0 bg-[var(--surface)]">
-            <HeroImage imageUrl={null} alias={item.title} name={item.title} />
+            <HeroImage
+              imageUrl={null}
+              alias={item.title}
+              name={item.title}
+              sizes="(max-width: 640px) 100vw, 112px"
+            />
           </div>
 
           <div className="flex-1 p-4 sm:p-5 flex flex-col justify-between">
