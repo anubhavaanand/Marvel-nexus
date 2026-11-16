@@ -200,8 +200,13 @@ export default function SearchPage({
               >
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-3">
-                    <span className="badge-accent px-3 py-1.5 text-xs font-medium">
-                      <Sparkles className="w-3 h-3" />
+                    <span
+                      role="status"
+                      aria-live="polite"
+                      aria-atomic="true"
+                      className="badge-accent px-3 py-1.5 text-xs font-medium"
+                    >
+                      <Sparkles className="w-3 h-3" aria-hidden="true" />
                       {results.length} {results.length === 1 ? 'hero' : 'heroes'} found
                     </span>
                     {query && (
