@@ -28,11 +28,5 @@ export default async function SearchPage() {
     loadError = 'Live hero database is unreachable.'
   }
   const isDemoMode = !isSupabaseConfigured
-  return (
-    <SearchClient
-      initialAllHeroes={initialAllHeroes}
-      loadError={loadError}
-      isDemoMode={isDemoMode}
-    />
-  )
+  return <SearchClient allHeroes={initialAllHeroes} loadError={loadError} isDemoMode={isDemoMode} />
 }
