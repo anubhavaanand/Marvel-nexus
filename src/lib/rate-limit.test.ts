@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { isRateLimited, resetRateLimiter } from './rate-limit'
+import { isRateLimited, parseClientIp, resetRateLimiter } from './rate-limit'
 
 describe('isRateLimited', () => {
   beforeEach(() => resetRateLimiter())
@@ -24,5 +24,16 @@ describe('isRateLimited', () => {
     expect(isRateLimited('c', 1, 20)).toBe(true)
     vi.advanceTimersByTime(25)
     expect(isRateLimited('c', 1, 20)).toBe(false)
+  })
+})
+
+describe('parseClientIp', () => {
+  it('takes the first entry of a forwarded-for list', () => {
+    expect(parseClientIp('203.0.113.7, 10.0.0.1')).toBe('203.0.113.7')
+  })
+
+  it('falls back to unknown when absent', () => {
+    expect(parseClientIp(null)).toBe('unknown')
+    expect(parseClientIp('   ')).toBe('unknown')
   })
 })
