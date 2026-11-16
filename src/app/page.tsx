@@ -1,4 +1,4 @@
-import { getAllHeroes } from '@/lib/supabase'
+import { getAllHeroes, isSupabaseConfigured } from '@/lib/supabase'
 import { bucketHeroes, EMPTY_HERO_BUCKETS, type HeroBuckets } from '@/lib/stats'
 import HomeClient from '@/components/HomeClient'
 import FranchiseTabs from '@/components/FranchiseTabs'
@@ -8,8 +8,10 @@ import { Shield, Zap, Swords, Star, Skull, ArrowRight, Sparkles, Bug } from 'luc
 export const dynamic = 'force-dynamic'
 
 export default async function Home() {
+  const isDemoMode = !isSupabaseConfigured
   let buckets: HeroBuckets = EMPTY_HERO_BUCKETS
   let totalHeroes = 0
+  let loadError: string | null = null
 
   try {
     const allHeroes = await getAllHeroes()
@@ -18,13 +20,14 @@ export default async function Home() {
       totalHeroes = allHeroes.length
     }
   } catch {
-    // Keep the empty state; the page should still render without data.
+    // Render the page but tell the visitor the live database is unavailable.
+    loadError = 'Live hero database is unreachable. Showing limited sample data.'
   }
 
   const { mcu, xmen, spider, dc, anime, theBoys, peacemaker } = buckets
 
   return (
-    <HomeClient>
+    <HomeClient isDemoMode={isDemoMode} loadError={loadError}>
       <main className="min-h-screen">
         {/* Dark Apple editorial hero — pure black canvas */}
         <section className="relative bg-[var(--bg)] overflow-hidden">

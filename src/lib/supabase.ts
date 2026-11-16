@@ -512,10 +512,11 @@ export async function getAllHeroes(): Promise<Hero[]> {
   const { data, error } = await supabase.from('heroes').select('*').order('name')
 
   if (error) {
+    // Do not silently serve sample data when the real database fails.
     console.error('Error fetching heroes:', error)
-    return enrichMockHeroesWithTmdb([...mockHeroes]) // Fallback to mock data on error
+    throw new Error('Failed to load heroes')
   }
-  return data || enrichMockHeroesWithTmdb([...mockHeroes])
+  return data || []
 }
 
 export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | null> {
@@ -587,8 +588,9 @@ export async function getAllMovies(): Promise<Movie[]> {
     .order('release_date', { ascending: true })
 
   if (error) {
+    // Do not silently serve empty data when the real database fails.
     console.error('Error fetching movies:', error)
-    return []
+    throw new Error('Failed to load movies')
   }
   return data || []
 }
