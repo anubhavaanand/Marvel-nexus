@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: 'If you use this software, please cite it as below.'
+title: 'Multiverse Archive'
+abstract: 'A Next.js + Supabase hero database with watch orders, timelines, canon events, and an admin panel.'
+authors:
+  - family-names: Anand
+    given-names: Anubhav
+repository-code: 'https://github.com/anubhavaanand/Marvel-nexus'
+version: 0.1.0
+license: MIT
+date-released: 2026-11-17
