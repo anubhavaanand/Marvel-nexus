@@ -1,7 +1,19 @@
 'use client'
 
 import { useState, Suspense } from 'react'
-import { Shield, Atom, Bug, Zap, Swords, Skull, CircleDot } from 'lucide-react'
+import {
+  Shield,
+  Atom,
+  Bug,
+  Zap,
+  Swords,
+  Skull,
+  CircleDot,
+  Gamepad2,
+  Globe,
+  ShieldX,
+  Boxes,
+} from 'lucide-react'
 import type { Hero } from '@/lib/supabase'
 import HeroCard from '@/components/HeroCard'
 import { HeroGridSkeleton } from '@/components/Skeleton'
@@ -15,12 +27,26 @@ interface FranchiseTabsProps {
     anime: Hero[]
     theBoys: Hero[]
     peacemaker: Hero[]
+    defenders: Hero[]
+    invincible: Hero[]
+    gaming: Hero[]
+    other: Hero[]
   }
 }
 
 export default function FranchiseTabs({ data }: FranchiseTabsProps) {
   const [activeTab, setActiveTab] = useState<
-    'mcu' | 'xmen' | 'spider' | 'dc' | 'anime' | 'theBoys' | 'peacemaker'
+    | 'mcu'
+    | 'xmen'
+    | 'spider'
+    | 'dc'
+    | 'anime'
+    | 'theBoys'
+    | 'peacemaker'
+    | 'defenders'
+    | 'invincible'
+    | 'gaming'
+    | 'other'
   >('mcu')
 
   const franchises = [
@@ -66,6 +92,34 @@ export default function FranchiseTabs({ data }: FranchiseTabsProps) {
       icon: CircleDot,
       color: 'var(--franchise-dc)',
       count: data.peacemaker?.length || 0,
+    },
+    {
+      id: 'defenders',
+      label: 'Defenders',
+      icon: ShieldX,
+      color: 'var(--franchise-defenders)',
+      count: data.defenders?.length || 0,
+    },
+    {
+      id: 'invincible',
+      label: 'Invincible',
+      icon: Globe,
+      color: 'var(--franchise-invincible)',
+      count: data.invincible?.length || 0,
+    },
+    {
+      id: 'gaming',
+      label: 'Gaming',
+      icon: Gamepad2,
+      color: 'var(--franchise-gaming)',
+      count: data.gaming?.length || 0,
+    },
+    {
+      id: 'other',
+      label: 'Other',
+      icon: Boxes,
+      color: 'var(--franchise-other)',
+      count: data.other?.length || 0,
     },
   ] as const
 

@@ -26,7 +26,19 @@ export default async function Home() {
     loadError = 'Live hero database is unreachable. Showing limited sample data.'
   }
 
-  const { mcu, xmen, spider, dc, anime, theBoys, peacemaker } = buckets
+  const {
+    mcu,
+    xmen,
+    spider,
+    dc,
+    anime,
+    theBoys,
+    peacemaker,
+    defenders,
+    invincible,
+    gaming,
+    other,
+  } = buckets
 
   return (
     <HomeClient isDemoMode={isDemoMode} loadError={loadError}>
@@ -116,7 +128,21 @@ export default async function Home() {
               </p>
             </div>
 
-            <FranchiseTabs data={{ mcu, xmen, spider, dc, anime, theBoys, peacemaker }} />
+            <FranchiseTabs
+              data={{
+                mcu,
+                xmen,
+                spider,
+                dc,
+                anime,
+                theBoys,
+                peacemaker,
+                defenders,
+                invincible,
+                gaming,
+                other,
+              }}
+            />
           </div>
         </section>
 
