@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   RadarChart,
@@ -24,62 +24,77 @@ interface PowerRadarChartProps {
 }
 
 // Generate power stats based on power names (simulated)
-function generatePowerStats(powers: string[]): PowerData[] {
-  const powerValues: Record<string, number> = {
-    // Physical Powers
-    'Superhuman Strength': 95,
-    'Enhanced Strength': 75,
-    'Super Speed': 85,
-    Flight: 80,
-    'Healing Factor': 90,
-    Durability: 85,
-    Agility: 75,
-    Reflexes: 80,
+const powerValues: Record<string, number> = {
+  // Physical Powers
+  'Superhuman Strength': 95,
+  'Enhanced Strength': 75,
+  'Super Speed': 85,
+  Flight: 80,
+  'Healing Factor': 90,
+  Durability: 85,
+  Agility: 75,
+  Reflexes: 80,
 
-    // Energy Powers
-    'Energy Projection': 88,
-    'Lightning Manipulation': 92,
-    'Chaos Magic': 98,
-    'Reality Warping': 100,
-    'Power Cosmic': 95,
-    'Venom Strike': 70,
+  // Energy Powers
+  'Energy Projection': 88,
+  'Lightning Manipulation': 92,
+  'Chaos Magic': 98,
+  'Reality Warping': 100,
+  'Power Cosmic': 95,
+  'Venom Strike': 70,
 
-    // Mental Powers
-    Telepathy: 90,
-    'Mind Control': 88,
-    'Genius Intellect': 95,
-    'Tactical Genius': 85,
-    'Spider-Sense': 85,
-    '4th Wall Awareness': 100,
+  // Mental Powers
+  Telepathy: 90,
+  'Mind Control': 88,
+  'Genius Intellect': 95,
+  'Tactical Genius': 85,
+  'Spider-Sense': 85,
+  '4th Wall Awareness': 100,
 
-    // Equipment/Tech
-    'Powered Armor': 90,
-    'Vibranium Shield': 85,
-    'Vibranium Suit': 88,
-    Mjolnir: 95,
-    'Adamantium Claws': 92,
-    Talons: 75,
-    'Web-Slinging': 80,
+  // Equipment/Tech
+  'Powered Armor': 90,
+  'Vibranium Shield': 85,
+  'Vibranium Suit': 88,
+  Mjolnir: 95,
+  'Adamantium Claws': 92,
+  Talons: 75,
+  'Web-Slinging': 80,
 
-    // Other
-    'Master Spy': 85,
-    'Combat Expert': 88,
-    'Wall-Crawling': 75,
-    Invisibility: 80,
-    Acrobatics: 78,
-    'Accelerated Vision': 82,
-    'Magnetism Control': 95,
+  // Other
+  'Master Spy': 85,
+  'Combat Expert': 88,
+  'Wall-Crawling': 75,
+  Invisibility: 80,
+  Acrobatics: 78,
+  'Accelerated Vision': 82,
+  'Magnetism Control': 95,
+}
+
+/** Stable, hash-derived fallback so unknown powers keep the same value across renders. */
+function stableFallbackValue(power: string): number {
+  let hash = 0
+  for (let i = 0; i < power.length; i++) {
+    hash = (hash * 31 + power.charCodeAt(i)) | 0
   }
+  return 60 + (Math.abs(hash) % 40)
+}
 
+function generatePowerStats(powers: string[]): PowerData[] {
   return powers.map((power) => ({
     power: power.length > 15 ? power.substring(0, 12) + '...' : power,
-    value: powerValues[power] || Math.floor(Math.random() * 40) + 60,
+    value: powerValues[power] ?? stableFallbackValue(power),
     fullMark: 100,
   }))
 }
 
+function prefersReducedMotion(): boolean {
+  if (typeof window === 'undefined' || !window.matchMedia) return false
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
 export default function PowerRadarChart({ powers, className = '' }: PowerRadarChartProps) {
   const [mounted, setMounted] = useState(false)
+  const [reducedMotion, setReducedMotion] = useState(prefersReducedMotion)
 
   useEffect(() => {
     let active = true
@@ -91,6 +106,16 @@ export default function PowerRadarChart({ powers, className = '' }: PowerRadarCh
     }
   }, [])
 
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const handler = () => setReducedMotion(media.matches)
+    media.addEventListener('change', handler)
+    return () => media.removeEventListener('change', handler)
+  }, [])
+
+  // Memoized so chart data is stable across renders (and deterministic per power).
+  const data = useMemo(() => generatePowerStats(powers), [powers])
+
   if (!powers || powers.length === 0) {
     return (
       <div className={`glass-panel rounded-xl p-6 ${className}`}>
@@ -101,8 +126,6 @@ export default function PowerRadarChart({ powers, className = '' }: PowerRadarCh
       </div>
     )
   }
-
-  const data = generatePowerStats(powers)
 
   return (
     <motion.div
@@ -172,16 +195,18 @@ export default function PowerRadarChart({ powers, className = '' }: PowerRadarCh
 
       {/* Power List */}
       <div className="mt-4 flex flex-wrap gap-2">
-        {powers.map((power, i) => (
-          <motion.span
+        {powers.map((power) => (
+          <span
             key={power}
             className="px-2 py-1 text-xs bg-cyan-950/50 border border-cyan-500/30 rounded-md text-cyan-400 font-mono"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.1 }}
+            style={{
+              opacity: reducedMotion ? 1 : 0,
+              transform: reducedMotion ? 'translateX(0)' : 'translateX(-10px)',
+              transition: reducedMotion ? 'none' : 'opacity 0.3s ease-out, transform 0.3s ease-out',
+            }}
           >
             {power}
-          </motion.span>
+          </span>
         ))}
       </div>
     </motion.div>

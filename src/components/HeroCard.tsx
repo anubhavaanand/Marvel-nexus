@@ -1,7 +1,8 @@
 'use client'
 
-import { motion, useInView } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useRef } from 'react'
+import { useSharedInView } from '@/hooks/useSharedInView'
 import Link from 'next/link'
 import { Zap, Globe, ArrowRight } from 'lucide-react'
 import type { Hero } from '@/lib/supabase'
@@ -29,7 +30,7 @@ export default function HeroCard({ hero, index = 0 }: HeroCardProps) {
   const colors = franchiseColors[hero.franchise] || franchiseColors['MCU']
   const slug = slugifyAlias(hero.alias)
   const ref = useRef<HTMLDivElement>(null)
-  const isInView = useInView(ref, { once: true, margin: '-50px' })
+  const isInView = useSharedInView(ref, { once: true, rootMargin: '-50px' })
 
   return (
     <Link href={`/hero/${slug}`}>
