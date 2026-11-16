@@ -1,8 +1,8 @@
 import { Suspense } from 'react'
-import TimelineSlider from '@/components/TimelineSlider'
+import TimelineSagaTabs from '@/components/TimelineSagaTabs'
 import { TimelineSkeleton } from '@/components/Skeleton'
 import { getAllMovies, isSupabaseConfigured, type Movie } from '@/lib/supabase'
-import { Film, Sparkles } from 'lucide-react'
+import { Film } from 'lucide-react'
 
 // Movie data is public and changes infrequently. Cache at the edge with ISR
 // (revalidate = 3600s / 1 hour) instead of force-dynamic so getAllMovies()
@@ -415,55 +415,12 @@ export default async function TimelinePage() {
               </p>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-2 mb-12">
-              <button className="tab-trigger active">
-                <Sparkles className="w-4 h-4" />
-                All Phases
-              </button>
-              <button className="tab-trigger">
-                <span className="w-2 h-2 rounded-full bg-purple-500" />
-                Infinity Saga
-              </button>
-              <button className="tab-trigger">
-                <span className="w-2 h-2 rounded-full bg-red-500" />
-                Multiverse Saga
-              </button>
-            </div>
-
             <Suspense fallback={<TimelineSkeleton />}>
-              <div className="space-y-16">
-                {Object.entries(phases).map(
-                  ([phase, phaseMovies]) =>
-                    phaseMovies.length > 0 && (
-                      <div key={phase} className="space-y-6">
-                        <div className="flex items-center gap-4">
-                          <div className={`w-2.5 h-2.5 rounded-full ${getPhaseColor(phase)}`} />
-                          <div>
-                            <h2 className="text-xl font-semibold text-[var(--fg)]">{phase}</h2>
-                            <p className="text-sm text-[var(--meta)]">{phaseMovies.length} films</p>
-                          </div>
-                        </div>
-                        <TimelineSlider movies={phaseMovies} title="" />
-                      </div>
-                    ),
-                )}
-              </div>
+              <TimelineSagaTabs phases={phases} />
             </Suspense>
           </div>
         </section>
       )}
     </main>
   )
-}
-
-function getPhaseColor(phase: string): string {
-  const colors: Record<string, string> = {
-    'Phase 1': 'bg-[var(--franchise-mcu)]',
-    'Phase 2': 'bg-purple-500',
-    'Phase 3': 'bg-[var(--franchise-spider)]',
-    'Phase 4': 'bg-[var(--success)]',
-    'Phase 5': 'bg-[var(--franchise-anime)]',
-    'Phase 6': 'bg-[var(--accent)]',
-  }
-  return colors[phase] || 'bg-[var(--meta)]'
 }

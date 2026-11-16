@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Hero } from '@/lib/supabase'
 import { FRANCHISE_VALUES } from './hero-update'
-import { EMPTY_HERO_BUCKETS, bucketHeroes, type HeroBuckets } from './stats'
+import { EMPTY_HERO_BUCKETS, bucketHeroes, totalHeroes, type HeroBuckets } from './stats'
 
 function makeHero(id: string, overrides: Partial<Hero> = {}): Hero {
   return {
@@ -126,4 +126,22 @@ describe('bucketHeroes franchise coverage', () => {
       expect(buckets[FRANCHISE_BUCKET[franchise]]).toHaveLength(1)
     }
   })
+
+describe('no overlap between buckets', () => {
+  it('has no overlap between franchise buckets and special buckets', () => {
+    const buckets = bucketHeroes([
+      makeHero('spidey', { alias: 'Spider-Man', franchise: 'MCU' }),
+      makeHero('miles', { alias: 'Miles Morales', franchise: 'Spider-Verse' }),
+      makeHero('peacemaker', { alias: 'Peacemaker', franchise: 'DC' }),
+      makeHero('batman', { alias: 'Batman', franchise: 'DC' }),
+    ])
+    const special = new Set([...buckets.spider, ...buckets.peacemaker].map((h) => h.id))
+    const franchise = new Set(
+      [...buckets.mcu, ...buckets.xmen, ...buckets.dc, ...buckets.anime, ...buckets.theBoys, ...buckets.defenders, ...buckets.invincible, ...buckets.gaming, ...buckets.other].map((h) => h.id),
+    )
+    for (const id of special) expect(franchise.has(id)).toBe(false)
+    expect(totalHeroes(buckets)).toBe(4)
+  })
+})
+
 })

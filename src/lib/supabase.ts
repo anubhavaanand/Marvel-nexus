@@ -597,17 +597,49 @@ function resolveMockHeroBySlug(slug: string): Hero | null {
   return matches[0]
 }
 
-export async function getAllHeroes(): Promise<Hero[]> {
-  if (!supabase) return enrichMockHeroesWithTmdb([...mockHeroes])
+export interface GetAllHeroesOptions {
+  page?: number
+  pageSize?: number
+  cursor?: string
+}
 
-  const { data, error } = await supabase.from('heroes').select('*').order('name')
+export async function getAllHeroes(options?: GetAllHeroesOptions): Promise<Hero[]> {
+  const pageSize = Math.max(1, Math.min(options?.pageSize ?? 100, 1000))
+  const page = Math.max(1, options?.page ?? 1)
+
+  if (!supabase) {
+    const start = (page - 1) * pageSize
+    const slice = mockHeroes.slice(start, start + pageSize)
+    return enrichMockHeroesWithTmdb([...slice])
+  }
+
+  let query = supabase.from('heroes').select('*').order('name')
+  if (options?.cursor) {
+    query = query.gt('id', options.cursor)
+  } else {
+    const from = (page - 1) * pageSize
+    query = query.range(from, from + pageSize - 1)
+  }
+
+  const { data, error } = await query.limit(pageSize)
 
   if (error) {
-    // Do not silently serve sample data when the real database fails.
     console.error('Error fetching heroes:', error)
     throw new Error('Failed to load heroes')
   }
   return data || []
+}
+
+export async function getHeroesCount(): Promise<number> {
+  if (!supabase) return mockHeroes.length
+  const { count, error } = await supabase
+    .from('heroes')
+    .select('id', { count: 'exact', head: true })
+  if (error) {
+    console.error('Error counting heroes:', error)
+    return 0
+  }
+  return count ?? 0
 }
 
 export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | null> {
@@ -781,15 +813,15 @@ export async function getAllHeroesForAdmin(): Promise<Hero[]> {
   try {
     client = getServiceSupabase()
   } catch {
-    // Service-role credentials are missing: degrade to empty admin list
-    // instead of surfacing a 500.
+    // Service-role credentials are missing: fail so admins see an error
+    // state instead of an apparently empty database.
     console.error('getAllHeroesForAdmin: Supabase service client is not configured')
-    return []
+    throw new Error('Database query failed')
   }
   const { data, error } = await client.from('heroes').select('*').order('name')
   if (error) {
     console.error('Error fetching heroes for admin:', error)
-    throw new Error('Failed to load heroes')
+    throw new Error('Database query failed')
   }
   return data || []
 }

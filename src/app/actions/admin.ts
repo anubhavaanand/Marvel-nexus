@@ -161,10 +161,14 @@ export async function updateHeroAction(id: string, updates: Partial<Hero>): Prom
     .update(payload)
     .eq('id', id)
     .select()
-    .single()
+    .maybeSingle()
 
   if (error) {
     console.error('Error updating hero via server action:', error)
+    return null
+  }
+  if (!data) {
+    console.error('Hero not found for update:', id)
     return null
   }
 
@@ -216,10 +220,14 @@ export async function createHeroAction(updates: Partial<Hero>): Promise<Hero | n
   const payload: Record<string, unknown> = { ...sanitized }
   if (slug) payload.slug = slug
 
-  const { data, error } = await supabase.from('heroes').insert(payload).select().single()
+  const { data, error } = await supabase.from('heroes').insert(payload).select().maybeSingle()
 
   if (error) {
     console.error('Error creating hero via server action:', error)
+    return null
+  }
+  if (!data) {
+    console.error('Hero create returned no row')
     return null
   }
 
