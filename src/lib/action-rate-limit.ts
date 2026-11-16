@@ -31,11 +31,9 @@ export interface ActionRateLimitResult {
  */
 export async function getClientIp(): Promise<string> {
   const { headers: getHeaders } = await import('next/headers')
-  const { parseClientIp } = await import('./rate-limit')
+  const { resolveClientIp } = await import('./rate-limit')
   const requestHeaders = await getHeaders()
-  const forwarded = parseClientIp(requestHeaders.get('x-forwarded-for'))
-  if (forwarded !== 'unknown') return forwarded
-  return parseClientIp(requestHeaders.get('x-real-ip'))
+  return resolveClientIp(requestHeaders.get('x-forwarded-for'), requestHeaders.get('x-real-ip'))
 }
 
 /**
