@@ -1,7 +1,10 @@
 /**
  * TMDB Full Sync Script
  * Fetches ALL Marvel Studios movies from TMDB and populates the movies table.
- * Also attempts to link movies to existing heroes via hero_movies table.
+ *
+ * Notes:
+ * - Does NOT link movies to heroes; the hero_movies table is never touched.
+ * - Stores TMDB's own vote_average as the rating (NOT an IMDb rating).
  *
  * Usage: node scripts/sync-tmdb-movies.js
  */
@@ -64,6 +67,16 @@ async function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+// ─── Enrich with TMDB rating via movie details ────────────────────────────────
+async function getMovieDetails(tmdbId) {
+  try {
+    const data = await tmdbFetch(`/movie/${tmdbId}?append_to_response=credits`)
+    return data
+  } catch {
+    return null
+  }
+}
+
 // ─── Fetch all pages of Marvel Studios movies (company_id=420) ───────────────
 async function fetchAllMarvelMovies() {
   console.log('\n📡 Fetching Marvel Studios movies from TMDB...')
@@ -86,27 +99,18 @@ async function fetchAllMarvelMovies() {
   return movies
 }
 
-// ─── Enrich with IMDB rating via movie details ────────────────────────────────
-async function getMovieDetails(tmdbId) {
-  try {
-    const data = await tmdbFetch(`/movie/${tmdbId}?append_to_response=credits`)
-    return data
-  } catch {
-    return null
-  }
-}
-
 // ─── Map TMDB movie to our DB schema ─────────────────────────────────────────
 function mapToDbMovie(movie, details) {
   const posterUrl = movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : ''
-  const imdbRating = details?.vote_average ? parseFloat(details.vote_average.toFixed(1)) : 0
+  // vote_average is TMDB's own score, not an IMDb rating; column is `imdb_rating` per schema
+  const tmdbRating = details?.vote_average ? parseFloat(details.vote_average.toFixed(1)) : 0
   return {
     tmdb_id: movie.id,
     title: movie.title,
     release_date: movie.release_date || null,
     phase: getMCUPhase(movie.release_date),
     poster_url: posterUrl,
-    imdb_rating: imdbRating,
+    imdb_rating: tmdbRating,
   }
 }
 
@@ -159,7 +163,7 @@ async function syncMovies() {
         }
       } else {
         console.log(
-          `  ✅ [${i + 1}/${toInsert.length}] ${dbMovie.phase}: ${dbMovie.title} (${dbMovie.release_date?.slice(0, 4) || 'TBA'}) ⭐ ${dbMovie.imdb_rating}`,
+          `  ✅ [${i + 1}/${toInsert.length}] ${dbMovie.phase}: ${dbMovie.title} (${dbMovie.release_date?.slice(0, 4) || 'TBA'}) ⭐ TMDB ${dbMovie.imdb_rating}`,
         )
         inserted++
         insertedMovies.push(data)
