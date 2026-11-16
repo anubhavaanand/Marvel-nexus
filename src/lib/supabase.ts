@@ -2,6 +2,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { searchPerson } from './tmdb'
 import { compareSlug } from './slugs'
 import { mapWithConcurrency } from './concurrency'
+import { getServiceSupabase } from './service-supabase'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
@@ -559,6 +560,81 @@ export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | n
     return null
   }
   return data
+}
+
+/**
+ * Resolves a slug to basic visibility fields using the service role, so locked
+ * heroes can be distinguished from truly missing ones without exposing them.
+ */
+export async function getHeroVisibility(
+  slug: string,
+): Promise<{ id: string; alias: string; is_locked_content: boolean } | null> {
+  if (!supabase) {
+    const hero = mockHeroes.find((h) => compareSlug(h.alias, slug))
+    return hero ? { id: '', alias: hero.alias, is_locked_content: hero.is_locked_content } : null
+  }
+  const client = getServiceSupabase()
+  const { data: candidates, error } = await client
+    .from('heroes')
+    .select('id, alias, is_locked_content')
+  if (error) {
+    console.error('Error resolving hero visibility:', error)
+    return null
+  }
+  return (candidates || []).find((h) => compareSlug(h.alias, slug)) ?? null
+}
+
+async function fetchHeroWithRelations(
+  client: SupabaseClient,
+  id: string,
+): Promise<HeroWithRelations | null> {
+  const { data, error } = await client
+    .from('heroes')
+    .select(
+      `
+      *,
+      canon_events (
+        *,
+        movies (*)
+      ),
+      hero_movies (
+        movies (*)
+      )
+    `,
+    )
+    .eq('id', id)
+    .single()
+  if (error) {
+    console.error('Error fetching hero:', error)
+    return null
+  }
+  return data as HeroWithRelations
+}
+
+/** Service-role lookup used by authenticated admins, including locked heroes. */
+export async function getHeroBySlugForAdmin(slug: string): Promise<HeroWithRelations | null> {
+  if (!supabase) return getHeroBySlug(slug)
+  const client = getServiceSupabase()
+  const { data: candidates, error } = await client.from('heroes').select('id, alias')
+  if (error) {
+    console.error('Error fetching heroes for admin slug lookup:', error)
+    return null
+  }
+  const match = (candidates || []).find((h) => compareSlug(h.alias, slug))
+  if (!match) return null
+  return fetchHeroWithRelations(client, match.id)
+}
+
+/** Full hero list for the admin panel (includes locked content). */
+export async function getAllHeroesForAdmin(): Promise<Hero[]> {
+  if (!supabase) return getAllHeroes()
+  const client = getServiceSupabase()
+  const { data, error } = await client.from('heroes').select('*').order('name')
+  if (error) {
+    console.error('Error fetching heroes for admin:', error)
+    throw new Error('Failed to load heroes')
+  }
+  return data || []
 }
 
 export async function getAllMovies(): Promise<Movie[]> {
