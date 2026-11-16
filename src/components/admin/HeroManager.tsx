@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -74,7 +74,9 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
   }
 
   const handleDelete = async (id: string) => {
+    if (inFlightIds.has(id)) return
     if (deleteConfirm !== id) {
+      // starting a confirm on another row cancels the previous one
       setDeleteConfirm(id)
       return
     }
@@ -95,17 +97,24 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
           ...prev,
           [id]: 'Delete did not land — the row is still visible.',
         }))
+        setDeleteConfirm(null)
       }
     } catch (error) {
       console.error('Failed to delete hero:', error)
       setDeleteErrors((prev) => ({ ...prev, [id]: 'Delete failed — the row is still visible.' }))
+      setDeleteConfirm(null)
+    } finally {
+      setInFlightIds((prev) => {
+        const next = new Set(prev)
+        next.delete(id)
+        return next
+      })
     }
-    setInFlightIds((prev) => {
-      const next = new Set(prev)
-      next.delete(id)
-      return next
-    })
   }
+
+  useEffect(() => {
+    setDeleteConfirm(null)
+  }, [searchQuery, editingHero])
 
   const filteredHeroes = heroes.filter(
     (h) =>
