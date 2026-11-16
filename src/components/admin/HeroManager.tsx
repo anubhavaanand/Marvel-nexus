@@ -1,7 +1,5 @@
 'use client'
 
-/* eslint-disable @next/next/no-img-element */
-
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
@@ -16,6 +14,7 @@ import {
   Image as ImageIcon,
   AlertTriangle,
 } from 'lucide-react'
+import Image from 'next/image'
 import { getAllHeroes, type Hero } from '@/lib/supabase'
 import { updateHeroAction, deleteHeroAction } from '@/app/actions/admin'
 
@@ -274,10 +273,14 @@ export default function HeroManager() {
             >
               <div className="w-12 h-12 relative rounded overflow-hidden bg-neutral-800">
                 {hero.image_url ? (
-                  <img
+                  <Image
                     src={hero.image_url}
                     alt={hero.alias}
-                    className="w-full h-full object-cover"
+                    fill
+                    sizes="48px"
+                    loading="lazy"
+                    decoding="async"
+                    className="object-cover"
                   />
                 ) : (
                   <ImageIcon className="w-5 h-5 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-neutral-600" />

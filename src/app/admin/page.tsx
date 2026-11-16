@@ -456,7 +456,7 @@ export default function AdminPage() {
                 className="w-full justify-start text-neutral-300 hover:text-cyan-400 hover:bg-cyan-950/30"
                 asChild
               >
-                <a href="/" target="_blank">
+                <a href="/" target="_blank" rel="noopener noreferrer">
                   <Globe className="w-4 h-4 mr-3" />
                   View Live Site
                 </a>
@@ -466,7 +466,7 @@ export default function AdminPage() {
                 className="w-full justify-start text-neutral-300 hover:text-purple-400 hover:bg-purple-950/30"
                 asChild
               >
-                <a href="https://supabase.com/dashboard" target="_blank">
+                <a href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer">
                   <Database className="w-4 h-4 mr-3" />
                   Open Supabase Dashboard
                 </a>
@@ -476,7 +476,11 @@ export default function AdminPage() {
                 className="w-full justify-start text-neutral-300 hover:text-green-400 hover:bg-green-950/30"
                 asChild
               >
-                <a href="https://github.com/anubhavaanand/Marvel-nexus" target="_blank">
+                <a
+                  href="https://github.com/anubhavaanand/Marvel-nexus"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <div className="w-4 h-4 mr-3 rounded-full border border-current flex items-center justify-center text-[10px] font-bold">
                     GH
                   </div>

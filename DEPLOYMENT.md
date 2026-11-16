@@ -33,7 +33,10 @@ git push -u origin main
 4. Vercel will auto-detect Next.js settings
 5. Add your environment variables:
    - `NEXT_PUBLIC_SUPABASE_URL` = Your Supabase project URL
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = Your Supabase anonymous (public) key
    - `SUPABASE_SERVICE_ROLE_KEY` = Your Supabase service role key
+   - `TMDB_API_KEY` = Your TMDB API key (for image enrichment)
+   - `ADMIN_PASSWORD` = Password for the admin panel
 6. Click **"Deploy"**
 
 **Option B: Using Vercel CLI**
@@ -50,7 +53,10 @@ vercel
 
 # Add environment variables
 vercel env add NEXT_PUBLIC_SUPABASE_URL
+vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY
 vercel env add SUPABASE_SERVICE_ROLE_KEY
+vercel env add TMDB_API_KEY
+vercel env add ADMIN_PASSWORD
 
 # Deploy to production
 vercel --prod
@@ -63,7 +69,10 @@ In your Vercel project settings:
 - Go to **Settings** > **Environment Variables**
 - Add:
   - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
   - `SUPABASE_SERVICE_ROLE_KEY`
+  - `TMDB_API_KEY`
+  - `ADMIN_PASSWORD`
 - Make sure they are available for **Production**, **Preview**, and **Development**
 
 ---
@@ -79,7 +88,12 @@ In your Vercel project settings:
 5. Build settings (auto-detected):
    - **Build command**: `npm run build`
    - **Publish directory**: `.next`
-6. Add environment variables in **Site settings** > **Environment variables**
+6. Add environment variables in **Site settings** > **Environment variables**:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `TMDB_API_KEY`
+   - `ADMIN_PASSWORD`
 7. Click **"Deploy site"**
 
 ---
@@ -110,7 +124,10 @@ CMD ["npm", "start"]
 docker build -t marvel-nexus .
 docker run -p 3000:3000 \
   -e NEXT_PUBLIC_SUPABASE_URL="your-url" \
+  -e NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key" \
   -e SUPABASE_SERVICE_ROLE_KEY="your-key" \
+  -e TMDB_API_KEY="your-tmdb-key" \
+  -e ADMIN_PASSWORD="your-admin-password" \
   marvel-nexus
 ```
 
@@ -128,6 +145,22 @@ Use AWS Amplify or AWS Elastic Beanstalk:
 2. **AWS Lambda/Serverless**:
    - Use `serverless-next.js` or AWS CDK
    - More complex but cost-effective
+
+---
+
+## 📋 Environment Variables
+
+All environment variables required by the application. Set these in your deployment platform (Vercel, Netlify, Docker, etc.).
+
+| Variable                        | Required | Purpose                                                                        |
+| ------------------------------- | -------- | ------------------------------------------------------------------------------ |
+| `NEXT_PUBLIC_SUPABASE_URL`      | ✅       | Your Supabase project URL                                                      |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅       | Supabase anonymous (public) key — used by the client-side Supabase client      |
+| `SUPABASE_SERVICE_ROLE_KEY`     | ✅       | Supabase service role key — server-side admin access (never expose to browser) |
+| `TMDB_API_KEY`                  | ⚠️       | TMDB API key — enables automatic image enrichment for heroes missing images    |
+| `ADMIN_PASSWORD`                | ✅       | Password for the credential-protected admin panel                              |
+
+> **Note:** `TMDB_API_KEY` is optional at runtime; without it, heroes simply skip image enrichment. The other four are required for the app to function.
 
 ---
 
