@@ -50,9 +50,12 @@ export default async function HeroPage({ params }: PageProps) {
 
   const isAdmin = await checkAdminAuthAction()
 
-  // Resolve existence/lock state first so locked heroes show the restricted
-  // screen instead of a 404 now that RLS hides them from anonymous reads.
-  const visibility = await getHeroVisibility(slug)
+  // Resolve existence/lock state and hero data concurrently. Visibility still
+  // gates rendering so locked hero data is never leaked to anonymous users.
+  const [visibility, hero] = await Promise.all([
+    getHeroVisibility(slug),
+    isAdmin ? getHeroDataForAdmin(slug) : getHeroData(slug),
+  ])
   if (!visibility) {
     notFound()
   }
@@ -61,7 +64,6 @@ export default async function HeroPage({ params }: PageProps) {
     return <RestrictedAccess />
   }
 
-  const hero = isAdmin ? await getHeroDataForAdmin(slug) : await getHeroData(slug)
   if (!hero) {
     notFound()
   }
