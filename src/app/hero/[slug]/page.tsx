@@ -1,7 +1,7 @@
 import { cache } from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import PowerRadarChart from '@/components/PowerRadarChart'
+import PowerRadarChart from '@/components/PowerRadarChartDynamic'
 import CanonEventAlert from '@/components/CanonEventAlert'
 import RestrictedAccess from '@/components/RestrictedAccess'
 import HeroImage from '@/components/HeroImage'
