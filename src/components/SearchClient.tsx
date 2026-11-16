@@ -5,10 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Search, X, Loader2, Sparkles, AlertTriangle, RefreshCw } from 'lucide-react'
 import HeroCard from '@/components/HeroCard'
 import { Button } from '@/components/ui/button'
-import type { Hero } from '@/lib/supabase'
+import type { Hero, SearchHero } from '@/lib/supabase'
 
 interface SearchClientProps {
-  initialAllHeroes: Hero[]
+  initialAllHeroes: SearchHero[]
   loadError?: string | null
   isDemoMode?: boolean
 }
@@ -22,16 +22,16 @@ export default function SearchPage({
   isDemoMode = false,
 }: SearchClientProps) {
   const [query, setQuery] = useState('')
-  const [results, setResults] = useState<Hero[]>([])
+  const [results, setResults] = useState<SearchHero[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [selectedFranchise, setSelectedFranchise] = useState('All')
   const [hasSearched, setHasSearched] = useState(false)
-  const [allHeroes] = useState<Hero[]>(initialAllHeroes)
+  const [allHeroes] = useState<SearchHero[]>(initialAllHeroes)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
   // Memoize the full filter pass so re-renders (and rapid keystrokes that
   // revisit the same query/franchise combo) don't re-scan allHeroes.
-  const filteredResults = useMemo<Hero[]>(() => {
+  const filteredResults = useMemo<SearchHero[]>(() => {
     let filtered = allHeroes
     if (selectedFranchise !== 'All') {
       filtered = filtered.filter((h) => h.franchise === selectedFranchise)
@@ -211,7 +211,7 @@ export default function SearchPage({
                   <>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                       {visibleResults.map((hero, index) => (
-                        <HeroCard key={hero.id} hero={hero} index={index} />
+                        <HeroCard key={hero.id} hero={hero as Hero} index={index} />
                       ))}
                     </div>
 
