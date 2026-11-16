@@ -8,7 +8,34 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
 // TMDB image cache to avoid repeated lookups
-const tmdbImageCache = new Map<string, string | null>()
+const TMDB_IMAGE_CACHE_TTL_MS = 24 * 60 * 60 * 1000
+const TMDB_IMAGE_CACHE_MAX_ENTRIES = 500
+interface TmdbImageCacheEntry {
+  value: string | null
+  expiresAt: number
+}
+const tmdbImageCache = new Map<string, TmdbImageCacheEntry>()
+
+function getTmdbImageCache(key: string): string | null | undefined {
+  const entry = tmdbImageCache.get(key)
+  if (!entry) return undefined
+  if (Date.now() >= entry.expiresAt) {
+    tmdbImageCache.delete(key)
+    return undefined
+  }
+  // LRU: move to end
+  tmdbImageCache.delete(key)
+  tmdbImageCache.set(key, entry)
+  return entry.value
+}
+
+function setTmdbImageCache(key: string, value: string | null): void {
+  if (tmdbImageCache.size >= TMDB_IMAGE_CACHE_MAX_ENTRIES) {
+    const first = tmdbImageCache.keys().next().value
+    if (first !== undefined) tmdbImageCache.delete(first)
+  }
+  tmdbImageCache.set(key, { value, expiresAt: Date.now() + TMDB_IMAGE_CACHE_TTL_MS })
+}
 
 export function needsImageEnrichment(hero: Hero): boolean {
   return !hero.image_url || hero.image_url.trim() === ''
@@ -25,23 +52,23 @@ async function enrichMockHeroesWithTmdb(heroes: Hero[]): Promise<Hero[]> {
   // Limit concurrent TMDB requests to avoid rate limiting and socket exhaustion.
   const results = await mapWithConcurrency(needsEnrichment, 5, async (hero) => {
     const cacheKey = `${hero.name}|${hero.alias}`
-    if (tmdbImageCache.has(cacheKey)) {
-      const cached = tmdbImageCache.get(cacheKey)
+    const cached = getTmdbImageCache(cacheKey)
+    if (cached !== undefined) {
       return cached ? { id: hero.id, url: cached } : null
     }
 
-    // Try actor name first, then alias, then character name
+    // Try actor name first (skip empty), then alias, then character name
     const person =
-      (await searchPerson(hero.actor_name || '')) ||
+      (hero.actor_name ? await searchPerson(hero.actor_name) : null) ||
       (await searchPerson(hero.alias)) ||
       (await searchPerson(hero.name))
     if (person?.profile_path) {
       const url = `https://image.tmdb.org/t/p/w500${person.profile_path}`
-      tmdbImageCache.set(cacheKey, url)
+      setTmdbImageCache(cacheKey, url)
       return { id: hero.id, url }
     }
 
-    tmdbImageCache.set(cacheKey, null)
+    setTmdbImageCache(cacheKey, null)
     return null
   })
 
