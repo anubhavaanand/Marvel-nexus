@@ -5,6 +5,7 @@ import { getServiceSupabase } from '@/lib/service-supabase'
 import { SEED_EVENTS, SEED_HEROES, SEED_MOVIES } from '@/lib/seed-data'
 import { checkActionRateLimit } from '@/lib/action-rate-limit'
 import { checkAdminAuthAction } from './admin'
+import { getMCUPhase } from '@/lib/tmdb'
 import { getSafeErrorMessage } from '@/lib/error'
 
 async function requireAdmin(): Promise<void> {
@@ -112,6 +113,10 @@ export async function syncMoviesAction() {
       const payload = (await response.json()) as { results?: Array<Record<string, unknown>> }
       const match = payload.results?.[0]
       if (!match) continue
+      const enrichedReleaseDate =
+        typeof match.release_date === 'string' && match.release_date
+          ? match.release_date
+          : movie.release_date
       await supabase
         .from('movies')
         .update({
@@ -120,10 +125,8 @@ export async function syncMoviesAction() {
             typeof match.poster_path === 'string' && match.poster_path
               ? `https://image.tmdb.org/t/p/w500/${match.poster_path}`
               : '',
-          release_date:
-            typeof match.release_date === 'string' && match.release_date
-              ? match.release_date
-              : movie.release_date,
+          release_date: enrichedReleaseDate,
+          phase: movie.phase && enrichedReleaseDate ? getMCUPhase(enrichedReleaseDate) : null,
         })
         .eq('id', movie.id)
       enriched += 1
