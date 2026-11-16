@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { useRef } from 'react'
 import { useSharedInView } from '@/hooks/useSharedInView'
 import Link from 'next/link'
@@ -31,17 +31,18 @@ export default function HeroCard({ hero, index = 0 }: HeroCardProps) {
   const slug = slugifyAlias(hero.alias)
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useSharedInView(ref, { once: true, rootMargin: '-50px' })
+  const reducedMotion = useReducedMotion()
 
   return (
     <Link href={`/hero/${slug}`}>
       <motion.article
         ref={ref}
         className="hero-card group"
-        initial={{ opacity: 0, y: 20 }}
+        initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         transition={{
-          duration: 0.6,
-          delay: index * 0.06,
+          duration: reducedMotion ? 0 : 0.6,
+          delay: reducedMotion ? 0 : Math.min(index, 6) * 0.06,
           ease: [0.16, 1, 0.3, 1],
         }}
       >
