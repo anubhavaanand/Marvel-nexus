@@ -25,6 +25,9 @@ export default function HeroManager() {
   const [searchQuery, setSearchQuery] = useState('')
   const [editingHero, setEditingHero] = useState<Hero | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [deleteErrors, setDeleteErrors] = useState<Record<string, string>>({})
+  const [inFlightIds, setInFlightIds] = useState<Set<string>>(new Set())
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
   const fetchHeroes = async () => {
@@ -45,6 +48,8 @@ export default function HeroManager() {
     if (!editingHero) return
 
     setIsSaving(true)
+    setSaveError(null)
+    setInFlightIds((prev) => new Set(prev).add(editingHero.id))
     try {
       const updated = await updateHeroAction(editingHero.id, {
         alias: editingHero.alias,
@@ -57,11 +62,19 @@ export default function HeroManager() {
       if (updated) {
         setHeroes(heroes.map((h) => (h.id === updated.id ? updated : h)))
         setEditingHero(null)
+      } else {
+        setSaveError('Save did not land — the server returned no update. Your edits are preserved.')
       }
     } catch (error) {
       console.error('Failed to update hero:', error)
+      setSaveError('Save failed — your edits are preserved and the form is still open.')
     }
     setIsSaving(false)
+    setInFlightIds((prev) => {
+      const next = new Set(prev)
+      next.delete(editingHero.id)
+      return next
+    })
   }
 
   const handleDelete = async (id: string) => {
@@ -70,17 +83,32 @@ export default function HeroManager() {
       return
     }
 
-    setIsSaving(true)
+    setInFlightIds((prev) => new Set(prev).add(id))
+    setDeleteErrors((prev) => {
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
     try {
       const success = await deleteHeroAction(id)
       if (success) {
         setHeroes(heroes.filter((h) => h.id !== id))
         setDeleteConfirm(null)
+      } else {
+        setDeleteErrors((prev) => ({
+          ...prev,
+          [id]: 'Delete did not land — the row is still visible.',
+        }))
       }
     } catch (error) {
       console.error('Failed to delete hero:', error)
+      setDeleteErrors((prev) => ({ ...prev, [id]: 'Delete failed — the row is still visible.' }))
     }
-    setIsSaving(false)
+    setInFlightIds((prev) => {
+      const next = new Set(prev)
+      next.delete(id)
+      return next
+    })
   }
 
   const filteredHeroes = heroes.filter(
@@ -116,6 +144,22 @@ export default function HeroManager() {
           {filteredHeroes.length} Heroes
         </Badge>
       </div>
+
+      {saveError && (
+        <div className="flex items-center justify-between gap-3 p-3 rounded-lg border border-red-500/50 bg-red-950/30 text-red-300 text-sm">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            <span>{saveError}</span>
+          </div>
+          <button
+            onClick={() => setSaveError(null)}
+            className="text-red-400 hover:text-red-200 shrink-0"
+            aria-label="Dismiss error"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Edit Modal / Form */}
       <AnimatePresence>
@@ -243,6 +287,7 @@ export default function HeroManager() {
                   variant="ghost"
                   className="h-8 w-8 text-neutral-400 hover:text-cyan-400 hover:bg-cyan-950/30"
                   onClick={() => setEditingHero(hero)}
+                  disabled={inFlightIds.has(hero.id)}
                 >
                   <Pencil className="w-4 h-4" />
                 </Button>
@@ -251,13 +296,23 @@ export default function HeroManager() {
                   variant="ghost"
                   className={`h-8 w-8 ${deleteConfirm === hero.id ? 'text-red-500 bg-red-950/30 ring-1 ring-red-500' : 'text-neutral-400 hover:text-red-400 hover:bg-red-950/30'}`}
                   onClick={() => handleDelete(hero.id)}
+                  disabled={inFlightIds.has(hero.id)}
                 >
                   {deleteConfirm === hero.id ? (
-                    <AlertTriangle className="w-4 h-4" />
+                    inFlightIds.has(hero.id) ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <AlertTriangle className="w-4 h-4" />
+                    )
                   ) : (
                     <Trash2 className="w-4 h-4" />
                   )}
                 </Button>
+                {deleteErrors[hero.id] && (
+                  <span className="text-xs text-red-400 pr-2" title={deleteErrors[hero.id]}>
+                    {deleteErrors[hero.id]}
+                  </span>
+                )}
               </div>
             </div>
           ))}
