@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -19,6 +20,7 @@ import {
   Lock,
   Eye,
   EyeOff,
+  AlertTriangle,
 } from 'lucide-react'
 import type { Hero } from '@/lib/supabase'
 import HeroManager from '@/components/admin/HeroManager'
@@ -45,9 +47,16 @@ interface SeedStatus {
 interface AdminClientProps {
   initialHeroes: Hero[]
   initialStats?: AdminStats | null
+  heroesError?: string | null
+  statsError?: string | null
 }
 
-export default function AdminPage({ initialHeroes, initialStats = null }: AdminClientProps) {
+export default function AdminPage({
+  initialHeroes,
+  initialStats = null,
+  heroesError = null,
+  statsError = null,
+}: AdminClientProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -64,6 +73,7 @@ export default function AdminPage({ initialHeroes, initialStats = null }: AdminC
   const [connectionLatency, setConnectionLatency] = useState<number | null>(null)
   const [connectionError, setConnectionError] = useState('')
   const [stats, setStats] = useState<AdminStats | null>(initialStats)
+  const router = useRouter()
 
   // Check if already authenticated (server session check)
   useEffect(() => {
@@ -262,6 +272,15 @@ export default function AdminPage({ initialHeroes, initialStats = null }: AdminC
           Logout
         </Button>
       </header>
+
+      {/* Load-error banners: surface DB/auth failures instead of swallowing them. */}
+
+      {(heroesError || statsError) && (
+        <div className="max-w-4xl mx-auto mb-8 space-y-3">
+          {heroesError && <ErrorBanner message={heroesError} onRetry={() => router.refresh()} />}
+          {statsError && <ErrorBanner message={statsError} onRetry={() => router.refresh()} />}
+        </div>
+      )}
 
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Connection Status Card */}
@@ -538,6 +557,34 @@ function Stat({ label, value, color }: { label: string; value: string; color: st
     <div className={`p-4 rounded-xl border ${colorClasses[color]}`}>
       <p className="text-3xl font-orbitron font-bold">{value}</p>
       <p className="text-xs text-neutral-400 mt-1">{label}</p>
+    </div>
+  )
+}
+
+/**
+ * Generic error banner for admin load failures. Details are logged server-side;
+ * the UI shows only a generic message so nothing sensitive leaks.
+ */
+function ErrorBanner({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <div className="flex items-center justify-between gap-3 p-4 rounded-lg border border-red-500/50 bg-red-950/30 text-red-200">
+      <div className="flex items-center gap-3">
+        <AlertTriangle className="w-5 h-5 shrink-0 text-red-400" />
+        <div>
+          <p className="font-medium text-red-100">{message}</p>
+          <p className="text-xs text-red-300/70">
+            Check the server logs for details. Retrying will re-fetch the panel data.
+          </p>
+        </div>
+      </div>
+      <Button
+        onClick={onRetry}
+        variant="outline"
+        className="border-red-500/50 text-red-300 hover:bg-red-950/50 shrink-0"
+      >
+        <RefreshCw className="w-4 h-4 mr-2" />
+        Retry
+      </Button>
     </div>
   )
 }
