@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Home, Clock, Search, Play, Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -13,17 +13,34 @@ const navItems = [
   { icon: Search, label: 'Search', href: '/search' },
 ]
 
+const SCROLL_THRESHOLD = 20
+
 export default function Navbar() {
   const pathname = usePathname()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const isScrolledRef = useRef(isScrolled)
+  const rafRef = useRef<number | null>(null)
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
+      // Coalesce scroll events: at most one state update per animation frame.
+      if (rafRef.current !== null) return
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = null
+        const next = window.scrollY > SCROLL_THRESHOLD
+        // Only trigger a re-render when the scrolled state actually flips.
+        if (next !== isScrolledRef.current) {
+          isScrolledRef.current = next
+          setIsScrolled(next)
+        }
+      })
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
+    }
   }, [])
 
   return (
