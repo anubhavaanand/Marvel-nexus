@@ -6,6 +6,7 @@ const BASE_URL = 'https://api.themoviedb.org/3'
 const RATE_LIMIT_PER_MINUTE = 10
 const MAX_QUERY_LENGTH = 100
 const CACHE_TTL_MS = 3600_000
+const CACHE_MAX_ENTRIES = 200
 
 interface CacheEntry {
   person: unknown
@@ -21,11 +22,23 @@ function getCached(query: string): unknown | undefined {
     cache.delete(query)
     return undefined
   }
+  // LRU: move to end
+  cache.delete(query)
+  cache.set(query, entry)
   return entry.person
 }
 
 function setCached(query: string, person: unknown): void {
-  cache.set(query, { person, expiresAt: Date.now() + CACHE_TTL_MS })
+  // prune expired on insert
+  const now = Date.now()
+  for (const [k, v] of cache) {
+    if (now >= v.expiresAt) cache.delete(k)
+  }
+  if (cache.size >= CACHE_MAX_ENTRIES) {
+    const first = cache.keys().next().value
+    if (first !== undefined) cache.delete(first)
+  }
+  cache.set(query, { person, expiresAt: now + CACHE_TTL_MS })
 }
 
 export async function GET(request: NextRequest) {
