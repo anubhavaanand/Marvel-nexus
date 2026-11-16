@@ -4,9 +4,13 @@
 
 **Created**: 2026-06-03
 
-**Status**: Ready for Planning
+**Status**: Archived (superseded)
+
+**Superseded by**: [specs/002-supabase-security-hardening/](../002-supabase-security-hardening/)
 
 **Input**: User description: "Analyze and secure project dependencies and configurations"
+
+> **Archived 2026-11-16** — This spec is retained for historical reference only. Its scope (dependency audit + React 19 purity fixes) was completed, but the claimed success criteria do not hold: `npm audit` still reports 24 vulnerabilities (1 low, 10 moderate, 10 high, 3 critical) as of 2026-11-16, contradicting **FR-001/SC-001** ("zero vulnerabilities"). The live remediation work is tracked in issue #11 and the active spec at `specs/002-supabase-security-hardening/`. Do not use this spec as the source of truth for current security work.
 
 ## User Scenarios & Testing _(mandatory)_
 
