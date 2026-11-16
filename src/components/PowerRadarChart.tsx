@@ -135,7 +135,7 @@ export default function PowerRadarChart({ powers, className = '' }: PowerRadarCh
       transition={{ duration: 0.5 }}
     >
       <h3 className="text-lg font-orbitron text-cyan-400 mb-4 flex items-center gap-2">
-        <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
+        <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" aria-hidden="true" />
         Power Analysis
       </h3>
 

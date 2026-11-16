@@ -215,7 +215,12 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                 <h3 className="text-lg font-orbitron text-cyan-400">
                   {editingHero.id ? 'Edit Hero' : 'Add Hero'}
                 </h3>
-                <Button size="icon" variant="ghost" onClick={() => setEditingHero(null)}>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => setEditingHero(null)}
+                  aria-label="Close edit form"
+                >
                   <X className="w-4 h-4" />
                 </Button>
               </div>
