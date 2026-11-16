@@ -274,6 +274,20 @@ export async function deleteHeroAction(id: string): Promise<boolean> {
     return false
   }
 
+  // Clean up dependent rows first so orphaned canon_events/hero_movies rows
+  // cannot remain even on databases without ON DELETE CASCADE (#233).
+  const { error: canonError } = await supabase.from('canon_events').delete().eq('hero_id', id)
+  if (canonError) {
+    console.error('Error deleting hero canon events:', canonError)
+    return false
+  }
+
+  const { error: heroMoviesError } = await supabase.from('hero_movies').delete().eq('hero_id', id)
+  if (heroMoviesError) {
+    console.error('Error deleting hero movie links:', heroMoviesError)
+    return false
+  }
+
   const { error } = await supabase.from('heroes').delete().eq('id', id)
 
   if (error) {

@@ -12,6 +12,7 @@ Ordered SQL migrations for the Multiverse Archive schema. Filenames use a
 | `003_add_actor_name.sql`            | Adds the `actor_name` column to `heroes` (#50).                               |
 |                                     | `004_locked_content_rls.sql`                                                  | Excludes locked heroes from the public read policy (#116).                            |
 |                                     | `005_hero_slug_index.sql`                                                     | Adds an indexed `slug` column + trigger so slug lookups are a single DB query (#144). |
+| `006_hero_delete_cascade.sql`        | Re-adds `ON DELETE CASCADE` FKs for `canon_events`/`hero_movies` (#233). |
 
 ## How to apply
 
