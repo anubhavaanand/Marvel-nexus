@@ -42,8 +42,16 @@ export default function RootLayout({
       <body
         className={`${inter.variable} antialiased min-h-screen bg-[var(--bg)] text-[var(--fg)]`}
       >
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:rounded-md focus:bg-[var(--accent)] focus:text-white focus:outline-none"
+        >
+          Skip to content
+        </a>
         <Navbar />
-        <div className="relative z-10 pt-16">{children}</div>
+        <div id="main" tabIndex={-1} className="relative z-10 pt-16 outline-none">
+          {children}
+        </div>
         <footer className="relative z-10 border-t border-[var(--border)] py-6 px-4 text-center text-xs text-[var(--muted)]">
           <p>
             This product uses the TMDB API but is not endorsed or certified by TMDB.{' '}
