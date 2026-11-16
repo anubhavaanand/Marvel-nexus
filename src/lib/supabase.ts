@@ -532,7 +532,7 @@ export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | n
 
   if (listError) {
     console.error('Error fetching heroes for slug lookup:', listError)
-    return null
+    throw new Error('Failed to load hero')
   }
 
   const match = (candidates || []).find((h) => compareSlug(h.alias, slug))
@@ -557,7 +557,7 @@ export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | n
 
   if (error) {
     console.error('Error fetching hero:', error)
-    return null
+    throw new Error('Failed to load hero')
   }
   return data
 }
@@ -579,7 +579,7 @@ export async function getHeroVisibility(
     .select('id, alias, is_locked_content')
   if (error) {
     console.error('Error resolving hero visibility:', error)
-    return null
+    throw new Error('Failed to resolve hero')
   }
   return (candidates || []).find((h) => compareSlug(h.alias, slug)) ?? null
 }
@@ -606,7 +606,7 @@ async function fetchHeroWithRelations(
     .single()
   if (error) {
     console.error('Error fetching hero:', error)
-    return null
+    throw new Error('Failed to load hero')
   }
   return data as HeroWithRelations
 }
@@ -618,7 +618,7 @@ export async function getHeroBySlugForAdmin(slug: string): Promise<HeroWithRelat
   const { data: candidates, error } = await client.from('heroes').select('id, alias')
   if (error) {
     console.error('Error fetching heroes for admin slug lookup:', error)
-    return null
+    throw new Error('Failed to load hero')
   }
   const match = (candidates || []).find((h) => compareSlug(h.alias, slug))
   if (!match) return null
