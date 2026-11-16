@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { getAllHeroes, type Hero } from '@/lib/supabase'
+import { getAllHeroesForAdmin, type Hero } from '@/lib/supabase'
 import AdminClient from '@/components/AdminClient'
 import { getAdminStatsAction, type AdminStats } from '@/app/actions/seed'
 
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default async function AdminPage() {
   let initialHeroes: Hero[] = []
   try {
-    initialHeroes = await getAllHeroes()
+    initialHeroes = await getAllHeroesForAdmin()
   } catch (error) {
     console.error('Failed to load heroes for admin page:', error)
     initialHeroes = []
