@@ -214,11 +214,24 @@ export async function createHeroAction(updates: Partial<Hero>): Promise<Hero | n
     return null
   }
 
-  // ensure slug
-  const alias = (sanitized.alias ?? updates.alias) as string
-  const slug = alias ? slugifyAlias(alias) : undefined
+  // create requires a name (and alias when available); derive slug from name as fallback
+  const name = (sanitized.name ?? updates.name) as string | undefined
+  const alias = (sanitized.alias ?? updates.alias) as string | undefined
+  if (!name && !alias) {
+    console.error('Rejected hero create: missing name/alias')
+    return null
+  }
+  const slugSource = alias || name
+  const slug = slugSource ? slugifyAlias(slugSource) : undefined
+  if (!slug) {
+    console.error('Rejected hero create: could not derive slug')
+    return null
+  }
   const payload: Record<string, unknown> = { ...sanitized }
-  if (slug) payload.slug = slug
+  if (!payload.name && name) payload.name = name
+  if (!payload.alias && alias) payload.alias = alias
+  if (!payload.alias && name && !alias) payload.alias = name
+  payload.slug = slug
 
   const { data, error } = await supabase.from('heroes').insert(payload).select().maybeSingle()
 
