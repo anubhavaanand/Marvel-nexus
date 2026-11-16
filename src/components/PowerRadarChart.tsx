@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import {
   RadarChart,
   PolarGrid,
@@ -87,14 +87,9 @@ function generatePowerStats(powers: string[]): PowerData[] {
   }))
 }
 
-function prefersReducedMotion(): boolean {
-  if (typeof window === 'undefined' || !window.matchMedia) return false
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
-}
-
 export default function PowerRadarChart({ powers, className = '' }: PowerRadarChartProps) {
   const [mounted, setMounted] = useState(false)
-  const [reducedMotion, setReducedMotion] = useState(prefersReducedMotion)
+  const reducedMotion = useReducedMotion() ?? false
 
   useEffect(() => {
     let active = true
@@ -104,13 +99,6 @@ export default function PowerRadarChart({ powers, className = '' }: PowerRadarCh
     return () => {
       active = false
     }
-  }, [])
-
-  useEffect(() => {
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const handler = () => setReducedMotion(media.matches)
-    media.addEventListener('change', handler)
-    return () => media.removeEventListener('change', handler)
   }, [])
 
   // Memoized so chart data is stable across renders (and deterministic per power).
@@ -201,8 +189,10 @@ export default function PowerRadarChart({ powers, className = '' }: PowerRadarCh
             className="px-2 py-1 text-xs bg-cyan-950/50 border border-cyan-500/30 rounded-md text-cyan-400 font-mono"
             style={{
               opacity: reducedMotion ? 1 : 0,
-              transform: reducedMotion ? 'translateX(0)' : 'translateX(-10px)',
-              transition: reducedMotion ? 'none' : 'opacity 0.3s ease-out, transform 0.3s ease-out',
+              transform: reducedMotion ? 'none' : 'translateX(-10px)',
+              transition: reducedMotion
+                ? 'opacity 0.2s ease-out'
+                : 'opacity 0.3s ease-out, transform 0.3s ease-out',
             }}
           >
             {power}
