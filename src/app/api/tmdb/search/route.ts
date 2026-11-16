@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { isRateLimited } from '@/lib/rate-limit'
+import { isRateLimited, resolveClientIp } from '@/lib/rate-limit'
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY
 const BASE_URL = 'https://api.themoviedb.org/3'
@@ -15,10 +15,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Query too long' }, { status: 400 })
   }
 
-  const ip =
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
+  const ip = resolveClientIp(
+    request.headers.get('x-forwarded-for'),
+    request.headers.get('x-real-ip'),
+  )
   if (isRateLimited(`tmdb-search:${ip}`, RATE_LIMIT_PER_MINUTE, 60_000)) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
   }
@@ -28,10 +28,11 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const res = await fetch(
-      `${BASE_URL}/search/person?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`,
-      { next: { revalidate: 3600 }, signal: AbortSignal.timeout(5000) },
-    )
+    const res = await fetch(`${BASE_URL}/search/person?query=${encodeURIComponent(query)}`, {
+      headers: { Authorization: `Bearer ${TMDB_API_KEY}` },
+      next: { revalidate: 3600 },
+      signal: AbortSignal.timeout(5000),
+    })
 
     if (!res.ok) {
       // Do not expose upstream provider details to clients.
