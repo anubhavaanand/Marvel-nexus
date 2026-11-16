@@ -1,6 +1,8 @@
 const { createClient } = require('@supabase/supabase-js')
 require('dotenv').config({ path: '.env.local' })
 
+const guard = require('./seed-guard')
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -333,6 +335,20 @@ const newHeroes = [
 
 async function addMoreHeroes() {
   console.log(`🦸‍♂️ Adding ${newHeroes.length} new verified heroes...\n`)
+
+  const flags = guard.parseArgs(process.argv.slice(2))
+  guard.requireConfirm(
+    flags,
+    {
+      title: 'insert 30+ verified heroes — existing rows are skipped, nothing is deleted',
+      destructive: [],
+      safe: [
+        'INSERT only heroes that do not already exist (checked by alias)',
+        'No DELETE/TRUNCATE — existing rows are left untouched',
+      ],
+    },
+    'add-more-verified.js',
+  )
 
   let added = 0
   let failed = 0

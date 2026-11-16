@@ -1,6 +1,8 @@
 const { createClient } = require('@supabase/supabase-js')
 require('dotenv').config({ path: '.env.local' })
 
+const guard = require('./seed-guard')
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -200,6 +202,20 @@ async function addHeroes() {
   console.log('🚀 Adding new heroes to Multiverse Archive...')
   console.log(`📊 New heroes to add: ${newHeroes.length}`)
   console.log('')
+
+  const flags = guard.parseArgs(process.argv.slice(2))
+  guard.requireConfirm(
+    flags,
+    {
+      title: 'insert 18 new heroes — existing rows are skipped, nothing is deleted',
+      destructive: [],
+      safe: [
+        'INSERT only heroes that do not already exist (checked by alias)',
+        'No DELETE/TRUNCATE — existing rows are left untouched',
+      ],
+    },
+    'add-more-heroes.js',
+  )
 
   // First, let's drop the constraint so we can add new franchises
   console.log('🔧 Updating franchise constraint...')

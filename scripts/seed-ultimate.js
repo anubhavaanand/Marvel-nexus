@@ -557,22 +557,19 @@ async function seedUltimate() {
   console.log('🚀 Starting ULTIMATE MASTER SEED process...')
 
   const flags = guard.parseArgs(process.argv.slice(2))
+  guard.requireConfirm(
+    flags,
+    {
+      title: 'full database reseed — wipes existing data before inserting',
+      destructive: [
+        'DELETE all existing rows from heroes (table is truncated via .delete().neq(id, ...))',
+      ],
+      safe: ['INSERT heroes from the ultimate list'],
+    },
+    'seed-ultimate.js',
+  )
 
   // 1. WIPE EVERYTHING — destructive, requires explicit opt-in
-  if (!flags.confirm) {
-    console.log('')
-    console.log('⚠️  seed-ultimate.js — full database reseed (DESTRUCTIVE)')
-    console.log('')
-    console.log('This script will:')
-    console.log('   🗑️  DELETE all existing rows from heroes')
-    console.log('   ✅  Insert heroes from the ultimate list')
-    console.log('')
-    console.log('To proceed, re-run with --confirm:')
-    console.log('   node scripts/seed-ultimate.js --confirm')
-    console.log('   OR set SEED_CONFIRM=1 in your environment')
-    process.exit(1)
-  }
-
   console.log('🗑️  Clearing existing heroes...')
   const { error: deleteError } = await supabase
     .from('heroes')
