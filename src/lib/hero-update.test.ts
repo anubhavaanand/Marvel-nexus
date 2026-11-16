@@ -39,9 +39,14 @@ describe('sanitizeHeroUpdate', () => {
       }),
     )
 
-    expect(result).toEqual({ alias: 'Iron Man' })
+    expect(result).toEqual({
+      alias: 'Iron Man',
+      is_locked_content: true,
+      powers: ['Flight'],
+      weaknesses: ['Ego'],
+    })
     expect(result).not.toHaveProperty('id')
-    expect(result).not.toHaveProperty('is_locked_content')
+    expect(result).not.toHaveProperty('first_appearance_movie_id')
   })
 
   it('rejects empty alias or name', () => {
