@@ -63,9 +63,8 @@ Visit your project dashboard and resume it.
 
 1. Go to https://supabase.com/dashboard
 2. Create a new project
-3. Run the SQL from `scripts/create-tables.sql` in SQL Editor
-4. Run the SQL from `scripts/update-franchise-constraint.sql`
-5. Update `.env.local` with new credentials:
+3. Run the SQL from `supabase/schema.sql` in SQL Editor (canonical schema)
+4. Update `.env.local` with new credentials:
    ```env
    NEXT_PUBLIC_SUPABASE_URL=https://YOUR_NEW_PROJECT.supabase.co
    SUPABASE_SERVICE_ROLE_KEY=your_new_service_role_key
