@@ -9,6 +9,7 @@ import { getServiceSupabase as getAdminSupabase } from '@/lib/service-supabase'
 import { createSessionToken, revokeSessionToken, validateSessionToken } from '@/lib/admin-sessions'
 import { checkActionRateLimit, getClientIp } from '@/lib/action-rate-limit'
 import { isRateLimited } from '@/lib/rate-limit'
+import { getSafeErrorMessage } from '@/lib/error'
 
 const MAX_LOGIN_ATTEMPTS_PER_MINUTE = 5
 
@@ -211,6 +212,7 @@ export async function testDatabaseConnectionAction(): Promise<TestDatabaseConnec
 
     return { ok: true, latencyMs: Date.now() - started }
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : 'Database connection failed' }
+    console.error('testDatabaseConnectionAction failed:', err)
+    return { ok: false, error: getSafeErrorMessage(err, 'Database connection failed') }
   }
 }
