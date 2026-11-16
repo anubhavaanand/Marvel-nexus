@@ -8,6 +8,8 @@ function fingerprint(key) {
   return `sha256:${hash.slice(0, 8)}`
 }
 
+const verbose = process.argv.includes('--verbose')
+
 console.log('🔍 Checking Supabase Environment Variables...\n')
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -15,19 +17,21 @@ const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 console.log('NEXT_PUBLIC_SUPABASE_URL:', url ? '✅ Set' : '❌ Missing')
-console.log('  Value:', url || 'undefined')
+if (verbose) console.log('  Value:', url || 'undefined')
 
 console.log('\nSUPABASE_SERVICE_ROLE_KEY:', serviceKey ? '✅ Set' : '❌ Missing')
-console.log(
-  '  Value:',
-  serviceKey ? `${fingerprint(serviceKey)} (length ${serviceKey.length})` : 'undefined',
-)
+if (verbose)
+  console.log(
+    '  Value:',
+    serviceKey ? `${fingerprint(serviceKey)} (length ${serviceKey.length})` : 'undefined',
+  )
 
 console.log('\nNEXT_PUBLIC_SUPABASE_ANON_KEY:', anonKey ? '✅ Set' : '❌ Missing')
-console.log(
-  '  Value:',
-  anonKey ? `${fingerprint(anonKey)} (length ${anonKey.length})` : 'undefined',
-)
+if (verbose)
+  console.log(
+    '  Value:',
+    anonKey ? `${fingerprint(anonKey)} (length ${anonKey.length})` : 'undefined',
+  )
 
 console.log('\n' + '='.repeat(60))
 
