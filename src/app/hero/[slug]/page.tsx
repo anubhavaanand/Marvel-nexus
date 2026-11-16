@@ -17,24 +17,14 @@ interface PageProps {
   params: Promise<{ slug: string }>
 }
 
+// Load failures propagate to the route's error boundary instead of being
+// reported as a 404; only a genuinely missing slug uses notFound().
 async function getHeroData(slug: string): Promise<HeroWithRelations | null> {
-  try {
-    const hero = await getHeroBySlug(slug)
-    return hero
-  } catch (e) {
-    console.error('Error fetching hero:', e)
-    return null
-  }
+  return getHeroBySlug(slug)
 }
 
 async function getHeroDataForAdmin(slug: string): Promise<HeroWithRelations | null> {
-  try {
-    const hero = await getHeroBySlugForAdmin(slug)
-    return hero
-  } catch (e) {
-    console.error('Error fetching hero for admin:', e)
-    return null
-  }
+  return getHeroBySlugForAdmin(slug)
 }
 
 const franchiseColors: Record<string, { primary: string; glow: string }> = {
@@ -55,12 +45,7 @@ export default async function HeroPage({ params }: PageProps) {
 
   // Resolve existence/lock state first so locked heroes show the restricted
   // screen instead of a 404 now that RLS hides them from anonymous reads.
-  let visibility = null
-  try {
-    visibility = await getHeroVisibility(slug)
-  } catch (e) {
-    console.error('Error resolving hero visibility:', e)
-  }
+  const visibility = await getHeroVisibility(slug)
   if (!visibility) {
     notFound()
   }
