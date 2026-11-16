@@ -38,12 +38,12 @@ export default function Error({ error, reset }: ErrorPageProps) {
           </div>
         </div>
         {/* Heading */}
-        <h2
+        <h1
           className="text-2xl md:text-3xl font-semibold text-[var(--fg)] mb-4"
           style={{ fontFamily: 'var(--font-display)' }}
         >
           Something went wrong
-        </h2>
+        </h1>
         {/* Message */}
         <p
           className="text-[var(--muted)] max-w-md mx-auto mb-4"

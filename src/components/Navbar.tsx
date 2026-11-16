@@ -154,7 +154,7 @@ export default function Navbar() {
             {/* Mobile menu button */}
             <button
               ref={toggleRef}
-              className="md:hidden p-2 rounded-lg hover:bg-[var(--surface)] transition-colors"
+              className="md:hidden min-h-11 min-w-11 p-2 rounded-lg hover:bg-[var(--surface)] transition-colors"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="Toggle menu"
               aria-expanded={isMobileMenuOpen}

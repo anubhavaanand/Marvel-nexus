@@ -116,7 +116,7 @@ export default function SearchPage({
                       <button
                         onClick={() => setQuery('')}
                         aria-label="Clear search"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--meta)] hover:text-[var(--fg)] transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-3.5 text-[var(--meta)] hover:text-[var(--fg)] transition-colors"
                       >
                         <X className="w-4 h-4" />
                       </button>
