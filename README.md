@@ -14,7 +14,7 @@ This application features a premium, Stark-Industries-style "JARVIS" visual inte
 - 📺 **Official Watch Orders**: Detailed, sortable chronological and release order movie lists for the Marvel and DC universes.
 - 🌲 **Pine-Tree Timeline Scroll**: Interactive custom right-side scroll indicator matching MCU phase progress.
 - 📊 **Power Analysis Charts**: Hydration-safe radar charts visualizing capability matrices dynamically.
-- 🔒 **Secure Admin Clearance**: Built-in credential-protected panel to perform database reset, TMDB sync, and full CRUD operations on characters.
+- 🔒 **Secure Admin Clearance**: Built-in credential-protected panel with Hero Manager CRUD operations (create, update, delete) and a database connection tester. Seed/sync buttons are present but currently non-functional stubs (see issue #9); there is no database reset feature.
 
 ---
 
