@@ -55,9 +55,11 @@ node scripts/seed-master.js
 | ------------------ | ----------------------------------------------------------- | ------ |
 | `seed-master.js`   | **MASTER SEED** - Complete database reset with curated list | ~40    |
 | `seed-ultimate.js` | Alternative seed with different hero selection              | ~85    |
-| `seed-heroes.js`   | Original seed script                                        | ~50    |
+| `seed-heroes.js`   | Original seed script                                        | ~51    |
 
-> ⚠️ **Warning**: Seed scripts DELETE all existing heroes first!
+> ⚠️ **Safety**: `seed-master.js` and `seed-ultimate.js` **refuse to run without an explicit `--confirm` flag** (or `SEED_CONFIRM=1` in the environment). They print exactly what they will do and exit non-zero. `seed-heroes.js` is now **idempotent** — it upserts by `alias` and never deletes rows, so it is safe to run without `--confirm`. `add-spidermen.js` also deletes the two aliases it manages and requires `--confirm`.
+>
+> Shared guard: `scripts/seed-guard.js` (`parseArgs` / `requireConfirm` / `upsertHeroes`).
 
 ### Adding (Non-Destructive)
 
