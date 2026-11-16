@@ -4,7 +4,12 @@ import PowerRadarChart from '@/components/PowerRadarChart'
 import CanonEventAlert from '@/components/CanonEventAlert'
 import RestrictedAccess from '@/components/RestrictedAccess'
 import HeroImage from '@/components/HeroImage'
-import { getHeroBySlug, type HeroWithRelations } from '@/lib/supabase'
+import {
+  getHeroBySlug,
+  getHeroBySlugForAdmin,
+  getHeroVisibility,
+  type HeroWithRelations,
+} from '@/lib/supabase'
 import { checkAdminAuthAction } from '@/app/actions/admin'
 import { ArrowLeft, Globe, Zap, AlertTriangle, Shield, Film, Lock, Sparkles } from 'lucide-react'
 
@@ -22,6 +27,16 @@ async function getHeroData(slug: string): Promise<HeroWithRelations | null> {
   }
 }
 
+async function getHeroDataForAdmin(slug: string): Promise<HeroWithRelations | null> {
+  try {
+    const hero = await getHeroBySlugForAdmin(slug)
+    return hero
+  } catch (e) {
+    console.error('Error fetching hero for admin:', e)
+    return null
+  }
+}
+
 const franchiseColors: Record<string, { primary: string; glow: string }> = {
   MCU: { primary: 'var(--franchise-mcu)', glow: 'rgba(0, 113, 227, 0.3)' },
   'X-Men': { primary: 'var(--franchise-xmen)', glow: 'rgba(234, 179, 8, 0.3)' },
@@ -35,19 +50,31 @@ const franchiseColors: Record<string, { primary: string; glow: string }> = {
 
 export default async function HeroPage({ params }: PageProps) {
   const { slug } = await params
-  const hero = await getHeroData(slug)
 
+  const isAdmin = await checkAdminAuthAction()
+
+  // Resolve existence/lock state first so locked heroes show the restricted
+  // screen instead of a 404 now that RLS hides them from anonymous reads.
+  let visibility = null
+  try {
+    visibility = await getHeroVisibility(slug)
+  } catch (e) {
+    console.error('Error resolving hero visibility:', e)
+  }
+  if (!visibility) {
+    notFound()
+  }
+
+  if (visibility.is_locked_content && !isAdmin) {
+    return <RestrictedAccess />
+  }
+
+  const hero = isAdmin ? await getHeroDataForAdmin(slug) : await getHeroData(slug)
   if (!hero) {
     notFound()
   }
 
   const colors = franchiseColors[hero.franchise] || franchiseColors['MCU']
-
-  const isAdmin = await checkAdminAuthAction()
-  if (hero.is_locked_content && !isAdmin) {
-    // Do not render or serialize any protected fields for non-admins.
-    return <RestrictedAccess />
-  }
 
   return (
     <>
