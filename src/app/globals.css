@@ -11,10 +11,33 @@
  * ───────────────────────────────────────────────────────────────────────── */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--bg);
+  --color-foreground: var(--fg);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* shadcn/ui theme tokens aligned to the site design system */
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--accent-on);
+
+  --color-secondary: var(--surface);
+  --color-secondary-foreground: var(--fg);
+
+  --color-card: var(--surface);
+  --color-card-foreground: var(--fg);
+
+  --color-input: var(--border);
+  --color-ring: var(--accent);
+
+  --color-destructive: var(--danger);
+  --color-destructive-foreground: var(--accent-on);
+
+  --color-muted-foreground: var(--fg);
+
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--fg);
+
+  --color-accent-foreground: var(--accent-on);
 
   --color-bg: #000000;
   --color-surface: #000000;
