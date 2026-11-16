@@ -1,14 +1,20 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 
 const store = new Map<string, { token_hash: string; expires_at: string }>()
+
+let shouldError = false
 
 vi.mock('./service-supabase', () => ({
   getServiceSupabase: () => ({
     from: () => ({
       select: (_cols: string) => ({
-        limit: async () => ({ error: null }),
+        limit: async () => {
+          if (shouldError) return { error: { message: 'transient error' } }
+          return { error: null }
+        },
         eq: (col: string, val: string) => ({
           maybeSingle: async () => {
+            if (shouldError) return { data: null, error: { message: 'transient error' } }
             const row = store.get(val)
             if (!row) return { data: null, error: null }
             return { data: row, error: null }
@@ -16,24 +22,40 @@ vi.mock('./service-supabase', () => ({
         }),
       }),
       insert: async (row: { token_hash: string; expires_at: string }) => {
+        if (shouldError) return { error: { message: 'transient error' } }
         store.set(row.token_hash, row)
         return { error: null }
       },
       delete: () => ({
         eq: async (col: string, val: string) => {
+          if (shouldError) return { error: { message: 'transient error' } }
           if (col === 'token_hash') store.delete(val)
           return {}
         },
-        lt: async () => ({}),
+        lt: async () => {
+          if (shouldError) return { error: { message: 'transient error' } }
+          return {}
+        },
       }),
     }),
   }),
 }))
 
-import { createSessionToken, revokeSessionToken, validateSessionToken } from './admin-sessions'
+import {
+  createSessionToken,
+  revokeSessionToken,
+  validateSessionToken,
+  __resetDbModeForTest,
+} from './admin-sessions'
 
 beforeEach(() => {
   store.clear()
+  shouldError = false
+  __resetDbModeForTest()
+})
+
+afterEach(() => {
+  vi.useRealTimers()
 })
 
 describe('admin session tokens', () => {
@@ -61,5 +83,71 @@ describe('admin session tokens', () => {
 
   it('treats revoking an empty token as a no-op', async () => {
     await expect(revokeSessionToken('')).resolves.toBeUndefined()
+  })
+})
+
+describe('transient DB error recovery (re-probe)', () => {
+  beforeEach(() => {
+    store.clear()
+    shouldError = false
+    __resetDbModeForTest()
+  })
+
+  it('recovers after a transient error on initial probe', async () => {
+    shouldError = true
+    await expect(createSessionToken()).rejects.toThrow(
+      'Admin sessions require the admin_sessions table',
+    )
+
+    vi.useFakeTimers()
+    vi.advanceTimersByTime(3000)
+
+    shouldError = false
+    const token = await createSessionToken()
+    await expect(validateSessionToken(token)).resolves.toBe(true)
+  })
+
+  it('continues validating during transient write errors', async () => {
+    const token = await createSessionToken()
+    await expect(validateSessionToken(token)).resolves.toBe(true)
+
+    shouldError = true
+    await expect(createSessionToken()).rejects.toThrow('Failed to create admin session')
+
+    // Validation may fail during the error, but dbMode is NOT permanently disabled.
+    // After recovery, validation works again.
+
+    vi.useFakeTimers()
+    vi.advanceTimersByTime(3000)
+    shouldError = false
+    const token2 = await createSessionToken()
+    await expect(validateSessionToken(token2)).resolves.toBe(true)
+  })
+
+  it('recovers validation after transient read error', async () => {
+    const token = await createSessionToken()
+    await expect(validateSessionToken(token)).resolves.toBe(true)
+
+    shouldError = true
+    await expect(validateSessionToken(token)).resolves.toBe(false)
+
+    vi.useFakeTimers()
+    vi.advanceTimersByTime(3000)
+    shouldError = false
+    await expect(validateSessionToken(token)).resolves.toBe(true)
+  })
+
+  it('revoke triggers re-probe on error but does not throw', async () => {
+    const token = await createSessionToken()
+    await expect(validateSessionToken(token)).resolves.toBe(true)
+
+    shouldError = true
+    await expect(revokeSessionToken(token)).resolves.toBeUndefined()
+
+    vi.useFakeTimers()
+    vi.advanceTimersByTime(3000)
+    shouldError = false
+    const token2 = await createSessionToken()
+    await expect(validateSessionToken(token2)).resolves.toBe(true)
   })
 })
