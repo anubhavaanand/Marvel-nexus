@@ -65,7 +65,8 @@ export function isRateLimited(key: string, limit: number, windowMs: number): boo
     }
   }
   if (timestamps.length >= limit) {
-    record()
+    // Fixed window: a rejected attempt must not extend expiresAt (or move
+    // the bucket's expiry). Keep record() for accepted attempts only.
     return true
   }
   timestamps.push(now)

@@ -82,7 +82,7 @@ export const FRANCHISE_VALUES = [
   'Other',
 ] as const
 
-const UPDATEABLE_FIELDS = [
+export const UPDATEABLE_FIELDS = [
   'alias',
   'name',
   'image_url',

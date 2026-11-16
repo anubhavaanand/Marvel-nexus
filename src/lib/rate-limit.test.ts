@@ -24,8 +24,23 @@ describe('isRateLimited', () => {
     expect(isRateLimited('b', 1, 1000)).toBe(false)
   })
 
+  it('does not extend lockout expiry on rejected attempts', () => {
+    vi.useFakeTimers()
+    resetRateLimiter()
+    expect(isRateLimited('k', 1, 100)).toBe(false)
+    // Repeated rejected attempts must not slide the window.
+    vi.advanceTimersByTime(50)
+    expect(isRateLimited('k', 1, 100)).toBe(true)
+    vi.advanceTimersByTime(30)
+    expect(isRateLimited('k', 1, 100)).toBe(true)
+    // Original window (100ms) has elapsed; bucket should be unlocked.
+    vi.advanceTimersByTime(25)
+    expect(isRateLimited('k', 1, 100)).toBe(false)
+  })
+
   it('resets after the window passes', () => {
     vi.useFakeTimers()
+    resetRateLimiter()
     expect(isRateLimited('c', 1, 20)).toBe(false)
     expect(isRateLimited('c', 1, 20)).toBe(true)
     vi.advanceTimersByTime(25)
