@@ -135,3 +135,34 @@ export async function deleteHeroAction(id: string): Promise<boolean> {
   }
   return true
 }
+
+/**
+ * Pings Supabase with a cheap query and reports latency.
+ * Never returns credentials, URLs, or raw provider messages to the client.
+ */
+export interface TestDatabaseConnectionResult {
+  ok: boolean
+  latencyMs?: number
+  error?: string
+}
+
+export async function testDatabaseConnectionAction(): Promise<TestDatabaseConnectionResult> {
+  const isAuthenticated = await checkAdminAuthAction()
+  if (!isAuthenticated) {
+    throw new Error('Unauthorized admin access')
+  }
+
+  const started = Date.now()
+  try {
+    const supabase = getAdminSupabase()
+    const { error } = await supabase.from('heroes').select('id', { count: 'exact', head: true })
+
+    if (error) {
+      return { ok: false, error: 'Database query failed' }
+    }
+
+    return { ok: true, latencyMs: Date.now() - started }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Database connection failed' }
+  }
+}
