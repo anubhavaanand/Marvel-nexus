@@ -49,27 +49,48 @@ async function enrichMockHeroesWithTmdb(heroes: Hero[]): Promise<Hero[]> {
   const needsEnrichment = heroes.filter((h) => needsImageEnrichment(h))
   if (needsEnrichment.length === 0) return heroes
 
-  // Limit concurrent TMDB requests to avoid rate limiting and socket exhaustion.
-  const results = await mapWithConcurrency(needsEnrichment, 5, async (hero) => {
-    const cacheKey = `${hero.name}|${hero.alias}`
+  // Dedupe in-flight lookups within a single request so heroes sharing an
+  // actor name (or fallback search term) trigger only one TMDB call. The
+  // bounded LRU/TTL cache above (from #230) is reused for cross-request
+  // caching; no second unbounded cache is introduced.
+  const inflight = new Map<string, Promise<string | null>>()
+
+  const lookup = (cacheKey: string, hero: Hero): Promise<string | null> => {
     const cached = getTmdbImageCache(cacheKey)
     if (cached !== undefined) {
-      return cached ? { id: hero.id, url: cached } : null
+      return Promise.resolve(cached)
     }
+    const existing = inflight.get(cacheKey)
+    if (existing) return existing
 
-    // Try actor name first (skip empty), then alias, then character name
-    const person =
-      (hero.actor_name ? await searchPerson(hero.actor_name) : null) ||
-      (await searchPerson(hero.alias)) ||
-      (await searchPerson(hero.name))
-    if (person?.profile_path) {
-      const url = `https://image.tmdb.org/t/p/w500${person.profile_path}`
+    const promise = (async () => {
+      // Try actor name first (skip empty), then alias, then character name.
+      const actorName = hero.actor_name?.trim()
+      const alias = hero.alias?.trim()
+      const name = hero.name?.trim()
+      const person =
+        (actorName ? await searchPerson(actorName) : null) ||
+        (alias ? await searchPerson(alias) : null) ||
+        (name ? await searchPerson(name) : null)
+      const url = person?.profile_path
+        ? `https://image.tmdb.org/t/p/w500${person.profile_path}`
+        : null
       setTmdbImageCache(cacheKey, url)
-      return { id: hero.id, url }
-    }
+      return url
+    })()
+    inflight.set(cacheKey, promise)
+    return promise
+  }
 
-    setTmdbImageCache(cacheKey, null)
-    return null
+  // Limit concurrent TMDB requests to avoid rate limiting and socket exhaustion.
+  const results = await mapWithConcurrency(needsEnrichment, 5, async (hero) => {
+    // Skip empty actor/search names; key the cache by the actor name (falling
+    // back to alias then name) so repeated lookups reuse the cached result.
+    const cacheKey = hero.actor_name?.trim() || hero.alias?.trim() || hero.name?.trim()
+    if (!cacheKey) return null
+
+    const url = await lookup(cacheKey, hero)
+    return url ? { id: hero.id, url } : null
   })
 
   const imageMap = new Map<string, string>()
