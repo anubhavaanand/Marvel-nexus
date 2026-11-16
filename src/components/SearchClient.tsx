@@ -2,19 +2,25 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, X, Loader2, Sparkles } from 'lucide-react'
+import { Search, X, Loader2, Sparkles, AlertTriangle, RefreshCw } from 'lucide-react'
 import HeroCard from '@/components/HeroCard'
 import { Button } from '@/components/ui/button'
 import type { Hero } from '@/lib/supabase'
 
 interface SearchClientProps {
   initialAllHeroes: Hero[]
+  loadError?: string | null
+  isDemoMode?: boolean
 }
 
 const franchises = ['All', 'MCU', 'X-Men', 'Spider-Verse', 'DC', 'Anime', 'The Boys']
 const PAGE_SIZE = 24
 
-export default function SearchPage({ initialAllHeroes }: SearchClientProps) {
+export default function SearchPage({
+  initialAllHeroes,
+  loadError = null,
+  isDemoMode = false,
+}: SearchClientProps) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Hero[]>([])
   const [isSearching, setIsSearching] = useState(false)
@@ -83,6 +89,11 @@ export default function SearchPage({ initialAllHeroes }: SearchClientProps) {
 
   return (
     <main className="min-h-screen">
+      {(isDemoMode || loadError) && (
+        <div className="border-b border-amber-500/30 bg-amber-500/10 px-4 py-2 text-center text-sm text-amber-300">
+          {loadError ?? 'Demo mode: Supabase is not configured, showing sample data.'}
+        </div>
+      )}
       <section className="relative bg-[var(--bg)] overflow-hidden">
         <div className="absolute inset-0 bg-grid opacity-[0.15]" />
         <div className="absolute inset-0 gradient-spotlight" />
@@ -163,7 +174,28 @@ export default function SearchPage({ initialAllHeroes }: SearchClientProps) {
       <section className="section bg-[var(--bg)]">
         <div className="container-wide">
           <AnimatePresence mode="wait">
-            {isSearching ? (
+            {loadError ? (
+              <motion.div
+                key="error"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="flex flex-col items-center justify-center py-20 text-center"
+              >
+                <div className="w-14 h-14 rounded-2xl glass flex items-center justify-center mb-4 border border-[var(--danger)]/30">
+                  <AlertTriangle className="w-7 h-7 text-[var(--danger)]" />
+                </div>
+                <p className="text-lg font-medium text-[var(--fg)]">{loadError}</p>
+                <p className="text-sm text-[var(--meta)] mt-2 max-w-md">
+                  We couldn&rsquo;t reach the hero database. Please try again in a moment, or check
+                  your connection.
+                </p>
+                <Button variant="outline" className="mt-6" onClick={() => window.location.reload()}>
+                  <RefreshCw className="w-4 h-4" />
+                  Retry
+                </Button>
+              </motion.div>
+            ) : isSearching ? (
               <motion.div
                 key="loading"
                 initial={{ opacity: 0 }}
