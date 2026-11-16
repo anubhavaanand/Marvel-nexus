@@ -54,7 +54,23 @@ Marvel-nexus/
 
 ## 🔒 Rate Limiting & TRUST_PROXY
 
-When deployed behind a trusted reverse proxy (Vercel, Netlify, nginx, ...), set `TRUST_PROXY=true` so per-client IP rate-limit buckets work. When unset/false, proxy headers are ignored (spoofable) and all clients share one conservative bucket; a warning is logged if headers are present. See DEPLOYMENT.md.
+When deployed behind a trusted reverse proxy (Vercel, Netlify, nginx, ...), set `TRUST_PROXY=true` so per-client IP rate-limit buckets work. When unset/false, proxy headers are ignored (spoofable) and all clients share one conservative bucket; a warning is logged if headers are present. See DEPLOYMENT.md. Proxies must strip/replace any client-supplied X-Forwarded-For before appending; the rightmost `TRUST_PROXY_DEPTH` (default 1) entries are treated as trusted proxy hops. Set `TRUST_PROXY_DEPTH` for multi-hop proxies.
+
+## 🔧 Database Management Scripts
+
+The following npm script shortcuts are available for common database operations:
+
+```bash
+npm run seed          # Seed heroes (idempotent upsert)
+npm run sync:tmdb     # Sync movie data from TMDB
+npm run health        # Comprehensive database health check
+npm run count:heroes  # Count heroes by franchise
+npm run check-env     # Validate Supabase environment variables
+```
+
+These map to the scripts in `scripts/` — see [scripts/README.md](./scripts/README.md) for detailed usage and safety notes.
+
+---
 
 ## 📝 Documentation Links
 

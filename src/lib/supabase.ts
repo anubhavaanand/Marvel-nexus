@@ -1,6 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { searchPerson } from './tmdb'
 import { compareSlug, slugifyAlias } from './slugs'
+import { SEED_MOVIES } from './seed-data'
 import { mapWithConcurrency } from './concurrency'
 import { getServiceSupabase } from './service-supabase'
 
@@ -790,7 +791,7 @@ export async function getHeroBySlugForAdmin(slug: string): Promise<HeroWithRelat
 
 /** Fields the search UI actually renders (HeroCard + client-side filter). */
 const SEARCH_HERO_FIELDS =
-  'id,slug,name,alias,franchise,origin_world,powers,image_url,is_locked_content' as const
+  'id,slug,name,alias,actor_name,franchise,origin_world,powers,weaknesses,image_url,is_locked_content' as const
 
 /** Lightweight hero shape for search results — omits heavy/unused columns. */
 export type SearchHero = Pick<
@@ -799,9 +800,11 @@ export type SearchHero = Pick<
   | 'slug'
   | 'name'
   | 'alias'
+  | 'actor_name'
   | 'franchise'
   | 'origin_world'
   | 'powers'
+  | 'weaknesses'
   | 'image_url'
   | 'is_locked_content'
 >
@@ -822,6 +825,7 @@ export async function getSearchHeroes(): Promise<SearchHero[]> {
         franchise,
         origin_world,
         powers,
+        weaknesses,
         image_url,
         is_locked_content,
       }) => ({
@@ -832,6 +836,7 @@ export async function getSearchHeroes(): Promise<SearchHero[]> {
         franchise,
         origin_world,
         powers,
+        weaknesses,
         image_url,
         is_locked_content,
       }),
@@ -844,6 +849,8 @@ export async function getSearchHeroes(): Promise<SearchHero[]> {
     console.error('Error fetching search heroes:', error)
     throw new Error('Failed to load heroes')
   }
+  // Apply bounded TMDB enrichment to Supabase heroes missing images,
+  // reusing the same cache helper from #230/#249.
   return enrichHeroesWithTmdb((data || []) as SearchHero[])
 }
 
@@ -867,8 +874,21 @@ export async function getAllHeroesForAdmin(): Promise<Hero[]> {
   return data || []
 }
 
+const mockMovies: Movie[] = SEED_MOVIES.map((m) => ({
+  id: m.id,
+  tmdb_id: 0,
+  title: m.title,
+  release_date: m.release_date ?? '',
+  phase: m.phase as Movie['phase'],
+  poster_url: m.poster_url,
+  imdb_rating: 0,
+}))
+
 export async function getAllMovies(options?: { allowEmpty?: boolean }): Promise<Movie[]> {
-  if (!supabase) return []
+  if (!supabase)
+    return [...mockMovies].sort((a, b) =>
+      (a.release_date || '').localeCompare(b.release_date || ''),
+    )
 
   try {
     const { data, error } = await supabase

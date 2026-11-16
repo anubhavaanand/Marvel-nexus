@@ -53,6 +53,13 @@ describe('parseClientIp', () => {
     expect(parseClientIp('203.0.113.7, 10.0.0.1')).toBe('203.0.113.7')
   })
 
+  it('takes the untrusted entry before trusted proxies (multi-hop)', () => {
+    // client, proxy1, proxy2 with 2 trusted proxies -> client
+    expect(parseClientIp('203.0.113.7, 10.0.0.1, 10.0.0.2', 2)).toBe('203.0.113.7')
+    // single trusted proxy -> the entry just before it
+    expect(parseClientIp('203.0.113.7, 10.0.0.1, 10.0.0.2', 1)).toBe('10.0.0.1')
+  })
+
   it('falls back to unknown when absent', () => {
     expect(parseClientIp(null)).toBe('unknown')
     expect(parseClientIp('   ')).toBe('unknown')
