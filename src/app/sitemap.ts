@@ -11,13 +11,14 @@ function normalizeSiteUrl(url: string): string {
   return url.replace(/\/$/, '')
 }
 
-function lastMod(): string {
-  return new Date().toISOString().split('T')[0]
-}
+// Deterministic: captured once at module load (build time under force-static)
+// rather than per request/render.
+export const dynamic = 'force-static'
+const LAST_MODIFIED: string = new Date().toISOString().split('T')[0]
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = normalizeSiteUrl(SITE_URL)
-  const today = lastMod()
+  const today = LAST_MODIFIED
 
   const staticEntries: MetadataRoute.Sitemap = [
     {
@@ -62,8 +63,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     return [...staticEntries, ...heroEntries]
   } catch (error) {
-    // If the database is unreachable, still serve the static routes so the
-    // sitemap never 500s on a cold start.
     console.error('Sitemap: falling back to static routes only:', error)
     return staticEntries
   }

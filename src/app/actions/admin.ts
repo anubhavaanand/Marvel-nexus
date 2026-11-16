@@ -5,6 +5,7 @@ import { cookies, headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { Hero } from '@/lib/supabase'
 import { sanitizeHeroUpdate } from '@/lib/hero-update'
+import { isValidHeroUpdatePayload } from '@/lib/hero-update-guard'
 import { slugifyAlias } from '@/lib/slugs'
 import { getServiceSupabase as getAdminSupabase } from '@/lib/service-supabase'
 import { createSessionToken, revokeSessionToken, validateSessionToken } from '@/lib/admin-sessions'
@@ -123,6 +124,11 @@ export async function updateHeroAction(id: string, updates: Partial<Hero>): Prom
     return null
   }
 
+  if (!isValidHeroUpdatePayload(updates)) {
+    console.error('Rejected hero update: oversized or invalid payload shape')
+    return null
+  }
+
   const sanitized = sanitizeHeroUpdate(updates)
   if (!sanitized || Object.keys(sanitized).length === 0) {
     console.error('Rejected hero update: invalid or empty payload')
@@ -172,6 +178,11 @@ export async function createHeroAction(updates: Partial<Hero>): Promise<Hero | n
     return null
   }
 
+  if (!isValidHeroUpdatePayload(updates)) {
+    console.error('Rejected hero create: oversized or invalid payload shape')
+    return null
+  }
+
   const sanitized = sanitizeHeroUpdate(updates)
   if (!sanitized || Object.keys(sanitized).length === 0) {
     console.error('Rejected hero create: invalid or empty payload')
@@ -184,11 +195,7 @@ export async function createHeroAction(updates: Partial<Hero>): Promise<Hero | n
   const payload: Record<string, unknown> = { ...sanitized }
   if (slug) payload.slug = slug
 
-  const { data, error } = await supabase
-    .from('heroes')
-    .insert(payload)
-    .select()
-    .single()
+  const { data, error } = await supabase.from('heroes').insert(payload).select().single()
 
   if (error) {
     console.error('Error creating hero via server action:', error)
