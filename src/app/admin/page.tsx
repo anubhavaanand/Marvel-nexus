@@ -31,13 +31,17 @@ export default async function AdminPage() {
 
   let initialStats: AdminStats | null = null
   let statsError: string | null = null
-  try {
-    const result = await getAdminStatsAction()
-    if (result.ok) initialStats = result.stats
-    else statsError = result.error || 'Failed to load admin stats.'
-  } catch (error) {
-    console.error('Failed to load admin stats:', error)
-    statsError = 'Failed to load admin stats. The database may be unavailable.'
+  // Only fetch admin stats for authenticated admins; never invoke the
+  // authenticated-only action for unauthenticated visitors.
+  if (isAuthenticated) {
+    try {
+      const result = await getAdminStatsAction()
+      if (result.ok) initialStats = result.stats
+      else statsError = result.error || 'Failed to load admin stats.'
+    } catch (error) {
+      console.error('Failed to load admin stats:', error)
+      statsError = 'Failed to load admin stats. The database may be unavailable.'
+    }
   }
 
   return (
