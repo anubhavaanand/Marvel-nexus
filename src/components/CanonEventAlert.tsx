@@ -1,7 +1,8 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { AlertTriangle, Zap, Clock, Shield } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 
 interface CanonEventAlertProps {
   description: string
@@ -30,6 +31,20 @@ export default function CanonEventAlert({
     if (level <= 6) return <Zap className="w-5 h-5 text-orange-400" />
     return <AlertTriangle className="w-5 h-5 text-red-500 animate-pulse" />
   }
+
+  // Pause decorative animations when the tab is backgrounded and honor
+  // prefers-reduced-motion so motion-sensitive users (and idle tabs) never
+  // run composited loops forever.
+  const reducedMotion = useReducedMotion()
+  const [visible, setVisible] = useState(true)
+
+  useEffect(() => {
+    const onVisibilityChange = () => setVisible(!document.hidden)
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange)
+  }, [])
+
+  const shouldAnimate = visible && !reducedMotion
 
   return (
     <motion.div
@@ -60,12 +75,14 @@ export default function CanonEventAlert({
       {/* Glitch line decoration */}
       <motion.div
         className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-red-500 via-cyan-500 to-red-500"
-        animate={{
-          backgroundPosition: ['0% 0%', '0% 100%'],
-        }}
+        animate={
+          shouldAnimate
+            ? { backgroundPosition: ['0% 0%', '0% 100%'] }
+            : { backgroundPosition: '0% 0%' }
+        }
         transition={{
           duration: 2,
-          repeat: Infinity,
+          repeat: shouldAnimate ? Infinity : 0,
           repeatType: 'reverse',
         }}
       />
@@ -79,8 +96,11 @@ export default function CanonEventAlert({
           {isFixedPoint && (
             <motion.div
               className="glitch-enhanced text-xs flex items-center gap-2 font-roboto-mono"
-              animate={{ opacity: [1, 0.5, 1] }}
-              transition={{ duration: 0.5, repeat: Infinity }}
+              animate={shouldAnimate ? { opacity: [1, 0.5, 1] } : { opacity: 1 }}
+              transition={{
+                duration: shouldAnimate ? 0.5 : 0,
+                repeat: shouldAnimate ? Infinity : 0,
+              }}
             >
               <Shield className="w-3 h-3" />
               ⚠️ FIXED_CANON_EVENT - DO_NOT_ALTER
@@ -140,8 +160,12 @@ export default function CanonEventAlert({
       {isFixedPoint && (
         <motion.div
           className="absolute top-2 right-2"
-          animate={{ rotate: [0, 10, -10, 0] }}
-          transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}
+          animate={shouldAnimate ? { rotate: [0, 10, -10, 0] } : { rotate: 0 }}
+          transition={{
+            duration: shouldAnimate ? 0.5 : 0,
+            repeat: shouldAnimate ? Infinity : 0,
+            repeatDelay: shouldAnimate ? 2 : 0,
+          }}
         >
           <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
         </motion.div>
