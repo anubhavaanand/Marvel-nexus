@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { getAllHeroes, type Hero } from '@/lib/supabase'
+import { getSearchHeroes, type SearchHero, isSupabaseConfigured } from '@/lib/supabase'
 import SearchClient from '@/components/SearchClient'
 
 export const metadata: Metadata = {
@@ -18,14 +18,21 @@ export const metadata: Metadata = {
 }
 
 export default async function SearchPage() {
-  let initialAllHeroes: Hero[] = []
+  let initialAllHeroes: SearchHero[] = []
   let loadError: string | null = null
   try {
-    initialAllHeroes = await getAllHeroes()
+    initialAllHeroes = await getSearchHeroes()
   } catch (error) {
     // Log the raw driver error server-side; never leak it to the UI.
     console.error('Failed to load heroes for search page:', error)
     loadError = 'Live hero database is unreachable.'
   }
-  return <SearchClient initialAllHeroes={initialAllHeroes} loadError={loadError} />
+  const isDemoMode = !isSupabaseConfigured
+  return (
+    <SearchClient
+      initialAllHeroes={initialAllHeroes}
+      loadError={loadError}
+      isDemoMode={isDemoMode}
+    />
+  )
 }
