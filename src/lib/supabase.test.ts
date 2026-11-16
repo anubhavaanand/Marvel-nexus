@@ -4,6 +4,7 @@ import {
   escapeLikePattern,
   getAllHeroes,
   getHeroBySlug,
+  isSupabaseConfigured,
   needsImageEnrichment,
   searchHeroes,
 } from './supabase'
@@ -58,5 +59,11 @@ describe('escapeLikePattern', () => {
 
   it('leaves ordinary text unchanged', () => {
     expect(escapeLikePattern('Hulk')).toBe('Hulk')
+  })
+})
+
+describe('isSupabaseConfigured', () => {
+  it('is false when Supabase credentials are absent', () => {
+    expect(isSupabaseConfigured).toBe(false)
   })
 })
