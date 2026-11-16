@@ -98,6 +98,7 @@ export default async function HeroPage({ params }: PageProps) {
                   alias={hero.alias}
                   name={hero.actor_name || hero.name}
                   sizes="(max-width: 1024px) 100vw, 380px"
+                  priority
                   className="absolute inset-0 w-full h-full object-cover"
                 />
 
