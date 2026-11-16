@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS heroes (
     name TEXT NOT NULL,
     alias TEXT NOT NULL,
     actor_name TEXT,
-    franchise TEXT NOT NULL CHECK (franchise IN ('MCU', 'X-Men', 'Spider-Verse', 'Defenders', 'DC', 'Anime', 'The Boys', 'Invincible', 'Other')),
+    franchise TEXT NOT NULL CHECK (franchise IN ('MCU', 'X-Men', 'Spider-Verse', 'Defenders', 'DC', 'Anime', 'The Boys', 'Invincible', 'Peacemaker', 'Gaming', 'Other')),
     origin_world TEXT,
     powers TEXT[] DEFAULT '{}',
     weaknesses TEXT[] DEFAULT '{}',

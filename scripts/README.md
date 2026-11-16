@@ -17,15 +17,11 @@ NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```
 
-### 2. Update Franchise Constraint (First Time Only)
+### 2. Upgrading an Older Database?
 
-Run this SQL in Supabase SQL Editor:
-
-```bash
-# Copy contents from scripts/update-franchise-constraint.sql
-```
-
-This allows The Boys, Invincible, Peacemaker, and Gaming franchises.
+The canonical schema (`../supabase/schema.sql`) already allows every franchise
+the app supports. If you are upgrading a database created before it existed,
+run `supabase/migrations/002_franchise_constraint_full.sql` once.
 
 ### 3. Seed or Add Heroes
 
@@ -94,8 +90,8 @@ node scripts/seed-master.js
 ### First Time Setup
 
 ```bash
-# 1. Update franchise constraint in Supabase
-#    (copy SQL from update-franchise-constraint.sql)
+# 1. Legacy DB only: update the franchise constraint
+#    (run supabase/migrations/002_franchise_constraint_full.sql)
 
 # 2. Check current database state
 node scripts/count-heroes.js
@@ -140,11 +136,9 @@ Total franchises supported:
 
 ## 🔧 SQL Scripts
 
-| File                              | Purpose                                 |
-| --------------------------------- | --------------------------------------- |
-| `../supabase/schema.sql`          | Canonical database schema               |
-| `update-franchise-constraint.sql` | **NEW!** Update to allow new franchises |
-| `add-franchises.sql`              | Alternative franchise update            |
+| File                     | Purpose                   |
+| ------------------------ | ------------------------- |
+| `../supabase/schema.sql` | Canonical database schema |
 
 ---
 

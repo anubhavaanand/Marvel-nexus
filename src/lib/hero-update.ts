@@ -9,6 +9,8 @@ export const FRANCHISE_VALUES = [
   'Anime',
   'The Boys',
   'Invincible',
+  'Peacemaker',
+  'Gaming',
   'Other',
 ] as const
 
