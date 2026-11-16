@@ -10,17 +10,17 @@ const supabase = createClient(
 // These have been tested and confirmed accessible
 const imageUpdates = {
   // MCU Heroes - Using verified profile image paths from TMDB
-  Hulk: 'https://image.tmdb.org/t/p/original/pJ6LABxc0qqqP8bPvCHg8a3NQM9.jpg',
-  Hawkeye: 'https://image.tmdb.org/t/p/original/2hElpOxE6Dqm8IGZkKdxQ1k0fv0.jpg',
-  Drax: 'https://image.tmdb.org/t/p/original/9O0VBbOWbcFEW2rxdFEL2l8uVAM.jpg',
-  Gamora: 'https://image.tmdb.org/t/p/original/1igJAXh1hxkopOKqlMd4lfvJwMH.jpg',
-  Groot: 'https://image.tmdb.org/t/p/original/mJvd1nz4LhE4f0reBLaQRLNMxr7.jpg',
-  Rocket: 'https://image.tmdb.org/t/p/original/4fexNW2pPxhp9lITGLqC3lW6nLS.jpg',
-  'Star-Lord': 'https://image.tmdb.org/t/p/original/nGdyUoiKn3R3oH8TphN2HO6kBwP.jpg',
+  Hulk: 'https://image.tmdb.org/t/p/w500/pJ6LABxc0qqqP8bPvCHg8a3NQM9.jpg',
+  Hawkeye: 'https://image.tmdb.org/t/p/w500/2hElpOxE6Dqm8IGZkKdxQ1k0fv0.jpg',
+  Drax: 'https://image.tmdb.org/t/p/w500/9O0VBbOWbcFEW2rxdFEL2l8uVAM.jpg',
+  Gamora: 'https://image.tmdb.org/t/p/w500/1igJAXh1hxkopOKqlMd4lfvJwMH.jpg',
+  Groot: 'https://image.tmdb.org/t/p/w500/mJvd1nz4LhE4f0reBLaQRLNMxr7.jpg',
+  Rocket: 'https://image.tmdb.org/t/p/w500/4fexNW2pPxhp9lITGLqC3lW6nLS.jpg',
+  'Star-Lord': 'https://image.tmdb.org/t/p/w500/nGdyUoiKn3R3oH8TphN2HO6kBwP.jpg',
 
   // Additional heroes that might need fixing
-  'Spider-Woman': 'https://image.tmdb.org/t/p/original/uTSLeQTeHevt4fpLgid9UH2E5ls.jpg',
-  'Spider-Man 2099': 'https://image.tmdb.org/t/p/original/4FAA18ZIja70d1Tu5hr5cj2vjnr.jpg',
+  'Spider-Woman': 'https://image.tmdb.org/t/p/w500/uTSLeQTeHevt4fpLgid9UH2E5ls.jpg',
+  'Spider-Man 2099': 'https://image.tmdb.org/t/p/w500/4FAA18ZIja70d1Tu5hr5cj2vjnr.jpg',
 }
 
 async function updateImages() {
