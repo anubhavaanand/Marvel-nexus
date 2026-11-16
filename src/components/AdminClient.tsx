@@ -20,6 +20,7 @@ import {
   Eye,
   EyeOff,
 } from 'lucide-react'
+import type { Hero } from '@/lib/supabase'
 import HeroManager from '@/components/admin/HeroManager'
 import {
   loginAdminAction,
@@ -34,7 +35,11 @@ interface SeedStatus {
   events: 'idle' | 'loading' | 'success' | 'error'
 }
 
-export default function AdminPage() {
+interface AdminClientProps {
+  initialHeroes: Hero[]
+}
+
+export default function AdminPage({ initialHeroes }: AdminClientProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -421,7 +426,7 @@ export default function AdminPage() {
             <h2 className="text-xl font-orbitron text-white">Hero Manager</h2>
           </div>
 
-          <HeroManager />
+          <HeroManager initialHeroes={initialHeroes} />
         </motion.div>
 
         {/* Quick Stats & Links */}

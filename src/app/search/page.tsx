@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { getAllHeroes, type Hero } from '@/lib/supabase'
 import SearchClient from '@/components/SearchClient'
 
 export const metadata: Metadata = {
@@ -16,6 +17,13 @@ export const metadata: Metadata = {
   },
 }
 
-export default function SearchPage() {
-  return <SearchClient />
+export default async function SearchPage() {
+  let initialAllHeroes: Hero[] = []
+  try {
+    initialAllHeroes = await getAllHeroes()
+  } catch (error) {
+    console.error('Failed to load heroes for search page:', error)
+    initialAllHeroes = []
+  }
+  return <SearchClient initialAllHeroes={initialAllHeroes} />
 }
