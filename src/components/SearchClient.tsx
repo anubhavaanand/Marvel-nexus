@@ -5,18 +5,22 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Search, X, Loader2, Sparkles } from 'lucide-react'
 import HeroCard from '@/components/HeroCard'
 import { Button } from '@/components/ui/button'
-import { getAllHeroes, type Hero } from '@/lib/supabase'
+import type { Hero } from '@/lib/supabase'
+
+interface SearchClientProps {
+  initialAllHeroes: Hero[]
+}
 
 const franchises = ['All', 'MCU', 'X-Men', 'Spider-Verse', 'DC', 'Anime', 'The Boys']
 const PAGE_SIZE = 24
 
-export default function SearchPage() {
+export default function SearchPage({ initialAllHeroes }: SearchClientProps) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Hero[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [selectedFranchise, setSelectedFranchise] = useState('All')
   const [hasSearched, setHasSearched] = useState(false)
-  const [allHeroes, setAllHeroes] = useState<Hero[]>([])
+  const [allHeroes] = useState<Hero[]>(initialAllHeroes)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const searchSeqRef = useRef(0)
   const pendingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -29,19 +33,6 @@ export default function SearchPage() {
         pendingTimeoutRef.current = null
       }
     }
-  }, [])
-
-  useEffect(() => {
-    async function loadHeroes() {
-      try {
-        const heroes = await getAllHeroes()
-        setAllHeroes(heroes || [])
-      } catch (error) {
-        console.error('Failed to load heroes:', error)
-        setAllHeroes([])
-      }
-    }
-    loadHeroes()
   }, [])
 
   const performSearch = useCallback(

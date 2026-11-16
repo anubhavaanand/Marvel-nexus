@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -15,12 +15,15 @@ import {
   AlertTriangle,
 } from 'lucide-react'
 import Image from 'next/image'
-import { getAllHeroes, type Hero } from '@/lib/supabase'
+import type { Hero } from '@/lib/supabase'
 import { updateHeroAction, deleteHeroAction } from '@/app/actions/admin'
 
-export default function HeroManager() {
-  const [heroes, setHeroes] = useState<Hero[]>([])
-  const [loading, setLoading] = useState(true)
+interface HeroManagerProps {
+  initialHeroes: Hero[]
+}
+
+export default function HeroManager({ initialHeroes }: HeroManagerProps) {
+  const [heroes, setHeroes] = useState<Hero[]>(initialHeroes)
   const [searchQuery, setSearchQuery] = useState('')
   const [editingHero, setEditingHero] = useState<Hero | null>(null)
   const [isSaving, setIsSaving] = useState(false)
@@ -28,20 +31,6 @@ export default function HeroManager() {
   const [deleteErrors, setDeleteErrors] = useState<Record<string, string>>({})
   const [inFlightIds, setInFlightIds] = useState<Set<string>>(new Set())
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
-
-  const fetchHeroes = async () => {
-    setLoading(true)
-    const data = await getAllHeroes()
-    setHeroes(data)
-    setLoading(false)
-  }
-
-  // Load heroes on mount
-  useEffect(() => {
-    requestAnimationFrame(() => {
-      fetchHeroes()
-    })
-  }, [])
 
   const handleSave = async () => {
     if (!editingHero) return
@@ -116,14 +105,6 @@ export default function HeroManager() {
       h.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       h.franchise.toLowerCase().includes(searchQuery.toLowerCase()),
   )
-
-  if (loading) {
-    return (
-      <div className="flex justify-center p-8">
-        <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
-      </div>
-    )
-  }
 
   return (
     <div className="space-y-6">
