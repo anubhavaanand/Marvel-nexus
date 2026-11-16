@@ -19,6 +19,66 @@ vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }))
 
+// In-memory admin_sessions stand-in: sessions now require the DB for durable
+// revocation (#223), so the login flow tests provide a minimal table mock.
+vi.mock('@/lib/service-supabase', () => {
+  const store = new Map<string, { token_hash: string; expires_at: string }>()
+  return {
+    getServiceSupabase: () => ({
+      from: (table: string) => {
+        if (table !== 'admin_sessions') throw new Error(`unexpected table ${table}`)
+        let mode: 'select' | 'delete' = 'select'
+        let filterHash: string | null = null
+        let ltValue: string | null = null
+        const chain: Record<string, unknown> = {
+          select: () => {
+            mode = 'select'
+            return chain
+          },
+          insert: (row: { token_hash: string; expires_at: string }) => {
+            store.set(row.token_hash, row)
+            return Promise.resolve({ error: null })
+          },
+          delete: () => {
+            mode = 'delete'
+            return chain
+          },
+          eq: (_col: string, val: string) => {
+            filterHash = val
+            return chain
+          },
+          lt: (_col: string, val: string) => {
+            ltValue = val
+            return chain
+          },
+          limit: () => Promise.resolve({ error: null }),
+          maybeSingle: () => {
+            if (mode === 'delete') {
+              if (filterHash) store.delete(filterHash)
+              return Promise.resolve({ data: null, error: null })
+            }
+            const row = filterHash ? store.get(filterHash) : undefined
+            return Promise.resolve({ data: row ?? null, error: null })
+          },
+          then: (resolve: (value: unknown) => void) => {
+            if (mode === 'delete') {
+              if (filterHash) store.delete(filterHash)
+              else if (ltValue) {
+                const cutoff = new Date(ltValue).getTime()
+                for (const [key, value] of [...store]) {
+                  if (new Date(value.expires_at).getTime() < cutoff) store.delete(key)
+                }
+              }
+            }
+            resolve({ data: null, error: null })
+          },
+        }
+        return chain
+      },
+    }),
+  }
+})
+
 import { resetRateLimiter } from '@/lib/rate-limit'
 
 beforeEach(() => {
