@@ -1,119 +1,43 @@
 -- ============================================
--- MULTIVERSE ARCHIVE DATABASE SCHEMA v2
--- New Supabase Project: Marvel-nexus
+-- MULTIVERSE ARCHIVE - SEED DATA
+-- Loaded automatically by `supabase db reset` (see supabase/config.toml)
+-- and safe to run manually on an empty database.
+--
+-- Every block is guarded so re-running never creates duplicates.
+-- Schema changes belong in supabase/migrations/, not here.
+--
+-- origin_world should use the controlled vocabulary:
+--   Earth-616, Earth-10005, Earth-199999, Earth-1610, Earth-65,
+--   Earth-616B, Earth-928, Earth-TRN414, Earth-96283, Earth-120703,
+--   Asgard, Wakanda, Vought Universe, Gotham, Metropolis, Central City,
+--   Star City, Coast City, Atlantis, Themyscira, Krypton, Titan,
+--   Zen-Whoberi, Halfworld, Planet X, Shinobi World, Grand Line,
+--   Universe 7, Dragon Ball, One Piece, My Hero Academia, Attack on Titan,
+--   Death Note, Demon Slayer, Bleach, Jujutsu Kaisen, Hunter x Hunter,
+--   OPM, Cowboy Bebop, Naruto
 -- ============================================
 
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
--- ============================================
--- MOVIES TABLE
--- ============================================
-CREATE TABLE IF NOT EXISTS movies (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    tmdb_id INTEGER UNIQUE,
-    title TEXT NOT NULL,
-    release_date DATE,
-    phase TEXT CHECK (phase IN ('Phase 1', 'Phase 2', 'Phase 3', 'Phase 4', 'Phase 5', 'Phase 6')),
-    poster_url TEXT,
-    imdb_rating DECIMAL(3,1),
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- ============================================
--- HEROES TABLE (with actor_name + expanded franchise)
--- ============================================
-CREATE TABLE IF NOT EXISTS heroes (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name TEXT NOT NULL,
-    alias TEXT NOT NULL,
-    actor_name TEXT,
-    franchise TEXT NOT NULL CHECK (franchise IN ('MCU', 'X-Men', 'Spider-Verse', 'Defenders', 'DC', 'Anime', 'The Boys')),
-    origin_world TEXT,
-    powers TEXT[] DEFAULT '{}',
-    weaknesses TEXT[] DEFAULT '{}',
-    image_url TEXT DEFAULT '',
-    is_locked_content BOOLEAN DEFAULT FALSE,
-    first_appearance_movie_id UUID REFERENCES movies(id),
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- ============================================
--- CANON EVENTS TABLE
--- ============================================
-CREATE TABLE IF NOT EXISTS canon_events (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    hero_id UUID REFERENCES heroes(id) ON DELETE CASCADE,
-    movie_id UUID REFERENCES movies(id),
-    description TEXT NOT NULL,
-    is_fixed_point BOOLEAN DEFAULT FALSE,
-    glitch_level INTEGER DEFAULT 5 CHECK (glitch_level >= 1 AND glitch_level <= 10),
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- ============================================
--- HERO_MOVIES JUNCTION TABLE
--- ============================================
-CREATE TABLE IF NOT EXISTS hero_movies (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    hero_id UUID REFERENCES heroes(id) ON DELETE CASCADE,
-    movie_id UUID REFERENCES movies(id) ON DELETE CASCADE,
-    role TEXT DEFAULT 'main',
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(hero_id, movie_id)
-);
-
--- ============================================
--- INDEXES FOR PERFORMANCE
--- ============================================
-CREATE INDEX IF NOT EXISTS idx_heroes_franchise ON heroes(franchise);
-CREATE INDEX IF NOT EXISTS idx_heroes_alias ON heroes(alias);
-CREATE INDEX IF NOT EXISTS idx_canon_events_hero ON canon_events(hero_id);
-CREATE INDEX IF NOT EXISTS idx_movies_phase ON movies(phase);
-
--- ============================================
--- ROW LEVEL SECURITY (RLS)
--- ============================================
-ALTER TABLE movies ENABLE ROW LEVEL SECURITY;
-ALTER TABLE heroes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE canon_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE hero_movies ENABLE ROW LEVEL SECURITY;
-
--- Public read access for all tables
+-- Movies (timeline + watch order need these)
 DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'movies' AND policyname = 'Public read access') THEN
-    CREATE POLICY "Public read access" ON movies FOR SELECT USING (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'heroes' AND policyname = 'Public read access') THEN
-    CREATE POLICY "Public read access" ON heroes FOR SELECT USING (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'canon_events' AND policyname = 'Public read access') THEN
-    CREATE POLICY "Public read access" ON canon_events FOR SELECT USING (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'hero_movies' AND policyname = 'Public read access') THEN
-    CREATE POLICY "Public read access" ON hero_movies FOR SELECT USING (true);
+  IF NOT EXISTS (SELECT 1 FROM movies) THEN
+    INSERT INTO movies (title, release_date, phase, poster_url) VALUES
+      ('Iron Man', '2008-05-02', 'Phase 1', ''),
+      ('The Avengers', '2012-05-04', 'Phase 1', ''),
+      ('Thor: Ragnarok', '2017-11-03', 'Phase 3', ''),
+      ('Avengers: Infinity War', '2018-04-27', 'Phase 3', ''),
+      ('Avengers: Endgame', '2019-04-26', 'Phase 3', ''),
+      ('Spider-Man: Homecoming', '2017-07-07', 'Phase 3', ''),
+      ('Spider-Man: No Way Home', '2021-12-17', 'Phase 4', ''),
+      ('X-Men', '2000-07-14', NULL, ''),
+      ('Logan', '2017-03-03', NULL, ''),
+      ('Wonder Woman', '2017-06-02', NULL, ''),
+      ('Spider-Man: Into the Spider-Verse', '2018-12-14', NULL, '');
   END IF;
 END $$;
 
--- Service role can do everything
+-- Heroes (curated demo set; actor names included)
 DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'movies' AND policyname = 'Service role full access') THEN
-    CREATE POLICY "Service role full access" ON movies FOR ALL USING (auth.role() = 'service_role');
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'heroes' AND policyname = 'Service role full access') THEN
-    CREATE POLICY "Service role full access" ON heroes FOR ALL USING (auth.role() = 'service_role');
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'canon_events' AND policyname = 'Service role full access') THEN
-    CREATE POLICY "Service role full access" ON canon_events FOR ALL USING (auth.role() = 'service_role');
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'hero_movies' AND policyname = 'Service role full access') THEN
-    CREATE POLICY "Service role full access" ON hero_movies FOR ALL USING (auth.role() = 'service_role');
-  END IF;
-END $$;
-
--- ============================================
--- SEED: HEROES DATA (32 heroes)
--- ============================================
+  IF NOT EXISTS (SELECT 1 FROM heroes) THEN
 INSERT INTO heroes (name, alias, actor_name, franchise, origin_world, powers, weaknesses, image_url, is_locked_content) VALUES
 ('Tony Stark', 'Iron Man', 'Robert Downey Jr.', 'MCU', 'Earth-616', ARRAY['Genius-level intellect', 'Powered armor suit', 'Flight', 'Energy repulsors'], ARRAY['Arc reactor dependency', 'Alcoholism'], '', false),
 ('Steve Rogers', 'Captain America', 'Chris Evans', 'MCU', 'Earth-616', ARRAY['Super soldier serum', 'Vibranium shield', 'Enhanced strength', 'Enhanced agility'], ARRAY['Man out of time', 'Honor bound'], '', false),
@@ -146,7 +70,67 @@ INSERT INTO heroes (name, alias, actor_name, franchise, origin_world, powers, we
 ('Goku', 'Goku', 'Masako Nozawa', 'Anime', 'Universe 7', ARRAY['Super Saiyan', 'Kamehameha', 'Instant transmission', 'Ultra Instinct'], ARRAY['Naive', 'Food obsession', 'Saiyan pride'], '', false),
 ('Naruto Uzumaki', 'Naruto', 'Junko Takeuchi', 'Anime', 'Shinobi World', ARRAY['Rasengan', 'Shadow clones', 'Nine-tails chakra', 'Sage mode'], ARRAY['Childhood trauma', 'Village rejection'], '', false),
 ('Monkey D. Luffy', 'Luffy', 'Mayumi Tanaka', 'Anime', 'Grand Line', ARRAY['Rubber body', 'Gum-Gum attacks', 'Haki', 'Gear transformations'], ARRAY['Water weakness', 'Naive nature'], '', false),
-('Saitama', 'One Punch Man', 'Makoto Furukawa', 'Anime', 'Earth', ARRAY['Limitless strength', 'Speed', 'Invulnerability', 'Serious punch'], ARRAY['Boredom', 'No real challenge'], '', false)
-ON CONFLICT DO NOTHING;
+('Saitama', 'One Punch Man', 'Makoto Furukawa', 'Anime', 'Earth', ARRAY['Limitless strength', 'Speed', 'Invulnerability', 'Serious punch'], ARRAY['Boredom', 'No real challenge'], '', false);
+  END IF;
+END $$;
 
-SELECT 'Database setup complete! ' || COUNT(*) || ' heroes seeded.' as message FROM heroes;
+-- Hero <-> movie links
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM hero_movies) THEN
+    INSERT INTO hero_movies (hero_id, movie_id, role)
+    SELECT h.id, m.id, 'main'
+      FROM heroes h JOIN movies m ON
+        (h.alias = 'Iron Man' AND m.title IN ('Iron Man', 'The Avengers', 'Avengers: Endgame'))
+     OR (h.alias = 'Captain America' AND m.title IN ('The Avengers', 'Avengers: Endgame'))
+     OR (h.alias = 'Thor' AND m.title IN ('The Avengers', 'Thor: Ragnarok', 'Avengers: Endgame'))
+     OR (h.name = 'Peter Parker' AND h.alias = 'Spider-Man' AND m.title IN ('Spider-Man: Homecoming', 'Spider-Man: No Way Home'))
+     OR (h.alias = 'Wolverine' AND m.title IN ('X-Men', 'Logan'))
+     OR (h.alias = 'Wonder Woman' AND m.title = 'Wonder Woman');
+    INSERT INTO hero_movies (hero_id, movie_id, role)
+    SELECT h.id, m.id, 'main'
+      FROM heroes h, movies m
+     WHERE h.name = 'Miles Morales' AND m.title = 'Spider-Man: Into the Spider-Verse';
+  END IF;
+END $$;
+
+-- First appearances (only where the movie list makes the answer unambiguous)
+UPDATE heroes h SET first_appearance_movie_id = m.id
+  FROM movies m
+ WHERE (h.name, m.title) IN (
+    ('Tony Stark', 'Iron Man'),
+    ('Steve Rogers', 'The Avengers'),
+    ('Thor Odinson', 'The Avengers'),
+    ('Bruce Banner', 'The Avengers'),
+    ('Natasha Romanoff', 'Iron Man'),
+    ('Clint Barton', 'The Avengers'),
+    ('Peter Parker', 'Spider-Man: Homecoming'),
+    ('Logan', 'X-Men'),
+    ('Diana Prince', 'Wonder Woman'),
+    ('Miles Morales', 'Spider-Man: Into the Spider-Verse')
+ );
+
+-- Normalize The Boys origin world to match the seed scripts
+UPDATE heroes SET origin_world = 'Vought Universe'
+ WHERE franchise = 'The Boys' AND origin_world = 'Earth';
+
+-- Canon events (powers the timeline page)
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM canon_events) THEN
+    INSERT INTO canon_events (hero_id, movie_id, description, is_fixed_point, glitch_level)
+    SELECT h.id, m.id, v.description, v.is_fixed_point, v.glitch_level
+      FROM (VALUES
+        ('Tony Stark', 'Iron Man', 'Iron Man', 'Tony Stark reveals he is Iron Man', true, 6),
+        ('Tony Stark', 'Iron Man', 'Avengers: Endgame', 'Tony Stark snaps away Thanos'' army', true, 9),
+        ('Steve Rogers', 'Captain America', 'Avengers: Endgame', 'Steve Rogers proves worthy of Mjolnir', false, 4),
+        ('Thor Odinson', 'Thor', 'Thor: Ragnarok', 'Asgard is destroyed by Surtur', true, 8),
+        ('Peter Parker', 'Spider-Man', 'Spider-Man: No Way Home', 'The multiverse breaks open', true, 9),
+        ('Logan', 'Wolverine', 'Logan', 'Logan sacrifices himself for Laura', true, 9),
+        ('Diana Prince', 'Wonder Woman', 'Wonder Woman', 'Diana leaves Themyscira for the war', false, 5),
+        ('Miles Morales', 'Spider-Man', 'Spider-Man: Into the Spider-Verse', 'Miles embraces his Spider-Man identity', true, 7)
+      ) AS v(name, alias, title, description, is_fixed_point, glitch_level)
+      JOIN heroes h ON h.name = v.name AND h.alias = v.alias
+      JOIN movies m ON m.title = v.title;
+  END IF;
+END $$;
+
+SELECT 'Seed complete.' AS message;
