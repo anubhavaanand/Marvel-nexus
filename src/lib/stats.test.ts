@@ -88,6 +88,16 @@ describe('bucketHeroes', () => {
     expect(buckets.peacemaker.map((h) => h.id)).toEqual(['christopher'])
     expect(buckets.dc).toHaveLength(0)
   })
+
+  it('franchise Peacemaker beats non-peacemaker alias (franchise-first)', () => {
+    const buckets = bucketHeroes([
+      makeHero('christopher', { alias: 'Christopher Smith', franchise: 'Peacemaker' }),
+      makeHero('random-alias', { alias: 'Random Hero', franchise: 'Peacemaker' }),
+    ])
+
+    expect(buckets.peacemaker.map((h) => h.id)).toEqual(['christopher', 'random-alias'])
+    expect(buckets.dc).toHaveLength(0)
+  })
 })
 
 describe('bucketHeroes franchise coverage', () => {
