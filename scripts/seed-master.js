@@ -1,11 +1,4 @@
-const { createClient } = require('@supabase/supabase-js')
-require('dotenv').config({ path: '.env.local' })
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-)
-
+const { createSupabaseClient } = require('./lib/supabase')
 const guard = require('./seed-guard')
 
 // MASTER HERO LIST - EXPANDED & FIXED
@@ -382,6 +375,7 @@ const heroes = [
 ]
 
 async function seedMaster() {
+  const supabase = createSupabaseClient()
   console.log('🚀 Starting MASTER SEED process...')
 
   const flags = guard.parseArgs(process.argv.slice(2))
@@ -399,7 +393,7 @@ async function seedMaster() {
     console.log('To proceed, re-run with --confirm:')
     console.log('   node scripts/seed-master.js --confirm')
     console.log('   OR set SEED_CONFIRM=1 in your environment')
-    process.exit(1)
+    throw new Error('Refusing to run: destructive operations require an explicit --confirm flag.')
   }
 
   const { error: deleteError } = await supabase
@@ -428,4 +422,7 @@ async function seedMaster() {
   console.log(`\n🎉 DONE! Added ${count}/${heroes.length} heroes.`)
 }
 
-seedMaster()
+seedMaster().catch((err) => {
+  console.error(err)
+  process.exitCode = 1
+})

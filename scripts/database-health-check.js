@@ -1,12 +1,6 @@
-const { createClient } = require('@supabase/supabase-js')
+const { createSupabaseClient } = require('./lib/supabase')
 const https = require('https')
 const http = require('http')
-require('dotenv').config({ path: '.env.local' })
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-)
 
 // Function to check if URL is accessible
 function checkUrl(url) {
@@ -37,6 +31,7 @@ function checkUrl(url) {
 }
 
 async function healthCheck() {
+  const supabase = createSupabaseClient()
   console.log('╔═══════════════════════════════════════════════════════════╗')
   console.log('║         🏥 DATABASE HEALTH CHECK - Full Scan 🏥           ║')
   console.log('╚═══════════════════════════════════════════════════════════╝\n')
@@ -222,4 +217,7 @@ async function healthCheck() {
   console.log('')
 }
 
-healthCheck().catch(console.error)
+healthCheck().catch((err) => {
+  console.error(err)
+  process.exitCode = 1
+})
