@@ -21,7 +21,12 @@ import {
   EyeOff,
 } from 'lucide-react'
 import HeroManager from '@/components/admin/HeroManager'
-import { loginAdminAction, logoutAdminAction, checkAdminAuthAction } from '@/app/actions/admin'
+import {
+  loginAdminAction,
+  logoutAdminAction,
+  checkAdminAuthAction,
+  testDatabaseConnectionAction,
+} from '@/app/actions/admin'
 
 interface SeedStatus {
   heroes: 'idle' | 'loading' | 'success' | 'error'
@@ -42,6 +47,9 @@ export default function AdminPage() {
   const [connectionStatus, setConnectionStatus] = useState<'unknown' | 'connected' | 'error'>(
     'unknown',
   )
+  const [connectionTesting, setConnectionTesting] = useState(false)
+  const [connectionLatency, setConnectionLatency] = useState<number | null>(null)
+  const [connectionError, setConnectionError] = useState('')
 
   // Check if already authenticated (server session check)
   useEffect(() => {
@@ -133,11 +141,25 @@ export default function AdminPage() {
   }
 
   const checkConnection = async () => {
+    setConnectionTesting(true)
     setConnectionStatus('unknown')
-    setTimeout(() => {
-      const isConfigured = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL)
-      setConnectionStatus(isConfigured ? 'connected' : 'error')
-    }, 1000)
+    setConnectionError('')
+    setConnectionLatency(null)
+    try {
+      const result = await testDatabaseConnectionAction()
+      if (result.ok) {
+        setConnectionStatus('connected')
+        setConnectionLatency(result.latencyMs ?? null)
+      } else {
+        setConnectionStatus('error')
+        setConnectionError(result.error || 'Connection failed')
+      }
+    } catch {
+      setConnectionStatus('error')
+      setConnectionError('Connection failed')
+    } finally {
+      setConnectionTesting(false)
+    }
   }
 
   const seedHeroes = async () => {
@@ -229,9 +251,9 @@ export default function AdminPage() {
               }`}
             >
               {connectionStatus === 'connected'
-                ? 'CONNECTED'
+                ? `CONNECTED${connectionLatency != null ? ` • ${connectionLatency}ms` : ''}`
                 : connectionStatus === 'error'
-                  ? 'NOT CONFIGURED'
+                  ? connectionError || 'NOT CONFIGURED'
                   : 'UNKNOWN'}
             </Badge>
           </div>
@@ -245,10 +267,11 @@ export default function AdminPage() {
             </div>
             <Button
               onClick={checkConnection}
+              disabled={connectionTesting}
               className="bg-cyan-600 hover:bg-cyan-700 text-white font-orbitron"
             >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Test Connection
+              <RefreshCw className={`w-4 h-4 mr-2 ${connectionTesting ? 'animate-spin' : ''}`} />
+              {connectionTesting ? 'Testing...' : 'Test Connection'}
             </Button>
           </div>
         </motion.div>
