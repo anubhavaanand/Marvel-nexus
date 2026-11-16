@@ -9,6 +9,7 @@
  */
 export const ACTION_RATE_LIMITS = {
   UPDATE_HERO: { limit: 30, windowMs: 60_000 },
+  CREATE_HERO: { limit: 30, windowMs: 60_000 },
   DELETE_HERO: { limit: 30, windowMs: 60_000 },
   TEST_DB_CONNECTION: { limit: 10, windowMs: 60_000 },
   SEED_DEMO_HEROES: { limit: 5, windowMs: 60_000 },
