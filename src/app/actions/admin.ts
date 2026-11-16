@@ -5,6 +5,7 @@ import { cookies, headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { Hero } from '@/lib/supabase'
 import { sanitizeHeroUpdate } from '@/lib/hero-update'
+import { slugifyAlias } from '@/lib/slugs'
 import { getServiceSupabase as getAdminSupabase } from '@/lib/service-supabase'
 import { createSessionToken, revokeSessionToken, validateSessionToken } from '@/lib/admin-sessions'
 import { checkActionRateLimit, getClientIp } from '@/lib/action-rate-limit'
@@ -148,6 +149,59 @@ export async function updateHeroAction(id: string, updates: Partial<Hero>): Prom
   return data
 }
 
+/**
+ * Securely creates a new hero using the admin client
+ */
+export async function createHeroAction(updates: Partial<Hero>): Promise<Hero | null> {
+  const isAuthenticated = await checkAdminAuthAction()
+  if (!isAuthenticated) {
+    throw new Error('Unauthorized admin access')
+  }
+
+  const rateLimit = await checkActionRateLimit('CREATE_HERO')
+  if (!rateLimit.ok) {
+    console.warn(`createHeroAction rate-limited: ${rateLimit.error}`)
+    return null
+  }
+
+  let supabase: ReturnType<typeof getAdminSupabase>
+  try {
+    supabase = getAdminSupabase()
+  } catch {
+    console.error('createHeroAction: Supabase service client is not configured')
+    return null
+  }
+
+  const sanitized = sanitizeHeroUpdate(updates)
+  if (!sanitized || Object.keys(sanitized).length === 0) {
+    console.error('Rejected hero create: invalid or empty payload')
+    return null
+  }
+
+  // ensure slug
+  const alias = (sanitized.alias ?? updates.alias) as string
+  const slug = alias ? slugifyAlias(alias) : undefined
+  const payload: Record<string, unknown> = { ...sanitized }
+  if (slug) payload.slug = slug
+
+  const { data, error } = await supabase
+    .from('heroes')
+    .insert(payload)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error creating hero via server action:', error)
+    return null
+  }
+
+  revalidatePath('/')
+  revalidatePath('/admin')
+  revalidatePath('/hero/[slug]', 'layout')
+  revalidatePath('/search')
+  revalidatePath('/timeline')
+  return data
+}
 /**
  * Securely deletes a hero using the admin client
  */
