@@ -1,7 +1,42 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi, beforeEach } from 'vitest'
+
+const store = new Map<string, { token_hash: string; expires_at: string }>()
+
+vi.mock('./service-supabase', () => ({
+  getServiceSupabase: () => ({
+    from: () => ({
+      select: (_cols: string) => ({
+        limit: async () => ({ error: null }),
+        eq: (col: string, val: string) => ({
+          maybeSingle: async () => {
+            const row = store.get(val)
+            if (!row) return { data: null, error: null }
+            return { data: row, error: null }
+          },
+        }),
+      }),
+      insert: async (row: { token_hash: string; expires_at: string }) => {
+        store.set(row.token_hash, row)
+        return { error: null }
+      },
+      delete: () => ({
+        eq: async (col: string, val: string) => {
+          if (col === 'token_hash') store.delete(val)
+          return {}
+        },
+        lt: async () => ({}),
+      }),
+    }),
+  }),
+}))
+
 import { createSessionToken, revokeSessionToken, validateSessionToken } from './admin-sessions'
 
-describe('admin session tokens (stateless fallback)', () => {
+beforeEach(() => {
+  store.clear()
+})
+
+describe('admin session tokens', () => {
   it('creates a token that validates', async () => {
     const token = await createSessionToken()
     await expect(validateSessionToken(token)).resolves.toBe(true)
@@ -15,8 +50,6 @@ describe('admin session tokens (stateless fallback)', () => {
   it('rejects a tampered token', async () => {
     const token = await createSessionToken()
     await expect(validateSessionToken(`${token}x`)).resolves.toBe(false)
-    const [expiresAt] = token.split('.')
-    await expect(validateSessionToken(`${Number(expiresAt) + 1}.${token}`)).resolves.toBe(false)
   })
 
   it('rejects a revoked token', async () => {
@@ -28,19 +61,5 @@ describe('admin session tokens (stateless fallback)', () => {
 
   it('treats revoking an empty token as a no-op', async () => {
     await expect(revokeSessionToken('')).resolves.toBeUndefined()
-  })
-
-  it('keeps the most recent revocation valid after hitting the bound', async () => {
-    // Revoke well past the in-memory cap (4096). Pruning must evict the
-    // oldest entries without throwing; the latest revocation stays live.
-    const tokens: string[] = []
-    for (let i = 0; i < 4500; i += 1) {
-      tokens.push(await createSessionToken())
-    }
-    for (const token of tokens) {
-      await revokeSessionToken(token)
-    }
-    // Latest revoked token must still be rejected (not yet evicted).
-    await expect(validateSessionToken(tokens[tokens.length - 1])).resolves.toBe(false)
   })
 })
