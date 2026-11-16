@@ -1,9 +1,15 @@
 -- ============================================
--- LEGACY DATA EXPORT (pg_dump fragment).
--- This file contains exported hero data only and is NOT a
--- schema definition. Create/upgrade tables with
--- supabase/schema.sql first, then load seed data from
--- supabase/seed.sql. See issue #38.
+-- HEROES-ONLY DATA EXPORT (pg_dump fragment).
+--
+-- Despite the old name, this file has always contained hero rows only:
+-- canon_events, hero_movies, and movies sections are empty. It is kept as
+-- a historical export of the production hero table, NOT as an importable
+-- schema and NOT as complete seed data.
+--
+-- For a working setup use:
+--   1. supabase/schema.sql        (schema)
+--   2. supabase/seed.sql          (heroes + movies + links + events)
+-- See issues #37 and #38.
 -- ============================================
 
 -- ============================================
