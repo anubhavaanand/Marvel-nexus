@@ -52,7 +52,19 @@ const createSupabaseMock = () => {
       return chain
     },
     maybeSingle: () => {
-      if (mode === 'select' && eqCol === 'slug' && neqCol === 'id' && mockConfig.existingSlug) {
+      // Update path: update().eq().select().maybeSingle() returns the updated row
+      if (mode === 'update') {
+        if (!mockConfig.updateReturns) return Promise.resolve({ data: null, error: null })
+        return Promise.resolve({
+          data: {
+            ...mockConfig.updateReturns,
+            slug: returnedSlug ?? mockConfig.updateReturns.slug,
+          },
+          error: null,
+        })
+      }
+      // Collision check: select().eq('slug').neq('id').maybeSingle()
+      if (eqCol === 'slug' && neqCol === 'id' && mockConfig.existingSlug) {
         return Promise.resolve({ data: mockConfig.existingSlug, error: null })
       }
       return Promise.resolve({ data: null, error: null })
