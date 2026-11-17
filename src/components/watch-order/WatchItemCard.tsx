@@ -83,7 +83,8 @@ export default function WatchItemCard({ item, index, accentColor }: WatchItemCar
                   <span className="text-xs">{item.runtime}</span>
                 </div>
               )}
-              {item.rating && (
+              {/* #678: 0 is a legitimate rating and must not read as "unrated". */}
+              {item.rating != null && (
                 <div className="flex items-center gap-1 text-[#ca8a04]">
                   <Star className="w-3.5 h-3.5 fill-[#ca8a04]" />
                   <span className="text-xs">{item.rating}</span>

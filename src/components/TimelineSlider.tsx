@@ -49,7 +49,15 @@ export default function TimelineSlider({ movies, title = 'MCU Timeline' }: Timel
   const scroll = (direction: 'left' | 'right') => {
     const container = scrollContainerRef.current
     if (container) {
-      const scrollAmount = 400
+      // #593: scroll whole cards instead of a hardcoded 400px that is neither a
+      // multiple of the card stride nor tied to the visible width.
+      const firstCard = container.querySelector<HTMLElement>(':scope > *')
+      const fallbackStep = 224 + 24 // w-56 card + gap-6
+      const step = firstCard
+        ? firstCard.offsetWidth + (parseFloat(getComputedStyle(container).columnGap) || 24)
+        : fallbackStep
+      const perView = Math.max(1, Math.round(container.clientWidth / step))
+      const scrollAmount = perView * step
       container.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth',
