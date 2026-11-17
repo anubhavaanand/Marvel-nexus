@@ -134,7 +134,7 @@ export default function SearchPage({
                       aria-label="Search heroes, actors, powers, or worlds"
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
-                      className="w-full bg-transparent pl-10 pr-10 py-3.5 text-base text-[var(--fg)] placeholder-[var(--meta)] focus:outline-none"
+                      className="w-full bg-transparent pl-10 pr-10 py-3.5 text-base text-[var(--fg)] placeholder-[var(--meta)]"
                     />
                     {query && (
                       <button
