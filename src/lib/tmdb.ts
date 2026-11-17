@@ -34,9 +34,13 @@ export async function searchPerson(name: string): Promise<TMDBPerson | null> {
   }
 }
 
-// MCU Phase mapping based on release date
-export function getMCUPhase(releaseDate: string): string {
+// MCU Phase mapping based on release date.
+// Invalid/missing dates return null so they land in the timeline's "Unphased"
+// bucket instead of silently becoming Phase 6 (#461).
+export function getMCUPhase(releaseDate: string): string | null {
+  if (!releaseDate) return null
   const date = new Date(releaseDate)
+  if (Number.isNaN(date.getTime())) return null
   const year = date.getFullYear()
   const month = date.getMonth() + 1
 
