@@ -23,7 +23,6 @@ All notable changes to the **Multiverse Archive** project will be documented in 
 ### Added
 
 - **Tech-Noir Visual Identity Overhaul**: Implemented Stark-Industries-style HUD theme.
-- Interactive 3D WebGL particle background using `@react-three/fiber` and `@react-three/drei` with automatic context-loss fallback handlers.
 - Dynamic mouse-tracking 3D hover parallax tilt and holographic reflection glare animations on hero cards.
 - Scanning biometric overlay animations (`.tactical-scan`) on the Navigation Bar and active components.
 - Integrated `DecryptionOverlay` loader component with simulated console readouts during connection phase.

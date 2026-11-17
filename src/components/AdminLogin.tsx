@@ -38,7 +38,7 @@ export default function AdminLogin() {
         setError('')
         router.refresh()
       } else {
-        setError('Login failed. Please try again.')
+        setError(result.error || 'Login failed. Please try again.')
         setPassword('')
       }
     } catch {

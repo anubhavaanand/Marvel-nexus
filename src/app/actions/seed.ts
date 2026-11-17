@@ -364,7 +364,10 @@ export interface AdminStats {
 export async function getAdminStatsAction(): Promise<
   { ok: true; stats: AdminStats } | { ok: false; error: string }
 > {
-  await requireAdmin()
+  const authed = await checkAdminAuthAction()
+  if (!authed) {
+    return { ok: false, error: 'Unauthorized' }
+  }
   const rateLimit = await checkActionRateLimit('GET_ADMIN_STATS')
   if (!rateLimit.ok) {
     console.warn(`getAdminStatsAction rate-limited: ${rateLimit.error}`)
@@ -385,7 +388,8 @@ export async function getAdminStatsAction(): Promise<
     supabase.from('hero_movies').select('*', { count: 'exact', head: true }),
     supabase.from('heroes').select('franchise'),
   ])
-  const error = heroes.error ?? movies.error ?? canonEvents.error ?? heroMovieLinks.error
+  const error =
+    heroes.error ?? movies.error ?? canonEvents.error ?? heroMovieLinks.error ?? franchiseRows.error
   if (error) {
     console.error('getAdminStatsAction query failed:', error)
     return { ok: false, error: getSafeErrorMessage(error, 'Failed to load admin stats') }
