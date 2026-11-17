@@ -26,19 +26,9 @@ const TMDB_BASE = 'https://api.themoviedb.org/3'
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w500'
 
 // ─── MCU Phase Mapping ────────────────────────────────────────────────────────
-function getMCUPhase(releaseDate) {
-  if (!releaseDate) return 'Phase 6'
-  const date = new Date(releaseDate)
-  const year = date.getFullYear()
-  const month = date.getMonth() + 1
-
-  if (year < 2012 || (year === 2012 && month <= 5)) return 'Phase 1'
-  if (year < 2015 || (year === 2015 && month <= 7)) return 'Phase 2'
-  if (year < 2019 || (year === 2019 && month <= 7)) return 'Phase 3'
-  if (year <= 2022) return 'Phase 4'
-  if (year <= 2024) return 'Phase 5'
-  return 'Phase 6'
-}
+// Canonical implementation lives in scripts/lib/mcu-phases.js so the app and the
+// scripts cannot drift apart (#436).
+const { getMCUPhase } = require('./lib/mcu-phases')
 
 // ─── TMDB Fetch Helpers ───────────────────────────────────────────────────────
 async function tmdbFetch(path, retries = 3) {
