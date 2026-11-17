@@ -88,7 +88,7 @@ async function fetchAllMarvelMovies() {
 // ─── Map TMDB movie to our DB schema ─────────────────────────────────────────
 function mapToDbMovie(movie, details) {
   const posterUrl = movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : ''
-  // vote_average is TMDB's own score, not an IMDb rating; column is `imdb_rating` per schema.
+  // vote_average is TMDB's own score, not an IMDb rating; column is `tmdb_rating` per schema.
   // #501: a missing/zero score means "unrated" — store null so the UI can show 0.0
   // ratings without conflating them with absent data.
   const tmdbRating = details?.vote_average ? parseFloat(details.vote_average.toFixed(1)) : null
@@ -98,7 +98,7 @@ function mapToDbMovie(movie, details) {
     release_date: movie.release_date || null,
     phase: getMCUPhase(movie.release_date),
     poster_url: posterUrl,
-    imdb_rating: tmdbRating,
+    tmdb_rating: tmdbRating,
   }
 }
 
@@ -151,7 +151,7 @@ async function syncMovies() {
         }
       } else {
         console.log(
-          `  ✅ [${i + 1}/${toInsert.length}] ${dbMovie.phase}: ${dbMovie.title} (${dbMovie.release_date?.slice(0, 4) || 'TBA'}) ⭐ TMDB ${dbMovie.imdb_rating}`,
+          `  ✅ [${i + 1}/${toInsert.length}] ${dbMovie.phase}: ${dbMovie.title} (${dbMovie.release_date?.slice(0, 4) || 'TBA'}) ⭐ TMDB ${dbMovie.tmdb_rating}`,
         )
         inserted++
         insertedMovies.push(data)
