@@ -66,6 +66,7 @@ export default function AdminPage({
     movies: 'idle',
     events: 'idle',
   })
+  const [seedConfirm, setSeedConfirm] = useState<'heroes' | 'movies' | 'events' | null>(null)
   const [connectionStatus, setConnectionStatus] = useState<'unknown' | 'connected' | 'error'>(
     'unknown',
   )
@@ -209,7 +210,15 @@ export default function AdminPage({
     key: 'heroes' | 'movies' | 'events',
     action: () => Promise<{ ok: boolean; error?: string }>,
   ) => {
+    // If not yet confirmed, request confirmation and return
+    if (seedConfirm !== key) {
+      setSeedConfirm(key)
+      return
+    }
+
+    // Confirmed - run the action
     setSeedStatus((prev) => ({ ...prev, [key]: 'loading' }))
+    setSeedConfirm(null)
     try {
       const result = await action()
       if (!result.ok) {
@@ -315,7 +324,9 @@ export default function AdminPage({
             <div className="flex-1 p-4 bg-neutral-800/30 rounded-lg">
               <p className="text-sm text-neutral-400 mb-2">URL</p>
               <code className="text-xs text-cyan-400 font-mono break-all">
-                {process.env.NEXT_PUBLIC_SUPABASE_URL || 'Not configured'}
+                {process.env.NEXT_PUBLIC_SUPABASE_URL
+                  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).host
+                  : 'Not configured'}
               </code>
             </div>
             <Button
@@ -356,12 +367,23 @@ export default function AdminPage({
             <Button
               onClick={seedHeroes}
               disabled={seedStatus.heroes === 'loading'}
-              className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-orbitron disabled:opacity-50"
+              className={`w-full font-orbitron disabled:opacity-50 ${
+                seedStatus.heroes === 'loading'
+                  ? 'bg-cyan-600 hover:bg-cyan-700 text-white'
+                  : seedConfirm === 'heroes'
+                    ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                    : 'bg-cyan-600 hover:bg-cyan-700 text-white'
+              }`}
             >
               {seedStatus.heroes === 'loading' ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Seeding...
+                </>
+              ) : seedConfirm === 'heroes' ? (
+                <>
+                  <AlertTriangle className="w-4 h-4 mr-2" />
+                  Confirm Seed Heroes?
                 </>
               ) : (
                 <>
@@ -395,12 +417,23 @@ export default function AdminPage({
             <Button
               onClick={seedMovies}
               disabled={seedStatus.movies === 'loading'}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-orbitron disabled:opacity-50"
+              className={`w-full font-orbitron disabled:opacity-50 ${
+                seedStatus.movies === 'loading'
+                  ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                  : seedConfirm === 'movies'
+                    ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                    : 'bg-purple-600 hover:bg-purple-700 text-white'
+              }`}
             >
               {seedStatus.movies === 'loading' ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Syncing...
+                </>
+              ) : seedConfirm === 'movies' ? (
+                <>
+                  <AlertTriangle className="w-4 h-4 mr-2" />
+                  Confirm Sync Movies?
                 </>
               ) : (
                 <>
@@ -434,12 +467,23 @@ export default function AdminPage({
             <Button
               onClick={seedEvents}
               disabled={seedStatus.events === 'loading'}
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-orbitron disabled:opacity-50"
+              className={`w-full font-orbitron disabled:opacity-50 ${
+                seedStatus.events === 'loading'
+                  ? 'bg-red-600 hover:bg-red-700 text-white'
+                  : seedConfirm === 'events'
+                    ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                    : 'bg-red-600 hover:bg-red-700 text-white'
+              }`}
             >
               {seedStatus.events === 'loading' ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Creating...
+                </>
+              ) : seedConfirm === 'events' ? (
+                <>
+                  <AlertTriangle className="w-4 h-4 mr-2" />
+                  Confirm Create Events?
                 </>
               ) : (
                 <>

@@ -22,7 +22,7 @@ function makeMovie(id: string, overrides: Partial<Movie> = {}): Movie {
     release_date: '2024-01-01',
     phase: 'Phase 1',
     poster_url: '',
-    imdb_rating: 7.0,
+    imdb_rating: null,
     ...overrides,
   }
 }
