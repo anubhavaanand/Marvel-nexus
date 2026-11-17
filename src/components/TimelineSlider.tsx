@@ -97,7 +97,8 @@ export default function TimelineSlider({ movies, title = 'MCU Timeline' }: Timel
   if (!movies || movies.length === 0) {
     return (
       <div className="glass-panel rounded-xl p-6">
-        <h3 className="text-lg font-orbitron text-cyan-400 mb-4">{title}</h3>
+        {/* #490: no orphan icon/blank heading when the caller passes no title. */}
+        {title ? <h3 className="text-lg font-orbitron text-cyan-400 mb-4">{title}</h3> : null}
         <div className="h-48 flex items-center justify-center text-neutral-500">
           No movies in timeline
         </div>
@@ -114,10 +115,13 @@ export default function TimelineSlider({ movies, title = 'MCU Timeline' }: Timel
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-orbitron text-cyan-400 flex items-center gap-3">
-          <Calendar className="w-5 h-5" />
-          {title}
-        </h3>
+        {/* #490: omit the heading entirely when there is no title to show. */}
+        {title ? (
+          <h3 className="text-xl font-orbitron text-cyan-400 flex items-center gap-3">
+            <Calendar className="w-5 h-5" />
+            {title}
+          </h3>
+        ) : null}
 
         {/* Navigation Buttons */}
         <div className="flex gap-2">

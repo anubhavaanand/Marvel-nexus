@@ -27,6 +27,7 @@ export default function HeroImage({
 
   return (
     <HeroImageErrorHandler
+      key={imageUrl ?? ''}
       name={name}
       alias={alias}
       className={className}
