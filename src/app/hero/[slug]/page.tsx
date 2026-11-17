@@ -50,22 +50,29 @@ export default async function HeroPage({ params }: PageProps) {
 
   const isAdmin = await checkAdminAuthAction()
 
-  // Resolve existence/lock state and hero data concurrently. Visibility still
-  // gates rendering so locked hero data is never leaked to anonymous users.
-  const [visibility, hero] = await Promise.all([
-    getHeroVisibility(slug),
+  // #464: admins already receive the full row (including is_locked_content), so
+  // skip the redundant service-role visibility query for them.
+  const [hero, visibility] = await Promise.all([
     isAdmin ? getHeroDataForAdmin(slug) : getHeroData(slug),
+    isAdmin ? Promise.resolve(null) : getHeroVisibility(slug),
   ])
-  if (!visibility) {
-    notFound()
-  }
 
-  if (visibility.is_locked_content && !isAdmin) {
-    return <RestrictedAccess />
-  }
+  if (isAdmin) {
+    if (!hero) {
+      notFound()
+    }
+  } else {
+    if (!visibility) {
+      notFound()
+    }
 
-  if (!hero) {
-    notFound()
+    if (visibility.is_locked_content) {
+      return <RestrictedAccess />
+    }
+
+    if (!hero) {
+      notFound()
+    }
   }
 
   const colors = franchiseColors[hero.franchise] || franchiseColors['MCU']
