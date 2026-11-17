@@ -71,9 +71,9 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
 
       if (result) {
         if (isNew) {
-          setHeroes([result, ...heroes])
+          setHeroes((prev) => [result, ...prev])
         } else {
-          setHeroes(heroes.map((h) => (h.id === result.id ? result : h)))
+          setHeroes((prev) => prev.map((h) => (h.id === result.id ? result : h)))
         }
         setEditingHero(null)
       } else {
@@ -110,7 +110,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
     try {
       const success = await deleteHeroAction(id)
       if (success) {
-        setHeroes(heroes.filter((h) => h.id !== id))
+        setHeroes((prev) => prev.filter((h) => h.id !== id))
         setDeleteConfirm(null)
       } else {
         setDeleteErrors((prev) => ({
@@ -167,7 +167,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
             aria-label="Search heroes"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-neutral-900/50 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-cyan-500 font-mono text-sm"
+            className="w-full pl-10 pr-4 py-2 bg-neutral-900/50 border border-neutral-700 rounded-lg text-white focus:border-cyan-500 font-mono text-sm"
           />
         </div>
         <Badge variant="outline" className="h-10 px-4 border-cyan-500/30 text-cyan-400 font-mono">
@@ -230,6 +230,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                 <Button
                   size="icon"
                   variant="ghost"
+                  className="min-h-11 min-w-11"
                   onClick={() => setEditingHero(null)}
                   aria-label="Close edit form"
                 >
@@ -504,7 +505,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-8 w-8 text-neutral-400 hover:text-cyan-400 hover:bg-cyan-950/30"
+                  className="min-h-11 min-w-11 h-8 w-8 text-neutral-400 hover:text-cyan-400 hover:bg-cyan-950/30"
                   onClick={() => {
                     // #427: clear unsubmitted inputs from the previous hero.
                     setNewPower('')
@@ -519,7 +520,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                 <Button
                   size="icon"
                   variant="ghost"
-                  className={`h-8 w-8 ${deleteConfirm === hero.id ? 'text-red-500 bg-red-950/30 ring-1 ring-red-500' : 'text-neutral-400 hover:text-red-400 hover:bg-red-950/30'}`}
+                  className={`min-h-11 min-w-11 h-8 w-8 ${deleteConfirm === hero.id ? 'text-red-500 bg-red-950/30 ring-1 ring-red-500' : 'text-neutral-400 hover:text-red-400 hover:bg-red-950/30'}`}
                   onClick={() => handleDelete(hero.id)}
                   disabled={inFlightIds.has(hero.id)}
                   aria-label={

@@ -55,8 +55,7 @@ CREATE TABLE IF NOT EXISTS heroes (
 -- Server-only credential storage; RLS exposes nothing to the public.
 -- ============================================
 CREATE TABLE IF NOT EXISTS admin_sessions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    token_hash TEXT NOT NULL UNIQUE,
+    token_hash TEXT PRIMARY KEY,
     expires_at TIMESTAMPTZ NOT NULL,
     password_epoch INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -156,10 +155,18 @@ $$;
 
 DROP TRIGGER IF EXISTS heroes_set_slug ON heroes;
 CREATE TRIGGER heroes_set_slug
-  BEFORE INSERT OR UPDATE OF alias
+  BEFORE INSERT OR UPDATE OF alias, name
   ON heroes
   FOR EACH ROW
-  WHEN (NEW.slug IS NULL OR NEW.slug = '')
+  WHEN (
+        NEW.slug IS NULL OR NEW.slug = ''
+        OR (
+          (TG_OP = 'INSERT'
+           OR OLD.alias IS DISTINCT FROM NEW.alias
+           OR OLD.name IS DISTINCT FROM NEW.name)
+          AND public.hero_slugify(NEW.alias) IS DISTINCT FROM NEW.slug
+        )
+  )
   EXECUTE FUNCTION public.heros_set_slug();
 
 -- ============================================
