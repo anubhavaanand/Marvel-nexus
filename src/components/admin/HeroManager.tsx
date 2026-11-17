@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -27,6 +27,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
   const [heroes, setHeroes] = useState<Hero[]>(initialHeroes)
   const [searchQuery, setSearchQuery] = useState('')
   const [editingHero, setEditingHero] = useState<Hero | null>(null)
+  const editFormRef = useRef<HTMLDivElement>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [deleteErrors, setDeleteErrors] = useState<Record<string, string>>({})
@@ -155,6 +156,26 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
       h.franchise.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
+  // #817: dialog semantics — focus the first field on open, Escape closes,
+  // and focus returns to whatever opened the panel.
+  useEffect(() => {
+    if (!editingHero) return
+    const previouslyFocused = document.activeElement as HTMLElement | null
+    const firstField = editFormRef.current?.querySelector<HTMLElement>('input, select, textarea')
+    firstField?.focus()
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.stopPropagation()
+        setEditingHero(null)
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      previouslyFocused?.focus?.()
+    }
+  }, [editingHero])
+
   return (
     <div className="space-y-6">
       {/* Toolbar */}
@@ -217,6 +238,10 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
       <AnimatePresence>
         {editingHero && (
           <motion.div
+            ref={editFormRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="hero-edit-dialog-title"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -224,7 +249,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
           >
             <div className="bg-neutral-800/80 border border-cyan-500/30 rounded-xl p-6 space-y-4 shadow-2xl shadow-black/50">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-orbitron text-cyan-400">
+                <h3 id="hero-edit-dialog-title" className="text-lg font-orbitron text-cyan-400">
                   {editingHero.id ? 'Edit Hero' : 'Add Hero'}
                 </h3>
                 <Button
