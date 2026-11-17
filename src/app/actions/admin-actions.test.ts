@@ -110,7 +110,8 @@ describe('admin actions (#528)', () => {
   it('createHeroAction refuses an unauthenticated caller', async () => {
     cookieStore.get.mockReturnValue(undefined)
     const { createHeroAction } = await import('./admin')
-    await expect(createHeroAction({ name: 'New Hero', alias: 'New' })).resolves.toBeNull()
+    const result = await createHeroAction({ name: 'New Hero', alias: 'New' })
+    await expect(result).toMatchObject({ ok: false, kind: 'auth' })
   })
 
   it('testDatabaseConnectionAction reports a failed query', async () => {

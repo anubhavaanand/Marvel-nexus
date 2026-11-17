@@ -155,15 +155,15 @@ describe('updateHeroAction slug recompute - alias changes', () => {
   it('recomputes slug when alias changes', async () => {
     const { updateHeroAction } = await import('./admin')
     const res = await updateHeroAction('1', { alias: 'Captain America' })
-    expect(res).not.toBeNull()
-    expect(res!.slug).toBe('captain-america')
+    expect(res.ok).toBe(true)
+    if (res.ok) expect(res.hero.slug).toBe('captain-america')
   })
 
   it('keeps original slug when alias unchanged', async () => {
     const { updateHeroAction } = await import('./admin')
     const res = await updateHeroAction('1', { name: 'Anthony Stark' })
-    expect(res).not.toBeNull()
-    expect(res!.slug).toBe('iron-man')
+    expect(res.ok).toBe(true)
+    if (res.ok) expect(res.hero.slug).toBe('iron-man')
   })
 
   it('detects that the slug trigger discards the collision suffix (#527)', async () => {
@@ -178,11 +178,11 @@ describe('updateHeroAction slug recompute - alias changes', () => {
 
     const { updateHeroAction } = await import('./admin')
     const res = await updateHeroAction('1', { alias: 'Captain America' })
-    expect(res).not.toBeNull()
+    expect(res.ok).toBe(true)
     // The action computed a collision-safe suffix...
     expect(mockConfig.lastSentSlug).toMatch(/^captain-america-[a-f0-9]{4}$/)
     // ...but the database trigger overwrote it, so the stored slug duplicates
     // the other hero's. This documents the production behaviour #527 flagged.
-    expect(res!.slug).toBe('captain-america')
+    if (res.ok) expect(res.hero.slug).toBe('captain-america')
   })
 })

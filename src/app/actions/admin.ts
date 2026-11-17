@@ -121,19 +121,30 @@ export async function logoutAdminAction(): Promise<void> {
   }
 }
 
+// #819: server actions report failure kinds so the admin UI can tell a bad
+// payload apart from a database/network failure instead of collapsing both to null.
+export type HeroMutationFailureKind =
+  'auth' | 'rate_limit' | 'invalid_payload' | 'missing_fields' | 'not_found' | 'config' | 'db'
+
+export type HeroMutationResult =
+  { ok: true; hero: Hero } | { ok: false; kind: HeroMutationFailureKind; message: string }
+
 /**
  * Securely updates a hero using the admin client
  */
-export async function updateHeroAction(id: string, updates: Partial<Hero>): Promise<Hero | null> {
+export async function updateHeroAction(
+  id: string,
+  updates: Partial<Hero>,
+): Promise<HeroMutationResult> {
   const isAuthenticated = await checkAdminAuthAction()
   if (!isAuthenticated) {
-    return null
+    return { ok: false, kind: 'auth', message: 'Admin session is no longer valid.' }
   }
 
   const rateLimit = await checkActionRateLimit('UPDATE_HERO')
   if (!rateLimit.ok) {
     console.warn(`updateHeroAction rate-limited: ${rateLimit.error}`)
-    return null
+    return { ok: false, kind: 'rate_limit', message: `Rate limited: ${rateLimit.error}` }
   }
 
   let supabase: ReturnType<typeof getAdminSupabase>
@@ -141,18 +152,30 @@ export async function updateHeroAction(id: string, updates: Partial<Hero>): Prom
     supabase = getAdminSupabase()
   } catch {
     console.error('updateHeroAction: Supabase service client is not configured')
-    return null
+    return {
+      ok: false,
+      kind: 'config',
+      message: 'Server configuration error: admin Supabase client unavailable.',
+    }
   }
 
   if (!isValidHeroUpdatePayload(updates)) {
     console.error('Rejected hero update: oversized or invalid payload shape')
-    return null
+    return {
+      ok: false,
+      kind: 'invalid_payload',
+      message: 'The submitted changes are too large or malformed.',
+    }
   }
 
   const sanitized = sanitizeHeroUpdate(updates)
   if (!sanitized || Object.keys(sanitized).length === 0) {
     console.error('Rejected hero update: invalid or empty payload')
-    return null
+    return {
+      ok: false,
+      kind: 'invalid_payload',
+      message: 'None of the submitted fields could be saved.',
+    }
   }
 
   // Read the current slug before updating so we can revalidate the old URL.
@@ -193,11 +216,11 @@ export async function updateHeroAction(id: string, updates: Partial<Hero>): Prom
 
   if (error) {
     console.error('Error updating hero via server action:', error)
-    return null
+    return { ok: false, kind: 'db', message: error.message ?? 'Database update failed.' }
   }
   if (!data) {
     console.error('Hero not found for update:', id)
-    return null
+    return { ok: false, kind: 'not_found', message: 'That hero no longer exists.' }
   }
 
   revalidatePath('/')
@@ -206,22 +229,22 @@ export async function updateHeroAction(id: string, updates: Partial<Hero>): Prom
   if (oldSlug && oldSlug !== data?.slug) revalidatePath(`/hero/${oldSlug}`)
   revalidatePath('/search')
   revalidatePath('/timeline')
-  return data
+  return { ok: true, hero: data }
 }
 
 /**
  * Securely creates a new hero using the admin client
  */
-export async function createHeroAction(updates: Partial<Hero>): Promise<Hero | null> {
+export async function createHeroAction(updates: Partial<Hero>): Promise<HeroMutationResult> {
   const isAuthenticated = await checkAdminAuthAction()
   if (!isAuthenticated) {
-    return null
+    return { ok: false, kind: 'auth', message: 'Admin session is no longer valid.' }
   }
 
   const rateLimit = await checkActionRateLimit('CREATE_HERO')
   if (!rateLimit.ok) {
     console.warn(`createHeroAction rate-limited: ${rateLimit.error}`)
-    return null
+    return { ok: false, kind: 'rate_limit', message: `Rate limited: ${rateLimit.error}` }
   }
 
   let supabase: ReturnType<typeof getAdminSupabase>
@@ -229,18 +252,30 @@ export async function createHeroAction(updates: Partial<Hero>): Promise<Hero | n
     supabase = getAdminSupabase()
   } catch {
     console.error('createHeroAction: Supabase service client is not configured')
-    return null
+    return {
+      ok: false,
+      kind: 'config',
+      message: 'Server configuration error: admin Supabase client unavailable.',
+    }
   }
 
   if (!isValidHeroUpdatePayload(updates)) {
     console.error('Rejected hero create: oversized or invalid payload shape')
-    return null
+    return {
+      ok: false,
+      kind: 'invalid_payload',
+      message: 'The submitted changes are too large or malformed.',
+    }
   }
 
   const sanitized = sanitizeHeroUpdate(updates)
   if (!sanitized || Object.keys(sanitized).length === 0) {
     console.error('Rejected hero create: invalid or empty payload')
-    return null
+    return {
+      ok: false,
+      kind: 'invalid_payload',
+      message: 'None of the submitted fields could be saved.',
+    }
   }
 
   // create requires core fields: name, alias, franchise
@@ -249,13 +284,21 @@ export async function createHeroAction(updates: Partial<Hero>): Promise<Hero | n
   const franchise = (sanitized.franchise ?? updates.franchise) as string | undefined
   if (!name || !alias || !franchise) {
     console.error('Rejected hero create: missing core fields (name, alias, franchise)')
-    return null
+    return {
+      ok: false,
+      kind: 'missing_fields',
+      message: 'Name, alias and franchise are required.',
+    }
   }
   const slugSource = alias || name
   let slug = slugSource ? slugifyAlias(slugSource) : undefined
   if (!slug) {
     console.error('Rejected hero create: could not derive slug')
-    return null
+    return {
+      ok: false,
+      kind: 'invalid_payload',
+      message: 'Could not derive a URL slug from the name or alias.',
+    }
   }
   // A duplicate alias yields the same base slug; append a short suffix instead
   // of letting the unique constraint turn into a 500 (#411).
@@ -277,11 +320,11 @@ export async function createHeroAction(updates: Partial<Hero>): Promise<Hero | n
 
   if (error) {
     console.error('Error creating hero via server action:', error)
-    return null
+    return { ok: false, kind: 'db', message: error.message ?? 'Database insert failed.' }
   }
   if (!data) {
     console.error('Hero create returned no row')
-    return null
+    return { ok: false, kind: 'db', message: 'The database returned no new row.' }
   }
 
   revalidatePath('/')
@@ -289,7 +332,7 @@ export async function createHeroAction(updates: Partial<Hero>): Promise<Hero | n
   if (data?.slug) revalidatePath(`/hero/${data.slug}`)
   revalidatePath('/search')
   revalidatePath('/timeline')
-  return data
+  return { ok: true, hero: data }
 }
 /**
  * Securely deletes a hero using the admin client
