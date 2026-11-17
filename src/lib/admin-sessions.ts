@@ -4,6 +4,120 @@ import { getServiceSupabase } from './service-supabase'
 /** Session lifetime (8 hours). */
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000
 
+/** In-memory current password epoch (bumped whenever the password changes). */
+let currentPasswordEpoch = 0
+
+/** Hash of the ADMIN_PASSWORD value the current epoch was issued under. */
+let lastKnownPasswordHash: string | null = null
+
+function hashPassword(password: string): string {
+  return crypto.createHash('sha256').update(password).digest('hex')
+}
+
+async function readStoredPasswordHash(): Promise<string | null> {
+  if (!(await canUseSessionsTable())) return null
+  try {
+    const supabase = getServiceSupabase()
+    const { data, error } = await supabase
+      .from('admin_password_epoch')
+      .select('password_hash')
+      .eq('id', 1)
+      .maybeSingle()
+    if (!error && data?.password_hash) return data.password_hash as string
+  } catch {
+    // Best effort; treat as unknown.
+  }
+  return null
+}
+
+async function writeStoredPasswordHash(hash: string): Promise<void> {
+  if (!(await canUseSessionsTable())) return
+  try {
+    const supabase = getServiceSupabase()
+    await supabase.from('admin_password_epoch').update({ password_hash: hash }).eq('id', 1)
+  } catch {
+    // Best effort; the in-memory epoch still rotates this process.
+  }
+}
+
+/**
+ * Keeps the session epoch aligned with the current ADMIN_PASSWORD.
+ * Called on every successful login: when the stored hash differs from the
+ * credential just used, the epoch is bumped so every previously issued
+ * admin_session row stops validating (#443). A first-ever observation only
+ * records the hash — it must not invalidate legitimate sessions.
+ */
+export async function ensurePasswordEpochFresh(password: string): Promise<void> {
+  const hash = hashPassword(password)
+  const stored = await readStoredPasswordHash()
+
+  if (stored === null) {
+    lastKnownPasswordHash = hash
+    await writeStoredPasswordHash(hash)
+    return
+  }
+  if (stored === hash || lastKnownPasswordHash === hash) {
+    lastKnownPasswordHash = hash
+    return
+  }
+
+  await rotatePasswordEpoch()
+  await writeStoredPasswordHash(hash)
+  lastKnownPasswordHash = hash
+}
+
+/**
+ * Gets the current password epoch from the database.
+ * Falls back to the in-memory value if DB is unavailable.
+ */
+async function getCurrentPasswordEpoch(): Promise<number> {
+  if (!(await canUseSessionsTable())) {
+    return currentPasswordEpoch
+  }
+  try {
+    const supabase = getServiceSupabase()
+    const { data, error } = await supabase
+      .from('admin_password_epoch')
+      .select('epoch')
+      .eq('id', 1)
+      .maybeSingle()
+    if (!error && data) {
+      currentPasswordEpoch = data.epoch
+      return data.epoch
+    }
+  } catch {
+    // Fall back to in-memory
+  }
+  return currentPasswordEpoch
+}
+
+/**
+ * Increments the password epoch in the database and updates the in-memory
+ * value. Sessions store their epoch at creation, so a bump invalidates them.
+ */
+export async function rotatePasswordEpoch(): Promise<number> {
+  currentPasswordEpoch += 1
+  if (!(await canUseSessionsTable())) {
+    return currentPasswordEpoch
+  }
+  try {
+    const supabase = getServiceSupabase()
+    const { data, error } = await supabase
+      .from('admin_password_epoch')
+      .update({ epoch: currentPasswordEpoch, updated_at: new Date().toISOString() })
+      .eq('id', 1)
+      .select('epoch')
+      .maybeSingle()
+    if (!error && data) {
+      currentPasswordEpoch = data.epoch
+      return data.epoch
+    }
+  } catch {
+    // Keep the in-memory increment.
+  }
+  return currentPasswordEpoch
+}
+
 /** Re-probe configuration for DB availability. */
 const REPROBE_BASE_DELAY_MS = 2000
 const REPROBE_MAX_DELAY_MS = 30000
@@ -138,6 +252,7 @@ export async function createSessionToken(): Promise<string> {
   const { error } = await supabase.from('admin_sessions').insert({
     token_hash: hashToken(token),
     expires_at: new Date(Date.now() + SESSION_TTL_MS).toISOString(),
+    password_epoch: await getCurrentPasswordEpoch(),
   })
   if (error) {
     // Write failed: trigger re-probe, but keep dbMode.available=true for now
@@ -166,11 +281,15 @@ export async function validateSessionToken(token: string): Promise<boolean> {
   const supabase = getServiceSupabase()
   const { data, error } = await supabase
     .from('admin_sessions')
-    .select('token_hash, expires_at')
+    .select('token_hash, expires_at, password_epoch')
     .eq('token_hash', hashToken(token))
     .maybeSingle()
   if (error || !data) return false
-  return new Date(data.expires_at).getTime() > Date.now()
+  if (new Date(data.expires_at).getTime() <= Date.now()) return false
+  const currentEpoch = await getCurrentPasswordEpoch()
+  // Rows written before the epoch column existed carry no value; treat them as
+  // epoch 0 so a fresh install is not invalidated merely by reading the epoch.
+  return (data.password_epoch ?? 0) === currentEpoch
 }
 
 /**
@@ -195,7 +314,15 @@ export async function revokeSessionToken(token: string): Promise<void> {
   }
 }
 
-/** Removes expired rows; called opportunistically when creating a session. */
+export async function revokeAllSessions(): Promise<void> {
+  if (!(await canUseSessionsTable())) return
+  try {
+    const supabase = getServiceSupabase()
+    await supabase.from('admin_sessions').delete().neq('token_hash', '')
+  } catch {
+    scheduleReprobe()
+  }
+}
 export async function pruneExpiredSessions(): Promise<void> {
   if (!(await canUseSessionsTable())) return
   try {
@@ -217,6 +344,8 @@ export function __resetDbModeForTest(): void {
     probing: false,
   }
   probePromise = null
+  currentPasswordEpoch = 0
+  lastKnownPasswordHash = null
 }
 
 // Exported for testing: advance time and force a re-probe check.

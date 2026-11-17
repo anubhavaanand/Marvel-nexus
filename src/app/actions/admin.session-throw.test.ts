@@ -12,6 +12,7 @@ vi.mock('@/lib/admin-sessions', () => ({
   createSessionToken: vi.fn(async () => {
     throw new Error('db down')
   }),
+  ensurePasswordEpochFresh: vi.fn(async () => {}),
   revokeSessionToken: vi.fn(),
   validateSessionToken: vi.fn(),
 }))
