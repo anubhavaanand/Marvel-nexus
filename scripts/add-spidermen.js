@@ -41,9 +41,7 @@ async function addSpidermen() {
     flags,
     {
       title: 'overwrites 2 existing hero rows (DESTRUCTIVE)',
-      destructive: [
-        'DELETE existing rows for aliases: Spider-Man (Tobey), Spider-Man (Andrew)',
-      ],
+      destructive: ['DELETE existing rows for aliases: Spider-Man (Tobey), Spider-Man (Andrew)'],
       safe: ['INSERT/UPDATE the two Spider-Verse heroes'],
     },
     'add-spidermen.js',
