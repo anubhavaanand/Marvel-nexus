@@ -3,7 +3,45 @@
 
 const IMAGE_BASE = 'https://image.tmdb.org/t/p/w500'
 
-const tmdbCache = new Map<string, string | null>()
+const TMDB_CACHE_TTL_MS = 3600_000
+const TMDB_CACHE_MAX_ENTRIES = 200
+
+interface TmdbCacheEntry {
+  value: string | null
+  expiresAt: number
+}
+
+const tmdbCache = new Map<string, TmdbCacheEntry>()
+
+function getCached(key: string): string | null | undefined {
+  const entry = tmdbCache.get(key)
+  if (!entry) return undefined
+  if (Date.now() >= entry.expiresAt) {
+    tmdbCache.delete(key)
+    return undefined
+  }
+  // LRU: move to end
+  tmdbCache.delete(key)
+  tmdbCache.set(key, entry)
+  return entry.value
+}
+
+function setCached(key: string, value: string | null): void {
+  const now = Date.now()
+  // prune expired on insert
+  for (const [k, v] of tmdbCache) {
+    if (now >= v.expiresAt) tmdbCache.delete(k)
+  }
+  if (tmdbCache.size >= TMDB_CACHE_MAX_ENTRIES) {
+    const first = tmdbCache.keys().next().value
+    if (first !== undefined) tmdbCache.delete(first)
+  }
+  tmdbCache.set(key, { value, expiresAt: now + TMDB_CACHE_TTL_MS })
+}
+
+export function resetTmdbImageCache(): void {
+  tmdbCache.clear()
+}
 
 // In-flight dedupe: concurrent lookups for the same term share one promise.
 const inFlight = new Map<string, Promise<string | null>>()
@@ -62,7 +100,8 @@ async function fetchWithRateLimitHandling(query: string): Promise<Response> {
 
 export async function getTmdbImageUrl(name: string, alias: string): Promise<string | null> {
   const key = `${name}|${alias}`
-  if (tmdbCache.has(key)) return tmdbCache.get(key) ?? null
+  const cached = getCached(key)
+  if (cached !== undefined) return cached
 
   const flying = inFlight.get(key)
   if (flying) return flying
@@ -87,7 +126,7 @@ export async function getTmdbImageUrl(name: string, alias: string): Promise<stri
     } catch {
       // keep value null; caller falls back to existing source
     }
-    tmdbCache.set(key, value)
+    setCached(key, value)
     inFlight.delete(key)
     resolve(value)
   }
