@@ -52,7 +52,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const heroEntries: MetadataRoute.Sitemap = (heroes || [])
       .filter((hero) => hero.alias && hero.alias.trim().length > 0)
       .map((hero) => {
-        const slug = slugifyAlias(hero.alias)
+        const slug = hero.slug || slugifyAlias(hero.alias)
         return {
           url: `${base}/hero/${encodeURIComponent(slug)}`,
           lastModified: today,
