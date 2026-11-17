@@ -246,7 +246,8 @@ export default function TimelineSlider({ movies, title = 'MCU Timeline' }: Timel
                 )}
 
                 {/* Rating */}
-                {movie.imdb_rating && (
+                {/* #501: a real 0.0 rating must not be swallowed by truthiness */}
+                {movie.imdb_rating != null && (
                   <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/60 px-2 py-1 rounded-md">
                     <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
                     <span className="text-xs text-white font-mono">{movie.imdb_rating}</span>
