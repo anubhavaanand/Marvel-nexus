@@ -133,7 +133,6 @@ async function syncMovies() {
   let inserted = 0
   let failed = 0
   const failedIds = []
-  const insertedMovies = []
 
   for (let i = 0; i < toInsert.length; i++) {
     const movie = toInsert[i]
@@ -173,7 +172,6 @@ async function syncMovies() {
           `  ✅ [${i + 1}/${toInsert.length}] ${dbMovie.phase}: ${dbMovie.title} (${dbMovie.release_date?.slice(0, 4) || 'TBA'}) ⭐ TMDB ${dbMovie.tmdb_rating}`,
         )
         inserted++
-        insertedMovies.push(data)
       }
     } catch (err) {
       console.error(`  ❌ Error on ${movie.title}: ${err.message}`)
