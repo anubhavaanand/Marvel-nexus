@@ -1,5 +1,8 @@
 import path from 'node:path'
 import { defineConfig } from 'vitest/config'
+import { fileURLToPath } from 'node:url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // Two test projects (#462): plain Node for lib/action tests, jsdom for
 // component/hook tests. Coverage runs across both (`npx vitest --coverage`).
