@@ -51,18 +51,28 @@ export default function HeroImageErrorHandler({
     }
   }
 
+  // #580: compose with any onError the child already has instead of overwriting it.
+  const composeOnError = (childOnError: unknown) => (event: unknown) => {
+    if (typeof childOnError === 'function') {
+      ;(childOnError as (e: unknown) => void)(event)
+    }
+    void handleError()
+  }
+
   // While checking, keep the failed child in place rather than swapping to the
   // placeholder immediately (#514).
   if (checking) {
     return (
       <>
-        {Children.map(children, (child) =>
-          isValidElement(child) && typeof child.type !== 'string'
-            ? cloneElement(child, {
-                onError: handleError,
-              } as React.HTMLAttributes<HTMLImageElement>)
-            : child,
-        )}
+        {Children.map(children, (child) => {
+          if (isValidElement(child) && typeof child.type !== 'string') {
+            const childProps = (child.props ?? {}) as { onError?: unknown }
+            return cloneElement(child, {
+              onError: composeOnError(childProps.onError),
+            } as React.HTMLAttributes<HTMLImageElement>)
+          }
+          return child
+        })}
       </>
     )
   }
@@ -111,11 +121,15 @@ export default function HeroImageErrorHandler({
 
   return (
     <>
-      {Children.map(children, (child) =>
-        isValidElement(child) && typeof child.type !== 'string'
-          ? cloneElement(child, { onError: handleError } as React.HTMLAttributes<HTMLImageElement>)
-          : child,
-      )}
+      {Children.map(children, (child) => {
+        if (isValidElement(child) && typeof child.type !== 'string') {
+          const childProps = (child.props ?? {}) as { onError?: unknown }
+          return cloneElement(child, {
+            onError: composeOnError(childProps.onError),
+          } as React.HTMLAttributes<HTMLImageElement>)
+        }
+        return child
+      })}
     </>
   )
 }
