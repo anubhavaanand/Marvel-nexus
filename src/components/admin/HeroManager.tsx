@@ -35,6 +35,14 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
   const [newPower, setNewPower] = useState('')
   const [newWeakness, setNewWeakness] = useState('')
   const [visibleCount, setVisibleCount] = useState(50)
+  const [lastInitialHeroes, setLastInitialHeroes] = useState(initialHeroes)
+  // #445: follow refreshed server props (router.refresh after seeding). This is
+  // React's adjust-state-during-render pattern; it is skipped while an edit is
+  // open so unsaved changes are never clobbered.
+  if (!editingHero && initialHeroes !== lastInitialHeroes) {
+    setLastInitialHeroes(initialHeroes)
+    setHeroes(initialHeroes)
+  }
   const powersInputRef = useRef<HTMLInputElement>(null)
   const weaknessesInputRef = useRef<HTMLInputElement>(null)
 

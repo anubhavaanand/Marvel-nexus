@@ -200,6 +200,8 @@ export default function AdminPage({
       if (result.lastSeeded) {
         setLastSeeded((prev) => ({ ...prev, [key]: result.lastSeeded }))
       }
+      // #445: re-pull server props so HeroManager/stat cards reflect the new rows.
+      router.refresh()
       await refreshStats()
     } catch {
       setSeedStatus((prev) => ({ ...prev, [key]: 'error' }))
