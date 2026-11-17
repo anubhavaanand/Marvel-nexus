@@ -11,10 +11,11 @@ function normalizeSiteUrl(url: string): string {
   return url.replace(/\/$/, '')
 }
 
-// #423: rendered per request and paginated, so newly added heroes are included
-// without a rebuild. The old force-static version froze the hero list (and the
-// first 100 rows) into the build output.
-export const dynamic = 'force-dynamic'
+// #423: paginated, so newly added heroes are included without a rebuild. The
+// old force-static version froze the hero list (and the first 100 rows) into
+// the build output.
+// #798: regenerate at most hourly via ISR instead of on every request.
+export const revalidate = 3600
 const LAST_MODIFIED: string = new Date().toISOString().split('T')[0]
 
 /** Fetch every hero by following the id cursor past the single-page cap. */
