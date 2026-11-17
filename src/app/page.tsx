@@ -198,24 +198,6 @@ export default async function Home() {
             </div>
           </div>
         </section>
-
-        {/* Footer */}
-        <footer className="section-sm bg-[var(--bg)] border-t border-[var(--border)]">
-          <div className="container-wide">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-7 h-7 rounded-[10px] flex items-center justify-center"
-                  style={{ background: 'linear-gradient(135deg, var(--accent), #60a5fa)' }}
-                >
-                  <span className="text-white font-bold text-xs">M</span>
-                </div>
-                <span className="text-[var(--fg)] font-semibold text-sm">Multiverse Archive</span>
-              </div>
-              <p className="text-caption">&copy; 2024 Multiverse Archive. All rights reserved.</p>
-            </div>
-          </div>
-        </footer>
       </main>
     </HomeClient>
   )
