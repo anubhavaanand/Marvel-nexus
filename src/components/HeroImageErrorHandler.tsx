@@ -27,22 +27,44 @@ export default function HeroImageErrorHandler({
   const [imageError, setImageError] = useState(false)
   const [tmdbAttempted, setTmdbAttempted] = useState(false)
   const [tmdbSrc, setTmdbSrc] = useState<string | null>(null)
+  // #514: while the fallback lookup is in flight we keep showing whatever the
+  // child rendered (or nothing new) instead of flashing the placeholder.
+  const [checking, setChecking] = useState(false)
 
   const handleError = async () => {
     if (tmdbAttempted || tmdbSrc) return
-    setImageError(true)
+    setChecking(true)
 
     try {
       const tmdbUrl = await getTmdbImageUrl(name, alias, lookupType)
       if (tmdbUrl) {
         setTmdbSrc(tmdbUrl)
-        setImageError(false)
+      } else {
+        // Only now do we know there is no usable image: show the placeholder.
+        setImageError(true)
       }
     } catch {
-      // fallback remains
+      setImageError(true)
     } finally {
       setTmdbAttempted(true)
+      setChecking(false)
     }
+  }
+
+  // While checking, keep the failed child in place rather than swapping to the
+  // placeholder immediately (#514).
+  if (checking) {
+    return (
+      <>
+        {Children.map(children, (child) =>
+          isValidElement(child) && typeof child.type !== 'string'
+            ? cloneElement(child, {
+                onError: handleError,
+              } as React.HTMLAttributes<HTMLImageElement>)
+            : child,
+        )}
+      </>
+    )
   }
 
   // #504: a dead/blocked TMDB URL must fall through to the placeholder instead
