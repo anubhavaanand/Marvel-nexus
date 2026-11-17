@@ -1,5 +1,10 @@
 'use client'
 
+// #479: this is the deliberately curated viewing order (it carries runtime,
+// per-franchise grouping and story ordering), not the canonical movie catalog —
+// that lives in src/lib/seed-data.ts and is what /timeline and getAllMovies use.
+// Keep titles aligned when adding films to both.
+
 export interface WatchItem {
   id: number
   title: string

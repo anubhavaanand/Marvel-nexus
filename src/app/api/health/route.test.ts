@@ -17,7 +17,12 @@ describe('health route', () => {
     const { getServiceSupabase } = await import('@/lib/service-supabase')
     vi.mocked(getServiceSupabase).mockReturnValue({
       from: () => ({
-        select: () => ({ limit: () => Promise.resolve({ data: [{ id: '1' }], error: null }) }),
+        select: () => ({
+          // #523: the route now attaches an abort signal; the double must accept it.
+          limit: () => ({
+            abortSignal: () => Promise.resolve({ data: [{ id: '1' }], error: null }),
+          }),
+        }),
       }),
     } as never)
     const { GET } = await import('./route')
@@ -33,7 +38,11 @@ describe('health route', () => {
     const { getServiceSupabase } = await import('@/lib/service-supabase')
     vi.mocked(getServiceSupabase).mockReturnValue({
       from: () => ({
-        select: () => ({ limit: () => Promise.resolve({ data: null, error: new Error('boom') }) }),
+        select: () => ({
+          limit: () => ({
+            abortSignal: () => Promise.resolve({ data: null, error: new Error('boom') }),
+          }),
+        }),
       }),
     } as never)
     const { GET } = await import('./route')
