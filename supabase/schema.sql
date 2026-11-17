@@ -247,3 +247,10 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION public.delete_hero_cascade(uuid) FROM PUBLIC;
+
+
+-- #813: match the privilege posture applied by supabase/migrations/011_admin_sessions_rls.sql.
+-- GRANT/REVOKE are naturally idempotent, so re-running this file is safe.
+REVOKE ALL ON admin_sessions FROM anon;
+REVOKE ALL ON admin_sessions FROM authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON admin_sessions TO service_role;
