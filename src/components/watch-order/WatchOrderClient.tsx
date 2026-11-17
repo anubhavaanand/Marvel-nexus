@@ -32,7 +32,10 @@ const WatchOrderTable = dynamic(() => import('./WatchOrderTable'), {
 })
 
 export default function WatchOrderClient({ items }: { items: WatchItem[] }) {
-  const franchises = useMemo(() => Array.from(new Set(items.map((item) => item.franchise))), [])
+  const franchises = useMemo(
+    () => Array.from(new Set(items.map((item) => item.franchise))),
+    [items],
+  )
   const [activeTab, setActiveTab] = useState<string>(franchises[0] ?? 'MCU')
   const [sortBy, setSortBy] = useState<'chronological' | 'release'>('chronological')
 
