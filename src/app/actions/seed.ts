@@ -93,18 +93,20 @@ export async function seedDemoHeroesAction() {
     console.error('seedDemoHeroesAction: Supabase service client is not configured')
     return { ok: false as const, error: 'Service not configured' }
   }
+  // #526: seeding must not destroy curator edits. `actor_name` has no seed
+  // value (writing null erased it) and `is_locked_content` is a protection
+  // flag, so both are left out of the upsert payload and keep their existing
+  // values on conflict.
   const heroRows = SEED_HEROES.map((hero) => ({
     id: hero.id,
     name: hero.name,
     alias: hero.alias,
     slug: slugifyAlias(hero.alias),
-    actor_name: null,
     franchise: hero.franchise,
     origin_world: hero.origin_world ?? null,
     powers: hero.powers,
     weaknesses: hero.weaknesses,
     image_url: hero.image_url,
-    is_locked_content: hero.is_locked_content,
   }))
   const completedSteps: string[] = []
   const allSteps = ['heroes', 'movies', 'canon_events', 'hero_movies']
@@ -156,10 +158,15 @@ export async function seedDemoHeroesAction() {
 
   const eventRows: Array<Record<string, unknown>> = []
   const links: Array<Record<string, unknown>> = []
+  let skippedEvents = 0
   for (const event of SEED_EVENTS) {
     const hero = heroKey.get(`${event.heroName}|${event.heroAlias}`)
     const movieId = movieIds.get(event.movieTitle)
-    if (!hero || !movieId) continue
+    if (!hero || !movieId) {
+      // #522: a silently skipped event is how "all steps completed" lies.
+      skippedEvents += 1
+      continue
+    }
     eventRows.push({
       id: event.id,
       hero_id: hero,
@@ -202,7 +209,9 @@ export async function seedDemoHeroesAction() {
       }
     }
   }
-  completedSteps.push('hero_movies')
+  // #522: only claim the step when there were actually links to write.
+  if (links.length > 0) completedSteps.push('hero_movies')
+  else log('hero_movies skipped: no resolvable hero/movie links')
 
   revalidatePath('/')
   revalidatePath('/admin')
@@ -218,6 +227,7 @@ export async function seedDemoHeroesAction() {
     movies: movieRows.length,
     events: eventRows.length,
     links: links.length,
+    skippedEvents,
     lastSeeded: seededAt,
     completedSteps,
   }
