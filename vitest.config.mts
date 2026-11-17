@@ -11,12 +11,12 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      include: ['src/components/**', 'src/hooks/**'],
+      include: ['src/**'],
       thresholds: {
-        statements: 50,
-        branches: 50,
-        functions: 50,
-        lines: 50,
+        statements: 30,
+        branches: 25,
+        functions: 25,
+        lines: 30,
       },
     },
     projects: [

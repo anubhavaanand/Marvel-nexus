@@ -16,6 +16,7 @@ async function checkAliases() {
 
   if (error) {
     console.error('❌ Error fetching heroes:', error.message)
+    process.exitCode = 1
     return
   }
 
@@ -65,4 +66,7 @@ async function checkAliases() {
   }
 }
 
-checkAliases()
+checkAliases().catch((err) => {
+  console.error('❌ Unexpected error:', err)
+  process.exitCode = 1
+})
