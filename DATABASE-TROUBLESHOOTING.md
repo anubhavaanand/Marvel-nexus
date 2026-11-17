@@ -6,7 +6,7 @@ Connection to Supabase database is **failing** with error:
 
 ```
 TypeError: fetch failed
-getaddrinfo ENOTFOUND ngrbczgogtmngnskymui.supabase.co
+getaddrinfo ENOTFOUND <your-project-ref>.supabase.co
 ```
 
 ## ✅ What's Configured Correctly
@@ -19,7 +19,7 @@ getaddrinfo ENOTFOUND ngrbczgogtmngnskymui.supabase.co
 
 ### 1. **Supabase Project Paused/Deleted** (Most Likely)
 
-Your Supabase project at `ngrbczgogtmngnskymui.supabase.co` cannot be reached.
+Your Supabase project at `<your-project-ref>.supabase.co` cannot be reached.
 
 **Solution:**
 
@@ -35,7 +35,7 @@ The URL might be temporarily unreachable.
 **Test:**
 
 ```bash
-ping ngrbczgogtmngnskymui.supabase.co
+ping <your-project-ref>.supabase.co
 ```
 
 If ping fails, it's definitely a connectivity issue.
@@ -63,7 +63,7 @@ Visit your project dashboard and resume it.
 
 1. Go to https://supabase.com/dashboard
 2. Create a new project
-3. Run the SQL from `supabase/schema.sql` in SQL Editor (canonical schema)
+3. Run the SQL files in order in the SQL Editor: `supabase/schema.sql` (canonical schema), then `supabase/migrations/*` (additional tables including `heroes.slug` and `admin_sessions`), then `supabase/seed.sql` (initial data)
 4. Update `.env.local` with new credentials:
    ```env
    NEXT_PUBLIC_SUPABASE_URL=https://YOUR_NEW_PROJECT.supabase.co
