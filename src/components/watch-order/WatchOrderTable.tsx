@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowUpDown, Calendar } from 'lucide-react'
-import { WatchItem } from './data'
+import type { WatchItem } from './meta'
 import WatchItemCard from './WatchItemCard'
 
 interface WatchOrderTableProps {
