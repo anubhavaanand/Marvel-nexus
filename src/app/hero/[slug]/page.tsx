@@ -252,7 +252,13 @@ export async function generateMetadata({ params }: PageProps) {
 
   // Resolve visibility with the same source the page uses so a locked hero is
   // described as restricted instead of "not found" (#424).
-  const visibility = await getHeroVisibility(slug)
+  // getHeroVisibility and getHeroData are independent for non-locked heroes,
+  // so fetch both concurrently then branch.
+  const [visibility, hero] = await Promise.all([
+    getHeroVisibility(slug),
+    getHeroData(slug),
+  ])
+
   if (!visibility) {
     return { title: 'Hero Not Found | Multiverse Archive' }
   }
@@ -263,8 +269,6 @@ export async function generateMetadata({ params }: PageProps) {
       robots: { index: false },
     }
   }
-
-  const hero = await getHeroData(slug)
 
   if (!hero) {
     return { title: 'Hero Not Found | Multiverse Archive' }

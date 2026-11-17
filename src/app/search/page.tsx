@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { getSearchHeroes, type SearchHero, isSupabaseConfigured } from '@/lib/supabase'
 import SearchClient from '@/components/SearchClient'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: 'Search | Multiverse Archive',
