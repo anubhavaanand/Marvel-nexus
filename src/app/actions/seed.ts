@@ -158,10 +158,15 @@ export async function seedDemoHeroesAction() {
 
   const eventRows: Array<Record<string, unknown>> = []
   const links: Array<Record<string, unknown>> = []
+  let skippedEvents = 0
   for (const event of SEED_EVENTS) {
     const hero = heroKey.get(`${event.heroName}|${event.heroAlias}`)
     const movieId = movieIds.get(event.movieTitle)
-    if (!hero || !movieId) continue
+    if (!hero || !movieId) {
+      // #522: a silently skipped event is how "all steps completed" lies.
+      skippedEvents += 1
+      continue
+    }
     eventRows.push({
       id: event.id,
       hero_id: hero,
@@ -204,7 +209,9 @@ export async function seedDemoHeroesAction() {
       }
     }
   }
-  completedSteps.push('hero_movies')
+  // #522: only claim the step when there were actually links to write.
+  if (links.length > 0) completedSteps.push('hero_movies')
+  else log('hero_movies skipped: no resolvable hero/movie links')
 
   revalidatePath('/')
   revalidatePath('/admin')
@@ -220,6 +227,7 @@ export async function seedDemoHeroesAction() {
     movies: movieRows.length,
     events: eventRows.length,
     links: links.length,
+    skippedEvents,
     lastSeeded: seededAt,
     completedSteps,
   }
