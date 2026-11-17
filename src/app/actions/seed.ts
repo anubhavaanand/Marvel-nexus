@@ -18,6 +18,22 @@ function log(message: string) {
   console.log(`[admin-seed] ${message}`)
 }
 
+// Lightweight in-memory store of the last successful seed run per action.
+// Resets on server restart; intentionally no new DB table (see issue #372).
+const lastSeededAt: Record<'heroes' | 'movies' | 'events', string | null> = {
+  heroes: null,
+  movies: null,
+  events: null,
+}
+
+export async function getLastSeededStatusAction(): Promise<{
+  ok: true
+  lastSeeded: Record<'heroes' | 'movies' | 'events', string | null>
+}> {
+  await requireAdmin()
+  return { ok: true, lastSeeded: { ...lastSeededAt } }
+}
+
 /**
  * Upserts the curated demo hero set into the database.
  */
@@ -155,12 +171,14 @@ export async function seedDemoHeroesAction() {
   log(
     `seeded ${heroRows.length} heroes, ${movieRows.length} movies, ${eventRows.length} canon events`,
   )
+  lastSeededAt.heroes = new Date().toISOString()
   return {
     ok: true as const,
     seeded: heroRows.length,
     movies: movieRows.length,
     events: eventRows.length,
     links: links.length,
+    lastSeeded: lastSeededAt.heroes,
     completedSteps,
   }
 }
@@ -246,7 +264,8 @@ export async function syncMoviesAction() {
   revalidatePath('/watch-order')
   revalidatePath('/admin')
   log(`synced ${rows.length} movies (${enriched} enriched from TMDB)`)
-  return { ok: true as const, seeded: rows.length, enriched }
+  lastSeededAt.movies = new Date().toISOString()
+  return { ok: true as const, seeded: rows.length, enriched, lastSeeded: lastSeededAt.movies }
 }
 
 /**
@@ -316,7 +335,8 @@ export async function createCanonEventsAction() {
   revalidatePath('/timeline')
   revalidatePath('/admin')
   log(`created ${rows.length} canon events (skipped ${skipped})`)
-  return { ok: true as const, created: rows.length, skipped }
+  lastSeededAt.events = new Date().toISOString()
+  return { ok: true as const, created: rows.length, skipped, lastSeeded: lastSeededAt.events }
 }
 
 export interface AdminStats {
