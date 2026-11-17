@@ -19,7 +19,18 @@ const mockHeroRow = {
 let mockConfig: {
   updateReturns?: typeof mockHeroRow
   existingSlug?: typeof mockHeroRow
+  /** Slug the action actually tried to write (#527). */
+  lastSentSlug?: string | null
 } = {}
+
+// Mirrors public.hero_slugify (supabase/migrations/005_hero_slug_index.sql):
+// lowercase, non-alphanumerics collapsed to '-'.
+function triggerSlugify(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
 
 // Helper to create a fresh Supabase mock
 const createSupabaseMock = () => {
@@ -35,7 +46,14 @@ const createSupabaseMock = () => {
     },
     update: (payload: Record<string, unknown>) => {
       mode = 'update'
-      if (payload.slug) returnedSlug = payload.slug as string
+      mockConfig.lastSentSlug = typeof payload.slug === 'string' ? payload.slug : null
+      // #527: emulate heroes_set_slug (BEFORE UPDATE OF alias), which recomputes
+      // NEW.slug from the alias and discards whatever slug the app sent.
+      if (typeof payload.alias === 'string') {
+        returnedSlug = triggerSlugify(payload.alias)
+      } else if (payload.slug) {
+        returnedSlug = payload.slug as string
+      }
       return chain
     },
     select: () => {
@@ -122,7 +140,7 @@ vi.mock('@/lib/admin-sessions', () => ({
 describe('updateHeroAction slug recompute - alias changes', () => {
   beforeEach(() => {
     vi.resetModules()
-    mockConfig = { updateReturns: mockHeroRow }
+    mockConfig = { updateReturns: mockHeroRow, lastSentSlug: null }
     process.env.ADMIN_PASSWORD = 'secret'
 
     // Reset cookie store mock
@@ -148,7 +166,7 @@ describe('updateHeroAction slug recompute - alias changes', () => {
     expect(res!.slug).toBe('iron-man')
   })
 
-  it('appends suffix on slug collision with another hero', async () => {
+  it('detects that the slug trigger discards the collision suffix (#527)', async () => {
     vi.resetModules()
     mockConfig = {
       updateReturns: mockHeroRow,
@@ -161,6 +179,10 @@ describe('updateHeroAction slug recompute - alias changes', () => {
     const { updateHeroAction } = await import('./admin')
     const res = await updateHeroAction('1', { alias: 'Captain America' })
     expect(res).not.toBeNull()
-    expect(res!.slug).toMatch(/^captain-america-[a-f0-9]{4}$/)
+    // The action computed a collision-safe suffix...
+    expect(mockConfig.lastSentSlug).toMatch(/^captain-america-[a-f0-9]{4}$/)
+    // ...but the database trigger overwrote it, so the stored slug duplicates
+    // the other hero's. This documents the production behaviour #527 flagged.
+    expect(res!.slug).toBe('captain-america')
   })
 })
