@@ -12,6 +12,7 @@ import {
   type HeroWithRelations,
 } from '@/lib/supabase'
 import { checkAdminAuthAction } from '@/app/actions/admin'
+import { FRANCHISE_COLORS } from '@/lib/hero-update'
 import { ArrowLeft, Globe, Zap, AlertTriangle, Shield, Film, Lock, Sparkles } from 'lucide-react'
 
 interface PageProps {
@@ -75,7 +76,7 @@ export default async function HeroPage({ params }: PageProps) {
     }
   }
 
-  const colors = franchiseColors[hero.franchise] || franchiseColors['MCU']
+  const colors = FRANCHISE_COLORS[hero.franchise] ?? FRANCHISE_COLORS.MCU
 
   return (
     <>

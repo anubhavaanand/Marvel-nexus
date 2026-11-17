@@ -1,6 +1,7 @@
 'use client'
 
 import { motion, useReducedMotion } from 'framer-motion'
+import { FRANCHISE_COLORS } from '@/lib/hero-update'
 import { useRef } from 'react'
 import { useSharedInView } from '@/hooks/useSharedInView'
 import Link from 'next/link'
@@ -14,20 +15,8 @@ interface HeroCardProps {
   index?: number
 }
 
-const franchiseColors: Record<string, { primary: string; glow: string }> = {
-  MCU: { primary: 'var(--franchise-mcu)', glow: 'rgba(0, 113, 227, 0.25)' },
-  'X-Men': { primary: 'var(--franchise-xmen)', glow: 'rgba(234, 179, 8, 0.25)' },
-  'Spider-Verse': { primary: 'var(--franchise-spider)', glow: 'rgba(239, 68, 68, 0.25)' },
-  Defenders: { primary: '#a855f7', glow: 'rgba(168, 85, 247, 0.25)' },
-  DC: { primary: 'var(--franchise-dc)', glow: 'rgba(59, 130, 246, 0.25)' },
-  Anime: { primary: 'var(--franchise-anime)', glow: 'rgba(249, 115, 22, 0.25)' },
-  'The Boys': { primary: 'var(--franchise-theboys)', glow: 'rgba(220, 38, 38, 0.25)' },
-  Invincible: { primary: '#eab308', glow: 'rgba(234, 179, 8, 0.25)' },
-  Peacemaker: { primary: 'var(--franchise-dc)', glow: 'rgba(59, 130, 246, 0.25)' },
-}
-
 export default function HeroCard({ hero, index = 0 }: HeroCardProps) {
-  const colors = franchiseColors[hero.franchise] || franchiseColors['MCU']
+  const colors = FRANCHISE_COLORS[hero.franchise] ?? FRANCHISE_COLORS.MCU
   const slug = hero.slug || slugifyAlias(hero.alias)
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useSharedInView(ref, { once: true, rootMargin: '-50px' })
