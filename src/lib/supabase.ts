@@ -688,10 +688,7 @@ export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | n
   // Issue #144: resolve the slug against the indexed `slug` column in a single
   // query. The trigger keeps `slug` in sync with `alias`, so this is exact and
   // never needs the full-table id/alias scan + in-memory filter.
-  const { data, error } = await supabase
-    .from('heroes')
-    .select(
-      `
+  const selectCols = `
       *,
       canon_events (
         *,
@@ -700,8 +697,11 @@ export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | n
       hero_movies (
         movies (*)
       )
-    `,
-    )
+    `
+
+  const { data, error } = await supabase
+    .from('heroes')
+    .select(selectCols)
     .eq('slug', slug)
     .maybeSingle()
 
@@ -709,11 +709,29 @@ export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | n
     console.error('Error fetching hero by slug:', error)
     throw new Error('Failed to load hero')
   }
-  if (!data) return null
 
+  let resolved = data
+  // Fallback (#343): when the DB slug trigger is missing (fresh restore),
+  // the `slug` column may be null/empty, so the indexed lookup misses even
+  // though the alias still matches. Fall back to comparing normalized aliases.
+  if (!resolved) {
+    const { data: all, error: allError } = await supabase.from('heroes').select(selectCols)
+    if (allError) {
+      console.error('Error fetching heroes for slug fallback:', allError)
+      throw new Error('Failed to load hero')
+    }
+    const rows = Array.isArray(all) ? all : []
+    resolved =
+      (rows.find((r) => {
+        const row = r as Record<string, unknown>
+        return typeof row?.alias === 'string' && compareSlug(row.alias as string, slug)
+      }) as typeof data) ?? null
+  }
+
+  if (!resolved) return null
+  const row = resolved as Record<string, unknown>
   // Runtime validation: tolerate schema drift (missing relation arrays, null
   // fields) without crashing. Only the core hero identity fields are required.
-  const row = data as Record<string, unknown>
   const canonEvents = Array.isArray(row.canon_events) ? (row.canon_events as unknown[]) : []
   const heroMovies = Array.isArray(row.hero_movies) ? (row.hero_movies as unknown[]) : []
 
