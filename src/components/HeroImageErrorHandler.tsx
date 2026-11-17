@@ -45,6 +45,13 @@ export default function HeroImageErrorHandler({
     }
   }
 
+  // #504: a dead/blocked TMDB URL must fall through to the placeholder instead
+  // of leaving next/image's broken-image icon on screen.
+  const handleTmdbError = () => {
+    setTmdbSrc(null)
+    setImageError(true)
+  }
+
   // If we have a TMDB fallback source, render the image with that source
   if (tmdbSrc) {
     return (
@@ -54,6 +61,7 @@ export default function HeroImageErrorHandler({
         fill
         sizes={sizes}
         priority={priority}
+        onError={handleTmdbError}
         className={`object-cover ${className}`}
       />
     )

@@ -853,10 +853,7 @@ export async function getHeroBySlugForAdmin(slug: string): Promise<HeroWithRelat
     console.error('getHeroBySlugForAdmin: Supabase service client is not configured')
     return null
   }
-  const { data, error } = await client
-    .from('heroes')
-    .select(
-      `
+  const selectCols = `
       *,
       canon_events (
         *,
@@ -865,8 +862,11 @@ export async function getHeroBySlugForAdmin(slug: string): Promise<HeroWithRelat
       hero_movies (
         movies (*)
       )
-    `,
-    )
+    `
+
+  const { data, error } = await client
+    .from('heroes')
+    .select(selectCols)
     .eq('slug', slug)
     .maybeSingle()
 
@@ -874,6 +874,46 @@ export async function getHeroBySlugForAdmin(slug: string): Promise<HeroWithRelat
     console.error('Error fetching admin hero by slug:', error)
     throw new Error('Failed to load hero')
   }
+
+  // #509: mirror the anonymous alias fallback (#343/#503) so admins can open
+  // (and repair slugs for) rows whose trigger did not populate `slug`.
+  if (!data) {
+    const { data: candidates, error: listError } = await client
+      .from('heroes')
+      .select('id, slug, alias')
+      .limit(1000)
+    if (listError) {
+      console.error('Error fetching heroes for admin slug fallback:', listError)
+      throw new Error('Failed to load hero')
+    }
+    const matches = (Array.isArray(candidates) ? candidates : []).filter((r) => {
+      const row = r as Record<string, unknown>
+      return (
+        typeof row?.alias === 'string' &&
+        (compareSlug(row.alias as string, slug) || row.slug === slug)
+      )
+    })
+    if (matches.length > 1) {
+      matches.sort((a, b) => String(a.id).localeCompare(String(b.id)))
+      console.warn(
+        `admin slug fallback: ${matches.length} heroes match "${slug}"; using ${matches[0].id}`,
+      )
+    }
+    const match = matches[0] as { id?: string } | undefined
+    if (!match?.id) return null
+
+    const { data: full, error: fullError } = await client
+      .from('heroes')
+      .select(selectCols)
+      .eq('id', match.id)
+      .maybeSingle()
+    if (fullError) {
+      console.error('Error fetching admin hero after slug fallback:', fullError)
+      throw new Error('Failed to load hero')
+    }
+    return full as HeroWithRelations | null
+  }
+
   return data as HeroWithRelations | null
 }
 
