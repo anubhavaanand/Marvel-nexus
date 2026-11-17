@@ -198,13 +198,19 @@ async function healthCheck() {
 
   // 8. HEALTH SCORE
   console.log('\n' + '═'.repeat(60))
-  const healthScore = Math.round(
-    ((heroes.length - brokenImages.length - duplicates.length) / heroes.length) * 100,
-  )
-  console.log(`🏆 OVERALL HEALTH SCORE: ${healthScore}%`)
+  // #500: an empty database is "no data", not a critical failure.
+  const healthScore =
+    heroes.length === 0
+      ? null
+      : Math.round(
+          ((heroes.length - brokenImages.length - duplicates.length) / heroes.length) * 100,
+        )
+  console.log(`🏆 OVERALL HEALTH SCORE: ${healthScore === null ? 'N/A' : `${healthScore}%`}`)
   console.log('═'.repeat(60))
 
-  if (healthScore >= 95) {
+  if (healthScore === null) {
+    console.log('ℹ️  No heroes found — run the seed scripts before scoring this database.')
+  } else if (healthScore >= 95) {
     console.log('🎉 EXCELLENT! Database is in great shape!')
   } else if (healthScore >= 80) {
     console.log('👍 GOOD! Minor issues to address.')
