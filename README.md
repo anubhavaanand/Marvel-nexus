@@ -44,7 +44,6 @@ Marvel-nexus/
     │   ├── timeline/       # Chronological phase timelines
     │   └── watch-order/    # MCU/DC sortable movie lists
     ├── components/         # Reusable HUD & visual components
-    │   ├── 3d/             # WebGL particle background scen
     │   ├── ui/             # Radix & styling primitives
     │   └── admin/          # Form inputs and list managers
     └── lib/                # Database clients (Supabase, TMDB integration)
