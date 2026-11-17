@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, Suspense } from 'react'
+import { Button } from '@/components/ui/button'
 import {
   Shield,
   Atom,
@@ -17,6 +18,9 @@ import {
 import type { Hero } from '@/lib/supabase'
 import HeroCard from '@/components/HeroCard'
 import { HeroGridSkeleton } from '@/components/Skeleton'
+
+const PAGE_SIZE = 24
+const MAX_RENDERED = 96
 
 interface FranchiseTabsProps {
   data: {
@@ -48,6 +52,9 @@ export default function FranchiseTabs({ data }: FranchiseTabsProps) {
     | 'gaming'
     | 'other'
   >('mcu')
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+
+  // Use key to reset when activeTab changes instead of useEffect
 
   const franchises = [
     {
@@ -124,6 +131,7 @@ export default function FranchiseTabs({ data }: FranchiseTabsProps) {
   ] as const
 
   const activeHeroes = data[activeTab] || []
+  const visibleHeroes = activeHeroes.slice(0, Math.min(visibleCount, MAX_RENDERED))
 
   return (
     <div className="space-y-8">
@@ -164,10 +172,31 @@ export default function FranchiseTabs({ data }: FranchiseTabsProps) {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {activeHeroes.map((hero, index) => (
-                <HeroCard key={hero.id} hero={hero} index={index} />
-              ))}
+            <div key={activeTab}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {visibleHeroes.map((hero, index) => (
+                  <HeroCard key={hero.id} hero={hero} index={index} />
+                ))}
+              </div>
+              {activeHeroes.length > visibleCount && visibleCount < MAX_RENDERED && (
+                <div className="flex justify-center mt-10">
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      setVisibleCount((count) => Math.min(count + PAGE_SIZE, MAX_RENDERED))
+                    }
+                  >
+                    Load more ({Math.min(activeHeroes.length, MAX_RENDERED) - visibleCount}{' '}
+                    remaining)
+                  </Button>
+                </div>
+              )}
+              {activeHeroes.length > MAX_RENDERED && (
+                <p className="text-center text-[var(--meta)] text-sm mt-6">
+                  Showing {MAX_RENDERED} of {activeHeroes.length} — refine your search to see the
+                  rest.
+                </p>
+              )}
             </div>
           )}
         </div>
