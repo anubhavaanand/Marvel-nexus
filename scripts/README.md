@@ -26,8 +26,9 @@ run `supabase/migrations/002_franchise_constraint_full.sql` once.
 ### 3. Seed or Add Heroes
 
 ```bash
-# Add 40+ new heroes
-node scripts/add-expanded-heroes.js
+# Canonical first-run path: schema + migrations, then seed-heroes.js
+# (run supabase/schema.sql, then supabase/migrations/002_franchise_constraint_full.sql if legacy DB)
+node scripts/seed-heroes.js
 
 # OR full database reseed
 node scripts/seed-master.js
@@ -49,8 +50,8 @@ node scripts/seed-master.js
 
 | Script             | Purpose                                                     | Heroes |
 | ------------------ | ----------------------------------------------------------- | ------ |
-| `seed-master.js`   | **MASTER SEED** - Complete database reset with curated list | ~40    |
-| `seed-ultimate.js` | Alternative seed with different hero selection              | ~85    |
+| `seed-master.js`   | **MASTER SEED** - Complete database reset with curated list | ~35    |
+| `seed-ultimate.js` | Alternative seed with different hero selection              | ~51    |
 | `seed-heroes.js`   | Original seed script                                        | ~51    |
 
 > ⚠️ **Safety**: `seed-master.js` and `seed-ultimate.js` **refuse to run without an explicit `--confirm` flag** (or `SEED_CONFIRM=1` in the environment). They print exactly what they will do and exit non-zero. `seed-heroes.js` is now **idempotent** — it upserts by `alias` and never deletes rows, so it is safe to run without `--confirm`. `add-spidermen.js` also deletes the two aliases it manages and requires `--confirm`.
@@ -61,8 +62,8 @@ node scripts/seed-master.js
 
 | Script                   | Purpose                                       | Heroes |
 | ------------------------ | --------------------------------------------- | ------ |
-| `add-expanded-heroes.js` | ✨ **NEW!** Add 40+ MCU/DC/Anime/X-Men heroes | 47     |
-| `add-more-verified.js`   | Add verified anime + MCU/DC heroes            | 30+    |
+| `add-expanded-heroes.js` | ✨ **NEW!** Add 40+ MCU/DC/Anime/X-Men heroes | 44     |
+| `add-more-verified.js`   | Add verified anime + MCU/DC heroes            | 29     |
 | `add-more-heroes.js`     | Add The Boys + Invincible heroes              | 18     |
 
 ### Image Fixing
@@ -99,8 +100,8 @@ node scripts/count-heroes.js
 # 3. Run health check
 node scripts/database-health-check.js
 
-# 4. Add new heroes
-node scripts/add-expanded-heroes.js
+# 4. Seed canonical heroes (idempotent upsert by alias)
+node scripts/seed-heroes.js
 
 # 5. Verify everything works
 node scripts/check-broken-images.js
@@ -130,7 +131,7 @@ Total franchises supported:
 - The Boys
 - Invincible
 - Peacemaker
-- Gaming _(future expansion)_
+- Gaming
 
 ---
 

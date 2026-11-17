@@ -3,7 +3,8 @@
 -- Loaded automatically by `supabase db reset` (see supabase/config.toml)
 -- and safe to run manually on an empty database.
 --
--- Every block is guarded so re-running never creates duplicates.
+-- Every block is idempotent (#459): re-running converges to the curated set
+-- instead of only seeding completely empty tables.
 -- Schema changes belong in supabase/migrations/, not here.
 --
 -- origin_world should use the controlled vocabulary:
@@ -18,27 +19,29 @@
 -- ============================================
 
 -- Movies (timeline + watch order need these)
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM movies) THEN
-    INSERT INTO movies (title, release_date, phase, poster_url) VALUES
-      ('Iron Man', '2008-05-02', 'Phase 1', ''),
-      ('The Avengers', '2012-05-04', 'Phase 1', ''),
-      ('Thor: Ragnarok', '2017-11-03', 'Phase 3', ''),
-      ('Avengers: Infinity War', '2018-04-27', 'Phase 3', ''),
-      ('Avengers: Endgame', '2019-04-26', 'Phase 3', ''),
-      ('Spider-Man: Homecoming', '2017-07-07', 'Phase 3', ''),
-      ('Spider-Man: No Way Home', '2021-12-17', 'Phase 4', ''),
-      ('X-Men', '2000-07-14', NULL, ''),
-      ('Logan', '2017-03-03', NULL, ''),
-      ('Wonder Woman', '2017-06-02', NULL, ''),
-      ('Spider-Man: Into the Spider-Verse', '2018-12-14', NULL, '');
-  END IF;
-END $$;
+-- Idempotent (#459): each row is inserted only when its title is absent, so a
+-- partially seeded or partially failed database converges to the full set.
+INSERT INTO movies (title, release_date, phase, poster_url)
+SELECT v.title, v.release_date, v.phase, v.poster_url
+  FROM (VALUES
+    ('Iron Man', '2008-05-02', 'Phase 1'::text, ''),
+    ('The Avengers', '2012-05-04', 'Phase 1'::text, ''),
+    ('Thor: Ragnarok', '2017-11-03', 'Phase 3'::text, ''),
+    ('Avengers: Infinity War', '2018-04-27', 'Phase 3'::text, ''),
+    ('Avengers: Endgame', '2019-04-26', 'Phase 3'::text, ''),
+    ('Spider-Man: Homecoming', '2017-07-07', 'Phase 3'::text, ''),
+    ('Spider-Man: No Way Home', '2021-12-17', 'Phase 4'::text, ''),
+    ('X-Men', '2000-07-14', NULL::text, ''),
+    ('Logan', '2017-03-03', NULL::text, ''),
+    ('Wonder Woman', '2017-06-02', NULL::text, ''),
+    ('Spider-Man: Into the Spider-Verse', '2018-12-14', NULL::text, '')
+  ) AS v(title, release_date, phase, poster_url)
+ WHERE NOT EXISTS (SELECT 1 FROM movies m WHERE m.title = v.title);
 
 -- Heroes (curated demo set; actor names included)
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM heroes) THEN
-INSERT INTO heroes (name, alias, actor_name, franchise, origin_world, powers, weaknesses, image_url, is_locked_content) VALUES
+INSERT INTO heroes (name, alias, actor_name, franchise, origin_world, powers, weaknesses, image_url, is_locked_content)
+SELECT v.name, v.alias, v.actor_name, v.franchise, v.origin_world, v.powers, v.weaknesses, v.image_url, v.is_locked_content
+  FROM (VALUES
 ('Tony Stark', 'Iron Man', 'Robert Downey Jr.', 'MCU', 'Earth-616', ARRAY['Genius-level intellect', 'Powered armor suit', 'Flight', 'Energy repulsors'], ARRAY['Arc reactor dependency', 'Alcoholism'], '', false),
 ('Steve Rogers', 'Captain America', 'Chris Evans', 'MCU', 'Earth-616', ARRAY['Super soldier serum', 'Vibranium shield', 'Enhanced strength', 'Enhanced agility'], ARRAY['Man out of time', 'Honor bound'], '', false),
 ('Thor Odinson', 'Thor', 'Chris Hemsworth', 'MCU', 'Asgard', ARRAY['God of Thunder', 'Mjolnir/Stormbreaker', 'Super strength', 'Flight'], ARRAY['Arrogance', 'Love for Jane Foster'], '', false),
@@ -70,28 +73,124 @@ INSERT INTO heroes (name, alias, actor_name, franchise, origin_world, powers, we
 ('Goku', 'Goku', 'Masako Nozawa', 'Anime', 'Universe 7', ARRAY['Super Saiyan', 'Kamehameha', 'Instant transmission', 'Ultra Instinct'], ARRAY['Naive', 'Food obsession', 'Saiyan pride'], '', false),
 ('Naruto Uzumaki', 'Naruto', 'Junko Takeuchi', 'Anime', 'Shinobi World', ARRAY['Rasengan', 'Shadow clones', 'Nine-tails chakra', 'Sage mode'], ARRAY['Childhood trauma', 'Village rejection'], '', false),
 ('Monkey D. Luffy', 'Luffy', 'Mayumi Tanaka', 'Anime', 'Grand Line', ARRAY['Rubber body', 'Gum-Gum attacks', 'Haki', 'Gear transformations'], ARRAY['Water weakness', 'Naive nature'], '', false),
-('Saitama', 'One Punch Man', 'Makoto Furukawa', 'Anime', 'Earth', ARRAY['Limitless strength', 'Speed', 'Invulnerability', 'Serious punch'], ARRAY['Boredom', 'No real challenge'], '', false);
-  END IF;
-END $$;
+('Saitama', 'One Punch Man', 'Makoto Furukawa', 'Anime', 'Earth', ARRAY['Limitless strength', 'Speed', 'Invulnerability', 'Serious punch'], ARRAY['Boredom', 'No real challenge'], '', false),
+  ) AS v(name, alias, actor_name, franchise, origin_world, powers, weaknesses, image_url, is_locked_content)
+ WHERE NOT EXISTS (
+   SELECT 1 FROM heroes h WHERE h.name = v.name AND h.alias = v.alias
+ );
 
 -- Hero <-> movie links
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM hero_movies) THEN
-    INSERT INTO hero_movies (hero_id, movie_id, role)
-    SELECT h.id, m.id, 'main'
-      FROM heroes h JOIN movies m ON
-        (h.alias = 'Iron Man' AND m.title IN ('Iron Man', 'The Avengers', 'Avengers: Endgame'))
-     OR (h.alias = 'Captain America' AND m.title IN ('The Avengers', 'Avengers: Endgame'))
-     OR (h.alias = 'Thor' AND m.title IN ('The Avengers', 'Thor: Ragnarok', 'Avengers: Endgame'))
-     OR (h.name = 'Peter Parker' AND h.alias = 'Spider-Man' AND m.title IN ('Spider-Man: Homecoming', 'Spider-Man: No Way Home'))
-     OR (h.alias = 'Wolverine' AND m.title IN ('X-Men', 'Logan'))
-     OR (h.alias = 'Wonder Woman' AND m.title = 'Wonder Woman');
-    INSERT INTO hero_movies (hero_id, movie_id, role)
-    SELECT h.id, m.id, 'main'
-      FROM heroes h, movies m
-     WHERE h.name = 'Miles Morales' AND m.title = 'Spider-Man: Into the Spider-Verse';
-  END IF;
-END $$;
+INSERT INTO hero_movies (hero_id, movie_id, role)
+SELECT h.id, m.id, 'main'
+  FROM heroes h JOIN movies m ON m.title = 'Iron Man'
+ WHERE h.alias = 'Iron Man'
+   AND NOT EXISTS (
+     SELECT 1 FROM hero_movies hm WHERE hm.hero_id = h.id AND hm.movie_id = m.id
+   );
+
+INSERT INTO hero_movies (hero_id, movie_id, role)
+SELECT h.id, m.id, 'main'
+  FROM heroes h JOIN movies m ON m.title = 'The Avengers'
+ WHERE h.alias = 'Iron Man'
+   AND NOT EXISTS (
+     SELECT 1 FROM hero_movies hm WHERE hm.hero_id = h.id AND hm.movie_id = m.id
+   );
+
+INSERT INTO hero_movies (hero_id, movie_id, role)
+SELECT h.id, m.id, 'main'
+  FROM heroes h JOIN movies m ON m.title = 'Avengers: Endgame'
+ WHERE h.alias = 'Iron Man'
+   AND NOT EXISTS (
+     SELECT 1 FROM hero_movies hm WHERE hm.hero_id = h.id AND hm.movie_id = m.id
+   );
+
+INSERT INTO hero_movies (hero_id, movie_id, role)
+SELECT h.id, m.id, 'main'
+  FROM heroes h JOIN movies m ON m.title = 'The Avengers'
+ WHERE h.alias = 'Captain America'
+   AND NOT EXISTS (
+     SELECT 1 FROM hero_movies hm WHERE hm.hero_id = h.id AND hm.movie_id = m.id
+   );
+
+INSERT INTO hero_movies (hero_id, movie_id, role)
+SELECT h.id, m.id, 'main'
+  FROM heroes h JOIN movies m ON m.title = 'Avengers: Endgame'
+ WHERE h.alias = 'Captain America'
+   AND NOT EXISTS (
+     SELECT 1 FROM hero_movies hm WHERE hm.hero_id = h.id AND hm.movie_id = m.id
+   );
+
+INSERT INTO hero_movies (hero_id, movie_id, role)
+SELECT h.id, m.id, 'main'
+  FROM heroes h JOIN movies m ON m.title = 'The Avengers'
+ WHERE h.alias = 'Thor'
+   AND NOT EXISTS (
+     SELECT 1 FROM hero_movies hm WHERE hm.hero_id = h.id AND hm.movie_id = m.id
+   );
+
+INSERT INTO hero_movies (hero_id, movie_id, role)
+SELECT h.id, m.id, 'main'
+  FROM heroes h JOIN movies m ON m.title = 'Thor: Ragnarok'
+ WHERE h.alias = 'Thor'
+   AND NOT EXISTS (
+     SELECT 1 FROM hero_movies hm WHERE hm.hero_id = h.id AND hm.movie_id = m.id
+   );
+
+INSERT INTO hero_movies (hero_id, movie_id, role)
+SELECT h.id, m.id, 'main'
+  FROM heroes h JOIN movies m ON m.title = 'Avengers: Endgame'
+ WHERE h.alias = 'Thor'
+   AND NOT EXISTS (
+     SELECT 1 FROM hero_movies hm WHERE hm.hero_id = h.id AND hm.movie_id = m.id
+   );
+
+INSERT INTO hero_movies (hero_id, movie_id, role)
+SELECT h.id, m.id, 'main'
+  FROM heroes h JOIN movies m ON m.title = 'Spider-Man: Homecoming'
+ WHERE h.name = 'Peter Parker' AND h.alias = 'Spider-Man'
+   AND NOT EXISTS (
+     SELECT 1 FROM hero_movies hm WHERE hm.hero_id = h.id AND hm.movie_id = m.id
+   );
+
+INSERT INTO hero_movies (hero_id, movie_id, role)
+SELECT h.id, m.id, 'main'
+  FROM heroes h JOIN movies m ON m.title = 'Spider-Man: No Way Home'
+ WHERE h.name = 'Peter Parker' AND h.alias = 'Spider-Man'
+   AND NOT EXISTS (
+     SELECT 1 FROM hero_movies hm WHERE hm.hero_id = h.id AND hm.movie_id = m.id
+   );
+
+INSERT INTO hero_movies (hero_id, movie_id, role)
+SELECT h.id, m.id, 'main'
+  FROM heroes h JOIN movies m ON m.title = 'X-Men'
+ WHERE h.alias = 'Wolverine'
+   AND NOT EXISTS (
+     SELECT 1 FROM hero_movies hm WHERE hm.hero_id = h.id AND hm.movie_id = m.id
+   );
+
+INSERT INTO hero_movies (hero_id, movie_id, role)
+SELECT h.id, m.id, 'main'
+  FROM heroes h JOIN movies m ON m.title = 'Logan'
+ WHERE h.alias = 'Wolverine'
+   AND NOT EXISTS (
+     SELECT 1 FROM hero_movies hm WHERE hm.hero_id = h.id AND hm.movie_id = m.id
+   );
+
+INSERT INTO hero_movies (hero_id, movie_id, role)
+SELECT h.id, m.id, 'main'
+  FROM heroes h JOIN movies m ON m.title = 'Wonder Woman'
+ WHERE h.alias = 'Wonder Woman'
+   AND NOT EXISTS (
+     SELECT 1 FROM hero_movies hm WHERE hm.hero_id = h.id AND hm.movie_id = m.id
+   );
+
+INSERT INTO hero_movies (hero_id, movie_id, role)
+SELECT h.id, m.id, 'main'
+  FROM heroes h JOIN movies m ON m.title = 'Spider-Man: Into the Spider-Verse'
+ WHERE h.name = 'Miles Morales'
+   AND NOT EXISTS (
+     SELECT 1 FROM hero_movies hm WHERE hm.hero_id = h.id AND hm.movie_id = m.id
+   );
 
 -- First appearances (only where the movie list makes the answer unambiguous)
 UPDATE heroes h SET first_appearance_movie_id = m.id
@@ -114,23 +213,23 @@ UPDATE heroes SET origin_world = 'Vought Universe'
  WHERE franchise = 'The Boys' AND origin_world = 'Earth';
 
 -- Canon events (powers the timeline page)
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM canon_events) THEN
-    INSERT INTO canon_events (hero_id, movie_id, description, is_fixed_point, glitch_level)
-    SELECT h.id, m.id, v.description, v.is_fixed_point, v.glitch_level
-      FROM (VALUES
-        ('Tony Stark', 'Iron Man', 'Iron Man', 'Tony Stark reveals he is Iron Man', true, 6),
-        ('Tony Stark', 'Iron Man', 'Avengers: Endgame', 'Tony Stark snaps away Thanos'' army', true, 9),
-        ('Steve Rogers', 'Captain America', 'Avengers: Endgame', 'Steve Rogers proves worthy of Mjolnir', false, 4),
-        ('Thor Odinson', 'Thor', 'Thor: Ragnarok', 'Asgard is destroyed by Surtur', true, 8),
-        ('Peter Parker', 'Spider-Man', 'Spider-Man: No Way Home', 'The multiverse breaks open', true, 9),
-        ('Logan', 'Wolverine', 'Logan', 'Logan sacrifices himself for Laura', true, 9),
-        ('Diana Prince', 'Wonder Woman', 'Wonder Woman', 'Diana leaves Themyscira for the war', false, 5),
-        ('Miles Morales', 'Spider-Man', 'Spider-Man: Into the Spider-Verse', 'Miles embraces his Spider-Man identity', true, 7)
-      ) AS v(name, alias, title, description, is_fixed_point, glitch_level)
-      JOIN heroes h ON h.name = v.name AND h.alias = v.alias
-      JOIN movies m ON m.title = v.title;
-  END IF;
-END $$;
+INSERT INTO canon_events (hero_id, movie_id, description, is_fixed_point, glitch_level)
+SELECT h.id, m.id, v.description, v.is_fixed_point, v.glitch_level
+  FROM (VALUES
+    ('Tony Stark', 'Iron Man', 'Iron Man', 'Tony Stark reveals he is Iron Man', true, 6),
+    ('Tony Stark', 'Iron Man', 'Avengers: Endgame', 'Tony Stark snaps away Thanos'' army', true, 9),
+    ('Steve Rogers', 'Captain America', 'Avengers: Endgame', 'Steve Rogers proves worthy of Mjolnir', false, 4),
+    ('Thor Odinson', 'Thor', 'Thor: Ragnarok', 'Asgard is destroyed by Surtur', true, 8),
+    ('Peter Parker', 'Spider-Man', 'Spider-Man: No Way Home', 'The multiverse breaks open', true, 9),
+    ('Logan', 'Wolverine', 'Logan', 'Logan sacrifices himself for Laura', true, 9),
+    ('Diana Prince', 'Wonder Woman', 'Wonder Woman', 'Diana leaves Themyscira for the war', false, 5),
+    ('Miles Morales', 'Spider-Man', 'Spider-Man: Into the Spider-Verse', 'Miles embraces his Spider-Man identity', true, 7)
+  ) AS v(name, alias, title, description, is_fixed_point, glitch_level)
+  JOIN heroes h ON h.name = v.name AND h.alias = v.alias
+  JOIN movies m ON m.title = v.title
+ WHERE NOT EXISTS (
+   SELECT 1 FROM canon_events ce
+    WHERE ce.hero_id = h.id AND ce.movie_id = m.id AND ce.description = v.description
+ );
 
 SELECT 'Seed complete.' AS message;
