@@ -49,7 +49,8 @@ export function isAllowedImageUrl(value: string): boolean {
   } catch {
     return false
   }
-  if (url.protocol !== 'http:' && url.protocol !== 'https:') return false
+  // #485: next/image remotePatterns only allow https, so reject http here too.
+  if (url.protocol !== 'https:') return false
   if (url.username || url.password) return false
   const host = url.hostname.toLowerCase()
   if (!host) return false

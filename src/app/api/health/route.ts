@@ -14,7 +14,7 @@ export async function GET() {
       { status: 'ok', db: 'ok', latencyMs: Date.now() - startedAt },
       { headers: { 'Cache-Control': 'no-store' } },
     )
-  } catch (err) {
+  } catch {
     // Log hygiene: never surface credentials or upstream details.
     console.error('health check failed')
     return NextResponse.json(

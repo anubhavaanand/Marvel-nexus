@@ -91,6 +91,8 @@ export default function AdminPage({
   const [connectionLatency, setConnectionLatency] = useState<number | null>(null)
   const [connectionError, setConnectionError] = useState('')
   const [stats, setStats] = useState<AdminStats | null>(initialStats)
+  // #493: distinguish "loaded fine" from "kept old numbers because the refresh failed".
+  const [statsStale, setStatsStale] = useState(false)
   const router = useRouter()
   // True until the server session check finishes, so authenticated admins
   // never see the login form flash (#450).
@@ -176,9 +178,16 @@ export default function AdminPage({
   const refreshStats = async () => {
     try {
       const result = await getAdminStatsAction()
-      if (result.ok) setStats(result.stats)
+      if (result.ok) {
+        setStats(result.stats)
+        setStatsStale(false)
+      } else {
+        // #493: surface the failure instead of leaving silently stale numbers.
+        setStatsStale(true)
+      }
     } catch {
-      // Keep the last known stats if the refresh fails.
+      // Keep the last known stats, but flag them as possibly stale (#493).
+      setStatsStale(true)
     }
   }
 
@@ -280,6 +289,11 @@ export default function AdminPage({
                 {key}: {msg}
               </p>
             ))}
+
+      {statsStale && (
+        <div className="mb-6 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+          Stats could not be refreshed — the numbers below may be outdated.
+
         </div>
       )}
 

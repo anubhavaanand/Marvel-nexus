@@ -37,6 +37,9 @@ git push -u origin main
    - `SUPABASE_SERVICE_ROLE_KEY` = Your Supabase service role key
    - `TMDB_API_KEY` = Your TMDB API key (for image enrichment)
    - `ADMIN_PASSWORD` = Password for the admin panel
+   - `NEXT_PUBLIC_SITE_URL` = Canonical public origin, e.g. https://your-domain.com (metadataBase, Open Graph, sitemap)
+   - `TRUST_PROXY` = `true` behind Vercel/nginx so rate limiting sees real client IPs
+   - `TRUST_PROXY_DEPTH` = Proxy hop count (Vercel uses 1); must match your proxy
 6. Click **"Deploy"**
 
 **Option B: Using Vercel CLI**
@@ -57,6 +60,9 @@ vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY
 vercel env add SUPABASE_SERVICE_ROLE_KEY
 vercel env add TMDB_API_KEY
 vercel env add ADMIN_PASSWORD
+vercel env add NEXT_PUBLIC_SITE_URL
+vercel env add TRUST_PROXY
+vercel env add TRUST_PROXY_DEPTH
 
 # Deploy to production
 vercel --prod
@@ -73,6 +79,9 @@ In your Vercel project settings:
   - `SUPABASE_SERVICE_ROLE_KEY`
   - `TMDB_API_KEY`
   - `ADMIN_PASSWORD`
+  - `NEXT_PUBLIC_SITE_URL`
+  - `TRUST_PROXY`
+  - `TRUST_PROXY_DEPTH`
 - Make sure they are available for **Production**, **Preview**, and **Development**
 
 ---
@@ -94,6 +103,11 @@ In your Vercel project settings:
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `TMDB_API_KEY`
    - `ADMIN_PASSWORD`
+
+- `NEXT_PUBLIC_SITE_URL`
+- `TRUST_PROXY`
+- `TRUST_PROXY_DEPTH`
+
 7. Click **"Deploy site"**
 
 ---
@@ -128,6 +142,9 @@ docker run -p 3000:3000 \
   -e SUPABASE_SERVICE_ROLE_KEY="your-key" \
   -e TMDB_API_KEY="your-tmdb-key" \
   -e ADMIN_PASSWORD="your-admin-password" \
+  -e NEXT_PUBLIC_SITE_URL="https://your-domain.com" \
+  -e TRUST_PROXY="true" \
+  -e TRUST_PROXY_DEPTH="1" \
   marvel-nexus
 ```
 
@@ -159,6 +176,9 @@ All environment variables required by the application. Set these in your deploym
 | `SUPABASE_SERVICE_ROLE_KEY`     | ✅       | Supabase service role key — server-side admin access (never expose to browser) |
 | `TMDB_API_KEY`                  | ⚠️       | TMDB API key — enables automatic image enrichment for heroes missing images    |
 | `ADMIN_PASSWORD`                | ✅       | Password for the credential-protected admin panel                              |
+| `NEXT_PUBLIC_SITE_URL`          | ⚠️       | Canonical origin used for metadataBase, Open Graph and the sitemap             |
+| `TRUST_PROXY`                   | ⚠️       | Set `true` on Vercel/nginx so per-client rate limits use the real visitor IP   |
+| `TRUST_PROXY_DEPTH`             | ⚠️       | Proxy hop count (Vercel: 1); a wrong value shares one rate-limit bucket        |
 
 > **Note:** `TMDB_API_KEY` is optional at runtime; without it, heroes simply skip image enrichment. The other four are required for the app to function.
 
