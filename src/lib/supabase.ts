@@ -912,6 +912,11 @@ export async function getSearchHeroes(): Promise<SearchHero[]> {
   return enrichHeroesWithTmdb((data || []) as SearchHero[])
 }
 
+/** Demo-mode hero list, used as the homepage fallback when Supabase is down (#482). */
+export function getMockHeroes(): Hero[] {
+  return [...mockHeroes]
+}
+
 /** Full hero list for the admin panel (includes locked content). */
 export async function getAllHeroesForAdmin(): Promise<Hero[]> {
   if (!supabase) return [...mockHeroes]
