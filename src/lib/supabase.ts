@@ -737,13 +737,8 @@ export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | n
   // never needs the full-table id/alias scan + in-memory filter.
   const selectCols = `
       *,
-      canon_events (
-        *,
-        movies (*)
-      ),
-      hero_movies (
-        movies (*)
-      )
+      canon_events (*, movies (*), limit:200),
+      hero_movies (movies (*), limit:200)
     `
 
   const { data, error } = await supabase
@@ -913,13 +908,8 @@ export async function getHeroBySlugForAdmin(slug: string): Promise<HeroWithRelat
   }
   const selectCols = `
       *,
-      canon_events (
-        *,
-        movies (*)
-      ),
-      hero_movies (
-        movies (*)
-      )
+      canon_events (*, movies (*), limit:200),
+      hero_movies (movies (*), limit:200)
     `
 
   const { data, error } = await client
@@ -1085,14 +1075,28 @@ export function compareMoviesByReleaseDate(a: Movie, b: Movie): number {
   return a.release_date.localeCompare(b.release_date)
 }
 
-export async function getAllMovies(options?: { allowEmpty?: boolean }): Promise<Movie[]> {
-  if (!supabase) return [...mockMovies].sort(compareMoviesByReleaseDate)
+export async function getAllMovies(options?: {
+  allowEmpty?: boolean
+  page?: number
+  pageSize?: number
+}): Promise<Movie[]> {
+  if (!supabase) {
+    const sorted = [...mockMovies].sort(compareMoviesByReleaseDate)
+    const pageSize = Math.max(1, Math.min(options?.pageSize ?? 1000, 1000))
+    const page = Math.max(1, options?.page ?? 1)
+    const start = (page - 1) * pageSize
+    return sorted.slice(start, start + pageSize)
+  }
 
   try {
+    const pageSize = Math.max(1, Math.min(options?.pageSize ?? 1000, 1000))
+    const page = Math.max(1, options?.page ?? 1)
+    const from = (page - 1) * pageSize
     const { data, error } = await supabase
       .from('movies')
       .select('*')
       .order('release_date', { ascending: true, nullsFirst: false })
+      .range(from, from + pageSize - 1)
 
     if (error) {
       // Do not silently serve empty data when the real database fails, unless
