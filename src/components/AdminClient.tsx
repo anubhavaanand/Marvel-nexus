@@ -398,7 +398,9 @@ export default function AdminPage({
               <Film className="w-8 h-8 text-purple-400" />
               <div>
                 <h3 className="font-orbitron text-white">Movies</h3>
-                <p className="text-xs text-neutral-400">34 films ready</p>
+                <p className="text-xs text-neutral-400">
+                  {stats ? `${stats.movies} movies in database` : 'Movies from the MCU'}
+                </p>
               </div>
               {getStatusIcon(seedStatus.movies)}
             </div>
@@ -452,7 +454,9 @@ export default function AdminPage({
               <Zap className="w-8 h-8 text-red-400" />
               <div>
                 <h3 className="font-orbitron text-white">Canon Events</h3>
-                <p className="text-xs text-neutral-400">Fixed points ready</p>
+                <p className="text-xs text-neutral-400">
+                  {stats ? `${stats.canonEvents} fixed points in database` : 'Fixed points ready'}
+                </p>
               </div>
               {getStatusIcon(seedStatus.events)}
             </div>
