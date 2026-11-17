@@ -127,11 +127,16 @@ export default function FranchiseTabs({ data }: FranchiseTabsProps) {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap justify-center gap-2">
+      <div
+        className="flex flex-wrap justify-center gap-2"
+        role="group"
+        aria-label="Filter by franchise"
+      >
         {franchises.map((franchise) => (
           <button
             key={franchise.id}
             onClick={() => setActiveTab(franchise.id)}
+            aria-pressed={activeTab === franchise.id}
             className={`tab-trigger group ${activeTab === franchise.id ? 'active' : ''}`}
           >
             <franchise.icon
