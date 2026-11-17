@@ -886,3 +886,117 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* ─── Print stylesheet ───────────────────────── */
+@media print {
+  /* Hide navigation, floating elements, interactive controls */
+  .floating-nav,
+  header,
+  nav,
+  .btn,
+  .tabs-list,
+  .tab-trigger,
+  button,
+  select,
+  input[type='checkbox'],
+  input[type='radio'],
+  .stat-pill,
+  [role='dialog'],
+  [role='alertdialog'],
+  .toast,
+  .dropdown,
+  .popover,
+  .admin-bar,
+  .filter-bar,
+  .pagination,
+  .breadcrumb {
+    display: none !important;
+  }
+
+  /* Force white background, black text — no ink-burning dark themes */
+  html {
+    color-scheme: light !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+    min-height: auto !important;
+    overflow: visible !important;
+  }
+  * {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    border-color: #e5e7eb !important;
+  }
+
+  /* Preserve link colors for readability */
+  a,
+  .link {
+    color: #000 !important;
+    text-decoration: underline !important;
+  }
+
+  /* Expand containers to full width */
+  .container,
+  .container-wide,
+  main,
+  .chapter,
+  .glass-panel,
+  .glass-panel-strong,
+  .card,
+  .card-glass,
+  .hero-card,
+  .glass,
+  .glass-strong,
+  .glass-subtle {
+    max-width: none !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    background: white !important;
+  }
+
+  /* Avoid breaking cards, tables, chapters across pages */
+  .card,
+  .card-glass,
+  .hero-card,
+  .chapter,
+  .glass-panel,
+  .glass-panel-strong,
+  table,
+  tbody,
+  thead,
+  tr,
+  .stat-pill,
+  article,
+  section {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Ensure proper page margins */
+  @page {
+    margin: 20mm;
+  }
+
+  /* Reset any fixed positioning */
+  .fixed,
+  .sticky,
+  [style*='position: fixed'],
+  [style*='position: sticky'] {
+    position: static !important;
+  }
+
+  /* Hide scrollbars */
+  ::-webkit-scrollbar {
+    display: none !important;
+  }
+  html {
+    overflow: visible !important;
+  }
+}
