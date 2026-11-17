@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { FRANCHISE_VALUES } from '@/lib/hero-update'
 import {
   Pencil,
   Trash2,
@@ -269,13 +270,11 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                     onChange={(e) => setEditingHero({ ...editingHero, franchise: e.target.value })}
                     className="w-full p-2 bg-black/40 border border-neutral-700 rounded text-white"
                   >
-                    <option value="MCU">MCU</option>
-                    <option value="DC">DC</option>
-                    <option value="Anime">Anime</option>
-                    <option value="The Boys">The Boys</option>
-                    <option value="Invincible">Invincible</option>
-                    <option value="X-Men">X-Men</option>
-                    <option value="Spider-Verse">Spider-Verse</option>
+                    {FRANCHISE_VALUES.map((franchise) => (
+                      <option key={franchise} value={franchise}>
+                        {franchise}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div className="space-y-2">
