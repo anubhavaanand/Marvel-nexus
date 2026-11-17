@@ -21,7 +21,9 @@ describe('getAllMovies ordering', () => {
 
     const datedMovies = movies.filter((m) => m.release_date && m.release_date.trim() !== '')
     for (let i = 1; i < datedMovies.length; i++) {
-      expect(datedMovies[i - 1].release_date.localeCompare(datedMovies[i].release_date)).toBeLessThanOrEqual(0)
+      expect(
+        datedMovies[i - 1].release_date.localeCompare(datedMovies[i].release_date),
+      ).toBeLessThanOrEqual(0)
     }
   })
 
