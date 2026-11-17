@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, X, Loader2, Sparkles, AlertTriangle, RefreshCw } from 'lucide-react'
 import HeroCard from '@/components/HeroCard'
@@ -24,6 +25,7 @@ export default function SearchPage({
   loadError = null,
   isDemoMode = false,
 }: SearchClientProps) {
+  const router = useRouter()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchHero[]>([])
   const [isSearching, setIsSearching] = useState(false)
@@ -173,7 +175,7 @@ export default function SearchPage({
                   We couldn&rsquo;t reach the hero database. Please try again in a moment, or check
                   your connection.
                 </p>
-                <Button variant="outline" className="mt-6" onClick={() => window.location.reload()}>
+                <Button variant="outline" className="mt-6" onClick={() => router.refresh()}>
                   <RefreshCw className="w-4 h-4" />
                   Retry
                 </Button>
