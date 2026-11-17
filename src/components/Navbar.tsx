@@ -178,7 +178,7 @@ export default function Navbar() {
             id="mobile-menu"
             role="dialog"
             aria-modal="true"
-            aria-label="Mobile navigation"
+            aria-labelledby="mobile-menu-title"
             className="fixed inset-0 z-40 md:hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -196,6 +196,9 @@ export default function Navbar() {
               exit={{ opacity: 0, y: -8, scale: 0.96 }}
               transition={{ duration: 0.2 }}
             >
+              <h2 id="mobile-menu-title" className="sr-only">
+                Mobile navigation
+              </h2>
               <div className="flex flex-col gap-1">
                 {navItems.map((item) => {
                   const isActive = pathname === item.href
