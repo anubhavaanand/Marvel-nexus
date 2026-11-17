@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { Hero } from './supabase'
+import type { Hero, HeroWithRelations } from './supabase'
 import {
   getAllHeroes,
   getHeroBySlug,
@@ -18,6 +18,16 @@ describe('mock data fallback', () => {
   it('resolves a simple slug to its mock hero', async () => {
     const hero = await getHeroBySlug('iron-man')
     expect(hero?.alias).toBe('Iron Man')
+  })
+
+  it('includes relation arrays in mock mode (canon_events and hero_movies)', async () => {
+    const hero = await getHeroBySlug('iron-man')
+    expect(hero).not.toBeNull()
+    const heroWithRelations = hero as HeroWithRelations
+    expect(Array.isArray(heroWithRelations.canon_events)).toBe(true)
+    expect(Array.isArray(heroWithRelations.hero_movies)).toBe(true)
+    expect(heroWithRelations.canon_events).toEqual([])
+    expect(heroWithRelations.hero_movies).toEqual([])
   })
 
   it.each([
