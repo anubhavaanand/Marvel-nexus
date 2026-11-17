@@ -57,9 +57,10 @@ async function sleep(ms) {
 async function getMovieDetails(tmdbId) {
   try {
     const data = await tmdbFetch(`/movie/${tmdbId}?append_to_response=credits`)
-    return data
-  } catch {
-    return null
+    return { ok: true, data }
+  } catch (err) {
+    console.error(`  ❌ Failed to fetch details for TMDB ID ${tmdbId}: ${err.message}`)
+    return { ok: false, error: err.message, tmdbId }
   }
 }
 
@@ -129,14 +130,26 @@ async function syncMovies() {
   // 3. Process and insert each movie
   let inserted = 0
   let failed = 0
+  const failedIds = []
   const insertedMovies = []
 
   for (let i = 0; i < toInsert.length; i++) {
     const movie = toInsert[i]
     try {
       // Fetch movie details for rating
-      const details = await getMovieDetails(movie.id)
+      const detailsResult = await getMovieDetails(movie.id)
       await sleep(200) // Rate limit: ~5 requests/sec
+
+      let details = null
+      if (detailsResult && detailsResult.ok) {
+        details = detailsResult.data
+      } else {
+        // Surface TMDB failure: do not persist null rating silently.
+        failed++
+        failedIds.push(movie.id)
+        console.error(`  ⚠️  Skipping ${movie.title} (TMDB ID ${movie.id}) — detail fetch failed`)
+        continue
+      }
 
       const dbMovie = mapToDbMovie(movie, details)
       const { data, error } = await supabase
@@ -171,6 +184,9 @@ async function syncMovies() {
   console.log(`🎬 Sync Complete!`)
   console.log(`   ✅ Inserted: ${inserted} movies`)
   console.log(`   ❌ Failed:   ${failed} movies`)
+  if (failedIds.length) {
+    console.log(`   Failed TMDB IDs: ${failedIds.join(', ')}`)
+  }
 
   // 5. Show phase breakdown
   const { data: allMovies } = await supabase.from('movies').select('phase')
