@@ -4,14 +4,23 @@ const { createSupabaseClient } = require('./lib/supabase')
 const supabase = createSupabaseClient()
 
 async function countHeroes() {
-  const { data, error, count } = await supabase.from('heroes').select('*', { count: 'exact' })
+  const { count: totalCount, error: totalError } = await supabase
+    .from('heroes')
+    .select('id', { count: 'exact', head: true })
+
+  if (totalError) {
+    console.error(totalError)
+    return
+  }
+
+  const { data, error } = await supabase.from('heroes').select('franchise')
 
   if (error) {
     console.error(error)
     return
   }
 
-  console.log(`\n📊 Total Heroes in Database: ${count || data.length}\n`)
+  console.log(`\n📊 Total Heroes in Database: ${totalCount || data.length}\n`)
 
   // Count by franchise
   const franchises = {}
