@@ -6,6 +6,11 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { FRANCHISE_VALUES } from '@/lib/hero-update'
 import {
+  HERO_UPDATE_MAX_STRING_LENGTH,
+  HERO_UPDATE_MAX_ARRAY_ITEMS,
+  HERO_UPDATE_MAX_ARRAY_ITEM_LENGTH,
+} from '@/lib/hero-update-guard'
+import {
   Pencil,
   Trash2,
   Search,
@@ -270,6 +275,8 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                   </label>
                   <input
                     id="hero-alias"
+                    required
+                    maxLength={HERO_UPDATE_MAX_STRING_LENGTH}
                     value={editingHero.alias}
                     onChange={(e) => setEditingHero({ ...editingHero, alias: e.target.value })}
                     className="w-full p-2 bg-black/40 border border-neutral-700 rounded text-white"
@@ -281,6 +288,8 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                   </label>
                   <input
                     id="hero-name"
+                    required
+                    maxLength={HERO_UPDATE_MAX_STRING_LENGTH}
                     value={editingHero.name}
                     onChange={(e) => setEditingHero({ ...editingHero, name: e.target.value })}
                     className="w-full p-2 bg-black/40 border border-neutral-700 rounded text-white"
@@ -292,6 +301,8 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                   </label>
                   <input
                     id="hero-image"
+                    inputMode="url"
+                    maxLength={HERO_UPDATE_MAX_STRING_LENGTH}
                     value={editingHero.image_url ?? ''}
                     onChange={(e) => setEditingHero({ ...editingHero, image_url: e.target.value })}
                     className="w-full p-2 bg-black/40 border border-neutral-700 rounded text-white font-mono text-xs"
@@ -320,6 +331,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                   </label>
                   <input
                     id="hero-origin"
+                    maxLength={HERO_UPDATE_MAX_STRING_LENGTH}
                     value={editingHero.origin_world ?? ''}
                     onChange={(e) =>
                       setEditingHero({ ...editingHero, origin_world: e.target.value })
@@ -390,13 +402,18 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                     <input
                       id="hero-powers-input"
                       ref={powersInputRef}
+                      maxLength={HERO_UPDATE_MAX_ARRAY_ITEM_LENGTH}
                       value={newPower}
                       onChange={(e) => setNewPower(e.target.value)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           e.preventDefault()
                           const val = newPower.trim()
-                          if (val && !(editingHero.powers ?? []).includes(val)) {
+                          if (
+                            val &&
+                            (editingHero.powers ?? []).length < HERO_UPDATE_MAX_ARRAY_ITEMS &&
+                            !(editingHero.powers ?? []).includes(val)
+                          ) {
                             setEditingHero({
                               ...editingHero,
                               powers: [...(editingHero.powers ?? []), val],
@@ -440,13 +457,18 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                     <input
                       id="hero-weaknesses-input"
                       ref={weaknessesInputRef}
+                      maxLength={HERO_UPDATE_MAX_ARRAY_ITEM_LENGTH}
                       value={newWeakness}
                       onChange={(e) => setNewWeakness(e.target.value)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           e.preventDefault()
                           const val = newWeakness.trim()
-                          if (val && !(editingHero.weaknesses ?? []).includes(val)) {
+                          if (
+                            val &&
+                            (editingHero.weaknesses ?? []).length < HERO_UPDATE_MAX_ARRAY_ITEMS &&
+                            !(editingHero.weaknesses ?? []).includes(val)
+                          ) {
                             setEditingHero({
                               ...editingHero,
                               weaknesses: [...(editingHero.weaknesses ?? []), val],
