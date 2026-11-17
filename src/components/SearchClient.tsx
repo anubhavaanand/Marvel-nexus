@@ -247,6 +247,14 @@ export default function SearchPage({
                       ))}
                     </div>
 
+                    {/* #524: the DOM cap is real; say so instead of truncating silently. */}
+                    {results.length > MAX_RENDERED && (
+                      <p className="text-center text-[var(--meta)] text-sm mt-6">
+                        Showing {MAX_RENDERED} of {results.length} — refine your search to see the
+                        rest.
+                      </p>
+                    )}
+
                     {results.length > visibleCount && visibleCount < MAX_RENDERED && (
                       <div className="flex justify-center mt-10">
                         <Button
