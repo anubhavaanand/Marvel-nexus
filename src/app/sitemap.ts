@@ -1,24 +1,10 @@
 import type { MetadataRoute } from 'next'
 import { getAllHeroes, type Hero } from '@/lib/supabase'
 import { slugifyAlias } from '@/lib/slugs'
+import { getSiteUrl } from '@/lib/site-url'
 
-function getSiteUrl(): string {
-  if (process.env.NEXT_PUBLIC_SITE_URL) {
-    return process.env.NEXT_PUBLIC_SITE_URL
-  }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`
-  }
-  throw new Error(
-    'NEXT_PUBLIC_SITE_URL or VERCEL_URL must be set — no hardcoded fallback domain allowed',
-  )
-}
-
-const SITE_URL: string = getSiteUrl()
-
-function normalizeSiteUrl(url: string): string {
-  return url.replace(/\/$/, '')
-}
+// #604: shared resolver — no duplicated hardcoded host, no build-time throw.
+const SITE_URL: string | null = getSiteUrl()
 
 // #423: paginated, so newly added heroes are included without a rebuild. The
 // old force-static version froze the hero list (and the first 100 rows) into
@@ -46,7 +32,12 @@ async function fetchAllHeroesPaginated(limitPerRequest = 1000): Promise<Hero[]> 
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = normalizeSiteUrl(SITE_URL)
+  if (!SITE_URL) {
+    // No host configured (e.g. CI build without env): emit an empty sitemap
+    // rather than crashing the build or inventing a domain.
+    return []
+  }
+  const base = SITE_URL
   const today = LAST_MODIFIED
 
   const staticEntries: MetadataRoute.Sitemap = [
