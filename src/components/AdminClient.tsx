@@ -324,7 +324,9 @@ export default function AdminPage({
             <div className="flex-1 p-4 bg-neutral-800/30 rounded-lg">
               <p className="text-sm text-neutral-400 mb-2">URL</p>
               <code className="text-xs text-cyan-400 font-mono break-all">
-                {process.env.NEXT_PUBLIC_SUPABASE_URL || 'Not configured'}
+                {process.env.NEXT_PUBLIC_SUPABASE_URL
+                  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).host
+                  : 'Not configured'}
               </code>
             </div>
             <Button

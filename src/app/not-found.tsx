@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Home, AlertTriangle } from 'lucide-react'
+import { Home, AlertTriangle, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export default function NotFound() {
@@ -39,16 +39,24 @@ export default function NotFound() {
           that needed to happen.
         </p>
 
-        {/* Action Button */}
-        <Button
-          asChild
-          className="bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-medium gap-2 px-6 py-3 rounded-full"
-        >
-          <Link href="/">
-            <Home className="w-4 h-4" />
-            Return to Archive
-          </Link>
-        </Button>
+        {/* Action Buttons */}
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <Button
+            asChild
+            className="bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-medium gap-2 px-6 py-3 rounded-full"
+          >
+            <Link href="/">
+              <Home className="w-4 h-4" />
+              Back home
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="gap-2 px-6 py-3 rounded-full">
+            <Link href="/search">
+              <Search className="w-4 h-4" />
+              Search
+            </Link>
+          </Button>
+        </div>
 
         {/* Decorative dots */}
         <div className="mt-16 flex justify-center gap-1.5">
