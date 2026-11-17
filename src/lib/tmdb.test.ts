@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { getMCUPhase } from './tmdb'
 
 describe('getMCUPhase', () => {
@@ -21,4 +21,50 @@ describe('getMCUPhase', () => {
       expect(getMCUPhase(releaseDate)).toBeNull()
     },
   )
+})
+
+describe('searchPerson (#455)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('prefers an Acting result over a higher-ranked non-acting one', async () => {
+    process.env.TMDB_API_KEY = 'test-key'
+    vi.resetModules()
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              results: [
+                { id: 1, name: 'Stunt Double', known_for_department: 'Crew' },
+                { id: 2, name: 'Actual Actor', known_for_department: 'Acting' },
+              ],
+            }),
+            { status: 200 },
+          ),
+      ),
+    )
+    const { searchPerson } = await import('./tmdb')
+    const person = await searchPerson('Some Hero')
+    expect(person?.id).toBe(2)
+  })
+
+  it('falls back to the first result when TMDB omits known_for_department', async () => {
+    process.env.TMDB_API_KEY = 'test-key'
+    vi.resetModules()
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          new Response(JSON.stringify({ results: [{ id: 7, name: 'Legacy Entry' }] }), {
+            status: 200,
+          }),
+      ),
+    )
+    const { searchPerson } = await import('./tmdb')
+    const person = await searchPerson('Some Hero')
+    expect(person?.id).toBe(7)
+  })
 })
