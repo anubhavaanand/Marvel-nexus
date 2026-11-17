@@ -139,8 +139,9 @@ node scripts/test-image-url.js "URL_HERE"
 2. Login: <your-admin-password>
 3. Add Hero form
 
-# Check current heroes
-node scripts/debug-heroes.js
+# Check current heroes (count-heroes) and run the full audit (database-health-check)
+node scripts/count-heroes.js
+node scripts/database-health-check.js
 ```
 
 ---
