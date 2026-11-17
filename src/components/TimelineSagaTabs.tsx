@@ -10,6 +10,8 @@ type Saga = 'all' | 'infinity' | 'multiverse'
 const INFINITY = ['Phase 1', 'Phase 2', 'Phase 3']
 const MULTIVERSE = ['Phase 4', 'Phase 5', 'Phase 6']
 
+const PAGE_SIZE = 12
+
 function getPhaseColor(phase: string): string {
   const colors: Record<string, string> = {
     'Phase 1': 'bg-[var(--franchise-mcu)]',
@@ -25,6 +27,7 @@ function getPhaseColor(phase: string): string {
 
 export default function TimelineSagaTabs({ phases }: { phases: Record<string, Movie[]> }) {
   const [saga, setSaga] = useState<Saga>('all')
+  const [visible, setVisible] = useState<Record<string, number>>({})
 
   const entries = Object.entries(phases).filter(([phase, movies]) => {
     if (movies.length === 0) return false
@@ -61,18 +64,39 @@ export default function TimelineSagaTabs({ phases }: { phases: Record<string, Mo
       </div>
 
       <div className="space-y-16">
-        {entries.map(([phase, phaseMovies]) => (
-          <div key={phase} className="space-y-6">
-            <div className="flex items-center gap-4">
-              <div className={`w-2.5 h-2.5 rounded-full ${getPhaseColor(phase)}`} />
-              <div>
-                <h2 className="text-xl font-semibold text-[var(--fg)]">{phase}</h2>
-                <p className="text-sm text-[var(--meta)]">{phaseMovies.length} films</p>
+        {entries.map(([phase, phaseMovies]) => {
+          const visibleCount = Math.min(visible[phase] ?? PAGE_SIZE, phaseMovies.length)
+          const shown = phaseMovies.slice(0, visibleCount)
+          const hasMore = visibleCount < phaseMovies.length
+          return (
+            <div key={phase} className="space-y-6">
+              <div className="flex items-center gap-4">
+                <div className={`w-2.5 h-2.5 rounded-full ${getPhaseColor(phase)}`} />
+                <div>
+                  <h2 className="text-xl font-semibold text-[var(--fg)]">{phase}</h2>
+                  <p className="text-sm text-[var(--meta)]">{phaseMovies.length} films</p>
+                </div>
               </div>
+              <TimelineSlider movies={shown} title="" />
+              {hasMore && (
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setVisible((v) => ({
+                        ...v,
+                        [phase]: Math.min((v[phase] ?? PAGE_SIZE) + PAGE_SIZE, phaseMovies.length),
+                      }))
+                    }
+                    className="px-4 py-2 rounded-md border border-[var(--border)] text-sm text-[var(--fg-2)] hover:text-[var(--fg)]"
+                  >
+                    Show more
+                  </button>
+                </div>
+              )}
             </div>
-            <TimelineSlider movies={phaseMovies} title="" />
-          </div>
-        ))}
+          )
+        })}
       </div>
     </>
   )
