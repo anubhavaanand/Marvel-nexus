@@ -252,10 +252,20 @@ export async function createHeroAction(updates: Partial<Hero>): Promise<Hero | n
     return null
   }
   const slugSource = alias || name
-  const slug = slugSource ? slugifyAlias(slugSource) : undefined
+  let slug = slugSource ? slugifyAlias(slugSource) : undefined
   if (!slug) {
     console.error('Rejected hero create: could not derive slug')
     return null
+  }
+  // A duplicate alias yields the same base slug; append a short suffix instead
+  // of letting the unique constraint turn into a 500 (#411).
+  const { data: existingSlugOwner } = await supabase
+    .from('heroes')
+    .select('id')
+    .eq('slug', slug)
+    .maybeSingle()
+  if (existingSlugOwner) {
+    slug = `${slug}-${crypto.randomBytes(2).toString('hex')}`
   }
   const payload: Record<string, unknown> = { ...sanitized }
   if (!payload.name) payload.name = name
