@@ -739,25 +739,55 @@ export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | n
     throw new Error('Failed to load hero')
   }
 
-  let resolved = data
-  // Fallback (#343): when the DB slug trigger is missing (fresh restore),
+  // Fallback (#343, #503): when the DB slug trigger is missing (fresh restore),
   // the `slug` column may be null/empty, so the indexed lookup misses even
-  // though the alias still matches. Fall back to comparing normalized aliases.
-  if (!resolved) {
-    const { data: all, error: allError } = await supabase.from('heroes').select(selectCols)
-    if (allError) {
-      console.error('Error fetching heroes for slug fallback:', allError)
+  // though the alias still matches. Resolve it cheaply: identity columns only,
+  // bounded by PostgREST's max-rows, then fetch the winner's full row by id.
+  if (!data) {
+    const { data: candidates, error: listError } = await supabase
+      .from('heroes')
+      .select('id, slug, alias')
+      .limit(1000)
+    if (listError) {
+      console.error('Error fetching heroes for slug fallback:', listError)
       throw new Error('Failed to load hero')
     }
-    const rows = Array.isArray(all) ? all : []
-    resolved =
-      (rows.find((r) => {
-        const row = r as Record<string, unknown>
-        return typeof row?.alias === 'string' && compareSlug(row.alias as string, slug)
-      }) as typeof data) ?? null
+    const matches = (Array.isArray(candidates) ? candidates : []).filter((r) => {
+      const row = r as Record<string, unknown>
+      return (
+        typeof row?.alias === 'string' &&
+        (compareSlug(row.alias as string, slug) || row.slug === slug)
+      )
+    })
+    if (matches.length > 1) {
+      // Duplicate aliases exist on purpose (three Spider-Men); pick a stable
+      // winner instead of an arbitrary array order, and say so (#503).
+      matches.sort((a, b) => String(a.id).localeCompare(String(b.id)))
+      console.warn(
+        `slug fallback: ${matches.length} heroes match "${slug}"; using ${matches[0].id}`,
+      )
+    }
+    const match = matches[0] as { id?: string } | undefined
+    if (!match?.id) return null
+
+    const { data: full, error: fullError } = await supabase
+      .from('heroes')
+      .select(selectCols)
+      .eq('id', match.id)
+      .maybeSingle()
+    if (fullError) {
+      console.error('Error fetching hero after slug fallback:', fullError)
+      throw new Error('Failed to load hero')
+    }
+    if (!full) return null
+    return buildHeroWithRelations(full)
   }
 
-  if (!resolved) return null
+  return buildHeroWithRelations(data)
+}
+
+/** Runtime validation shared by both slug lookups (#503). */
+function buildHeroWithRelations(resolved: unknown): HeroWithRelations {
   const row = resolved as Record<string, unknown>
   // Runtime validation: tolerate schema drift (missing relation arrays, null
   // fields) without crashing. Only the core hero identity fields are required.
