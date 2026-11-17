@@ -23,7 +23,26 @@
 
 'use strict'
 
+const crypto = require('crypto')
+
 const CONFIRM_ENV = 'SEED_CONFIRM'
+
+/**
+ * Deterministic UUID, identical to src/lib/seed-data.ts::stableUuid.
+ * Same ids as the admin seed action => both paths converge on one row per hero
+ * instead of duplicating under different primary keys (#437).
+ *
+ * @param {string} namespace
+ * @param {string} value
+ * @returns {string}
+ */
+function stableUuid(namespace, value) {
+  const digest = crypto.createHash('sha1').update(`${namespace}:${value}`).digest()
+  digest[6] = (digest[6] & 0x0f) | 0x50
+  digest[8] = (digest[8] & 0x3f) | 0x80
+  const hex = digest.subarray(0, 16).toString('hex')
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`
+}
 
 /**
  * Parse CLI flags from a seed script.
@@ -136,10 +155,16 @@ async function upsertHeroes(supabase, heroes, log = console.log) {
   let failed = 0
 
   for (const hero of heroes) {
+    // #437: same identity as the admin "Seed Heroes" action; match by the
+    // deterministic id, keeping alias in sync for legacy rows.
+    const withId = {
+      ...hero,
+      id: stableUuid('hero', `${hero.name}|${hero.alias}`),
+    }
     const { data: existing, error: findError } = await supabase
       .from('heroes')
       .select('id')
-      .eq('alias', hero.alias)
+      .or(`id.eq.${withId.id},alias.eq.${hero.alias}`)
       .maybeSingle()
 
     if (findError) {
@@ -150,11 +175,11 @@ async function upsertHeroes(supabase, heroes, log = console.log) {
 
     let error
     if (existing) {
-      const result = await supabase.from('heroes').update(hero).eq('id', existing.id)
+      const result = await supabase.from('heroes').update(withId).eq('id', existing.id)
       error = result.error
       if (!error) updated += 1
     } else {
-      const result = await supabase.from('heroes').insert(hero)
+      const result = await supabase.from('heroes').insert(withId)
       error = result.error
       if (!error) inserted += 1
     }
@@ -170,4 +195,4 @@ async function upsertHeroes(supabase, heroes, log = console.log) {
   return { inserted, updated, failed }
 }
 
-module.exports = { parseArgs, printPlan, printUsage, requireConfirm, upsertHeroes }
+module.exports = { parseArgs, printPlan, printUsage, requireConfirm, stableUuid, upsertHeroes }

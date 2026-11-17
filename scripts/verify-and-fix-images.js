@@ -105,6 +105,11 @@ const verifiedImages = {
 }
 
 async function updateImages() {
+  await imageGuard.backupCurrentImages(
+    supabase,
+    Object.keys(verifiedImages),
+    'verify-and-fix-images.js',
+  )
   console.log('🔄 Updating hero images with verified URLs...\n')
   console.log(`Total heroes to update: ${Object.keys(verifiedImages).length}\n`)
 
@@ -151,5 +156,16 @@ async function updateImages() {
   console.log('═'.repeat(60))
   console.log('\n💡 Refresh your browser to see the updated images!')
 }
+
+const imageGuard = require('./image-update-guard')
+const imageFlags = imageGuard.parseFlags(process.argv.slice(2))
+imageGuard.requireImageUpdateConfirm(
+  imageFlags,
+  {
+    title: 'overwrite production hero image_url values',
+    updates: Object.entries(verifiedImages).map(([alias, url]) => `${alias} -> ${url}`),
+  },
+  'verify-and-fix-images.js',
+)
 
 updateImages()

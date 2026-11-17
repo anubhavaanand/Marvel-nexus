@@ -9,7 +9,10 @@ const CACHE_TTL_MS = 3600_000
 const CACHE_MAX_ENTRIES = 200
 
 interface CacheEntry {
+  // #419: the proxy serves both TMDB search kinds; each response carries the
+  // matched shape so clients can read either field.
   person: unknown
+  movie: unknown
   expiresAt: number
 }
 
@@ -17,19 +20,23 @@ const cache = new Map<string, CacheEntry>()
 
 const inflight = new Map<string, Promise<unknown>>()
 
-function getCached(query: string): unknown | undefined {
-  const entry = cache.get(query)
-  if (!entry) return undefined
-  if (Date.now() >= entry.expiresAt) {
-    cache.delete(query)
-    return undefined
-  }
-  cache.delete(query)
-  cache.set(query, entry)
-  return entry.person
+function cacheKey(type: 'person' | 'movie', query: string): string {
+  return `${type}:${query}`
 }
 
-function setCached(query: string, person: unknown): void {
+function getCached(type: 'person' | 'movie', query: string): unknown | undefined {
+  const entry = cache.get(cacheKey(type, query))
+  if (!entry) return undefined
+  if (Date.now() >= entry.expiresAt) {
+    cache.delete(cacheKey(type, query))
+    return undefined
+  }
+  cache.delete(cacheKey(type, query))
+  cache.set(cacheKey(type, query), entry)
+  return entry[type]
+}
+
+function setCached(type: 'person' | 'movie', query: string, value: unknown): void {
   const now = Date.now()
   for (const [k, v] of cache) {
     if (now >= v.expiresAt) cache.delete(k)
@@ -38,18 +45,23 @@ function setCached(query: string, person: unknown): void {
     const first = cache.keys().next().value
     if (first !== undefined) cache.delete(first)
   }
-  cache.set(query, { person, expiresAt: now + CACHE_TTL_MS })
+  cache.set(cacheKey(type, query), {
+    person: type === 'person' ? value : null,
+    movie: type === 'movie' ? value : null,
+    expiresAt: now + CACHE_TTL_MS,
+  })
 }
 
-async function fetchPerson(trimmed: string): Promise<unknown> {
-  const cached = getCached(trimmed)
+async function fetchFromTmdb(type: 'person' | 'movie', trimmed: string): Promise<unknown> {
+  const cached = getCached(type, trimmed)
   if (cached !== undefined) return cached
 
   if (!TMDB_API_KEY) {
     throw new Error('TMDB API key not configured')
   }
 
-  const res = await fetch(`${BASE_URL}/search/person?query=${encodeURIComponent(trimmed)}`, {
+  const path = type === 'person' ? '/search/person' : '/search/movie'
+  const res = await fetch(`${BASE_URL}${path}?query=${encodeURIComponent(trimmed)}`, {
     headers: { Authorization: `Bearer ${TMDB_API_KEY}` },
     next: { revalidate: 3600 },
     signal: AbortSignal.timeout(5000),
@@ -61,18 +73,19 @@ async function fetchPerson(trimmed: string): Promise<unknown> {
   }
 
   const data = await res.json()
-  const person = data.results?.[0] || null
-  setCached(trimmed, person)
-  return person
+  const match = data.results?.[0] || null
+  setCached(type, trimmed, match)
+  return match
 }
 
-function coalescedFetch(trimmed: string): Promise<unknown> {
-  const existing = inflight.get(trimmed)
+function coalescedFetch(type: 'person' | 'movie', trimmed: string): Promise<unknown> {
+  const key = cacheKey(type, trimmed)
+  const existing = inflight.get(key)
   if (existing) return existing
-  const promise = fetchPerson(trimmed).finally(() => {
-    inflight.delete(trimmed)
+  const promise = fetchFromTmdb(type, trimmed).finally(() => {
+    inflight.delete(key)
   })
-  inflight.set(trimmed, promise)
+  inflight.set(key, promise)
   return promise
 }
 
@@ -86,11 +99,14 @@ export async function GET(request: NextRequest) {
   }
 
   const trimmed = query.trim()
+  // #419: film titles must hit the movie endpoint, not the person endpoint.
+  const rawType = request.nextUrl.searchParams.get('type')
+  const type: 'person' | 'movie' = rawType === 'movie' ? 'movie' : 'person'
 
-  const cached = getCached(trimmed)
+  const cached = getCached(type, trimmed)
   if (cached !== undefined) {
     return NextResponse.json(
-      { person: cached },
+      { person: type === 'person' ? cached : null, movie: type === 'movie' ? cached : null },
       {
         headers: {
           'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
@@ -116,9 +132,9 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const person = await coalescedFetch(trimmed)
+    const match = await coalescedFetch(type, trimmed)
     return NextResponse.json(
-      { person },
+      { person: type === 'person' ? match : null, movie: type === 'movie' ? match : null },
       { headers: { 'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400' } },
     )
   } catch (error) {

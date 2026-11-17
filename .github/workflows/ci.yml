@@ -60,3 +60,49 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  # #463: build and serve with non-production credentials so the Supabase/TMDB
+  # code paths are exercised instead of only the mock/demo branch. When the
+  # secrets are not configured the build falls back to demo mode and this job
+  # still verifies the rendered routes.
+  smoke:
+    name: Build Smoke (Supabase path)
+    runs-on: ubuntu-latest
+    needs: audit
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build with Supabase env
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+        run: npm run build
+
+      - name: Serve and smoke test routes
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          PORT: '3100'
+        run: |
+          npm run start -- -p 3100 &
+          for i in $(seq 1 30); do
+            curl -fsS http://localhost:3100/api/health >/dev/null 2>&1 && break
+            sleep 2
+          done
+          curl -fsS http://localhost:3100/api/health
+          curl -fsS -o /dev/null -w '/ %{http_code}\n' http://localhost:3100/
+          curl -fsS -o /dev/null -w '/search %{http_code}\n' http://localhost:3100/search
+          curl -fsS -o /dev/null -w '/sitemap.xml %{http_code}\n' http://localhost:3100/sitemap.xml

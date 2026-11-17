@@ -252,10 +252,20 @@ export async function createHeroAction(updates: Partial<Hero>): Promise<Hero | n
     return null
   }
   const slugSource = alias || name
-  const slug = slugSource ? slugifyAlias(slugSource) : undefined
+  let slug = slugSource ? slugifyAlias(slugSource) : undefined
   if (!slug) {
     console.error('Rejected hero create: could not derive slug')
     return null
+  }
+  // A duplicate alias yields the same base slug; append a short suffix instead
+  // of letting the unique constraint turn into a 500 (#411).
+  const { data: existingSlugOwner } = await supabase
+    .from('heroes')
+    .select('id')
+    .eq('slug', slug)
+    .maybeSingle()
+  if (existingSlugOwner) {
+    slug = `${slug}-${crypto.randomBytes(2).toString('hex')}`
   }
   const payload: Record<string, unknown> = { ...sanitized }
   if (!payload.name) payload.name = name
@@ -307,25 +317,33 @@ export async function deleteHeroAction(id: string): Promise<boolean> {
   // Resolve slug before deletion so we can revalidate the affected hero page.
   const { data: heroRow } = await supabase.from('heroes').select('slug').eq('id', id).maybeSingle()
 
-  // Clean up dependent rows first so orphaned canon_events/hero_movies rows
-  // cannot remain even on databases without ON DELETE CASCADE (#233).
-  const { error: canonError } = await supabase.from('canon_events').delete().eq('hero_id', id)
-  if (canonError) {
-    console.error('Error deleting hero canon events:', canonError)
-    return false
-  }
-
-  const { error: heroMoviesError } = await supabase.from('hero_movies').delete().eq('hero_id', id)
-  if (heroMoviesError) {
-    console.error('Error deleting hero movie links:', heroMoviesError)
-    return false
-  }
-
-  const { error } = await supabase.from('heroes').delete().eq('id', id)
-
+  // #440: dependent rows and the hero row are removed in one transaction by an
+  // RPC, so a failure cannot leave orphans or a half-deleted hero.
+  const { error } = await supabase.rpc('delete_hero_cascade', { p_hero_id: id })
   if (error) {
-    console.error('Error deleting hero via server action:', error)
-    return false
+    // Pre-010 databases / test doubles without the function: fall back to the
+    // previous explicit ordering. The RPC path is preferred when available.
+    const notFound =
+      String(error.code ?? '') === '42883' || String(error.message).includes('delete_hero_cascade')
+    if (!notFound) {
+      console.error('Error deleting hero via server action:', error)
+      return false
+    }
+    const { error: canonError } = await supabase.from('canon_events').delete().eq('hero_id', id)
+    if (canonError) {
+      console.error('Error deleting hero canon events:', canonError)
+      return false
+    }
+    const { error: heroMoviesError } = await supabase.from('hero_movies').delete().eq('hero_id', id)
+    if (heroMoviesError) {
+      console.error('Error deleting hero movie links:', heroMoviesError)
+      return false
+    }
+    const { error: legacyError } = await supabase.from('heroes').delete().eq('id', id)
+    if (legacyError) {
+      console.error('Error deleting hero via server action:', legacyError)
+      return false
+    }
   }
 
   revalidatePath('/')

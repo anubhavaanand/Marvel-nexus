@@ -34,6 +34,7 @@ const imageUpdates = {
 }
 
 async function updateImages() {
+  await imageGuard.backupCurrentImages(supabase, Object.keys(imageUpdates), 'fix-broken-images.js')
   console.log('🔄 Updating hero images with verified working URLs...\n')
 
   const flags = guard.parseArgs(process.argv.slice(2))
@@ -79,5 +80,16 @@ async function updateImages() {
   console.log('═'.repeat(50))
   console.log('\n💡 Hard refresh your browser (Ctrl+Shift+R) to see changes!')
 }
+
+const imageGuard = require('./image-update-guard')
+const imageFlags = imageGuard.parseFlags(process.argv.slice(2))
+imageGuard.requireImageUpdateConfirm(
+  imageFlags,
+  {
+    title: 'overwrite production hero image_url values',
+    updates: Object.entries(imageUpdates).map(([alias, url]) => `${alias} -> ${url}`),
+  },
+  'fix-broken-images.js',
+)
 
 updateImages()

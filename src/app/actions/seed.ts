@@ -220,21 +220,29 @@ export async function syncMoviesAction() {
       ok: true as const,
       seeded: rows.length,
       enriched: 0,
+      timedOut: 0,
       note: 'TMDB_API_KEY is not set; posters and TMDB ids were skipped.',
     }
   }
 
   let enriched = 0
-  for (const movie of rows) {
+  let timedOut = 0
+  // #442: every TMDB lookup is time-boxed and lookups run with bounded
+  // concurrency instead of an unbounded sequential stream.
+  const TMDB_TIMEOUT_MS = 8000
+  const TMDB_CONCURRENCY = 3
+
+  const enrichOne = async (movie: (typeof rows)[number]): Promise<void> => {
     try {
       const response = await fetch(
         `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(movie.title)}`,
         {
           headers: { Authorization: `Bearer ${apiKey}` },
+          signal: AbortSignal.timeout(TMDB_TIMEOUT_MS),
           next: { revalidate: 86400 },
         },
       )
-      if (!response.ok) continue
+      if (!response.ok) return
       const payload = (await response.json()) as { results?: Array<Record<string, unknown>> }
       const normalizedExpected = slugifyAlias(movie.title)
       const match = (payload.results ?? []).find((candidate) => {
@@ -248,7 +256,7 @@ export async function syncMoviesAction() {
       })
       if (!match) {
         log(`skipped ${movie.title}: no TMDB title match`)
-        continue
+        return
       }
       const enrichedReleaseDate =
         typeof match.release_date === 'string' && match.release_date
@@ -265,17 +273,31 @@ export async function syncMoviesAction() {
       update.phase = movie.phase && enrichedReleaseDate ? getMCUPhase(enrichedReleaseDate) : null
       await supabase.from('movies').update(update).eq('id', movie.id)
       enriched += 1
-    } catch {
+    } catch (error) {
+      if (error instanceof Error && error.name === 'TimeoutError') {
+        timedOut += 1
+        log(`timed out enriching ${movie.title} after ${TMDB_TIMEOUT_MS}ms`)
+      }
       // Enrichment is best-effort; a failed lookup must not fail the whole sync.
     }
+  }
+
+  for (let i = 0; i < rows.length; i += TMDB_CONCURRENCY) {
+    await Promise.all(rows.slice(i, i + TMDB_CONCURRENCY).map(enrichOne))
   }
 
   revalidatePath('/timeline')
   revalidatePath('/watch-order')
   revalidatePath('/admin')
-  log(`synced ${rows.length} movies (${enriched} enriched from TMDB)`)
+  log(`synced ${rows.length} movies (${enriched} enriched from TMDB, ${timedOut} timed out)`)
   lastSeededAt.movies = new Date().toISOString()
-  return { ok: true as const, seeded: rows.length, enriched, lastSeeded: lastSeededAt.movies }
+  return {
+    ok: true as const,
+    seeded: rows.length,
+    enriched,
+    timedOut,
+    lastSeeded: lastSeededAt.movies,
+  }
 }
 
 /**

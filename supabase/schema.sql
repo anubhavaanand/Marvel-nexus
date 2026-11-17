@@ -45,9 +45,35 @@ CREATE TABLE IF NOT EXISTS heroes (
     weaknesses TEXT[] DEFAULT '{}',
     image_url TEXT DEFAULT '',
     is_locked_content BOOLEAN DEFAULT FALSE,
+    slug TEXT,
     first_appearance_movie_id UUID REFERENCES movies(id),
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- ============================================
+-- ADMIN SESSIONS (#412: mirror migrations 005/008)
+-- Server-only credential storage; RLS exposes nothing to the public.
+-- ============================================
+CREATE TABLE IF NOT EXISTS admin_sessions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    token_hash TEXT NOT NULL UNIQUE,
+    expires_at TIMESTAMPTZ NOT NULL,
+    password_epoch INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS admin_sessions_password_epoch_idx ON admin_sessions (password_epoch);
+
+CREATE TABLE IF NOT EXISTS admin_password_epoch (
+    id INTEGER PRIMARY KEY DEFAULT 1,
+    epoch INTEGER NOT NULL DEFAULT 0,
+    password_hash TEXT,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+INSERT INTO admin_password_epoch (id, epoch, password_hash)
+VALUES (1, 0, NULL)
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================
 -- CANON EVENTS TABLE
@@ -81,6 +107,49 @@ CREATE INDEX IF NOT EXISTS idx_heroes_franchise ON heroes(franchise);
 CREATE INDEX IF NOT EXISTS idx_heroes_alias ON heroes(alias);
 CREATE INDEX IF NOT EXISTS idx_canon_events_hero ON canon_events(hero_id);
 CREATE INDEX IF NOT EXISTS idx_movies_phase ON movies(phase);
+CREATE INDEX IF NOT EXISTS idx_heroes_slug ON heroes(slug);
+
+-- ============================================
+-- HERO SLUG (#412: mirror migration 005 + guarded 009 semantics)
+-- Mirror of src/lib/slugs.ts::slugifyAlias. The trigger only fills an absent
+-- slug so application-chosen collision-safe slugs are preserved.
+-- ============================================
+CREATE OR REPLACE FUNCTION public.hero_slugify(alias text)
+RETURNS text
+LANGUAGE sql
+IMMUTABLE
+AS $$
+  SELECT
+    regexp_replace(
+      regexp_replace(
+        regexp_replace(lower(trim(coalesce(alias, ''))), '[''’]', '', 'g'),
+        '[^a-z0-9]+', '-', 'g'
+      ),
+      '^-+|-+$', '', 'g'
+    );
+$$;
+
+UPDATE heroes
+   SET slug = public.hero_slugify(alias)
+ WHERE slug IS NULL;
+
+CREATE OR REPLACE FUNCTION public.heros_set_slug()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.slug := public.hero_slugify(NEW.alias);
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS heroes_set_slug ON heroes;
+CREATE TRIGGER heroes_set_slug
+  BEFORE INSERT OR UPDATE OF alias
+  ON heroes
+  FOR EACH ROW
+  WHEN (NEW.slug IS NULL OR NEW.slug = '')
+  EXECUTE FUNCTION public.heros_set_slug();
 
 -- ============================================
 -- ROW LEVEL SECURITY (RLS)
@@ -89,6 +158,8 @@ ALTER TABLE movies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE heroes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE canon_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE hero_movies ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admin_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admin_password_epoch ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'movies' AND policyname = 'Public read access') THEN
@@ -120,4 +191,31 @@ DO $$ BEGIN
   END IF;
 END $$;
 
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'admin_sessions' AND policyname = 'Service role full access') THEN
+    CREATE POLICY "Service role full access" ON admin_sessions FOR ALL USING (auth.role() = 'service_role');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'admin_password_epoch' AND policyname = 'Service role full access') THEN
+    CREATE POLICY "Service role full access" ON admin_password_epoch FOR ALL USING (auth.role() = 'service_role');
+  END IF;
+END $$;
+
 SELECT 'Schema is up to date.' AS message;
+
+
+-- ============================================
+-- HERO DELETION (#440: transactional cascade)
+-- ============================================
+CREATE OR REPLACE FUNCTION public.delete_hero_cascade(p_hero_id uuid)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  DELETE FROM public.canon_events WHERE hero_id = p_hero_id;
+  DELETE FROM public.hero_movies WHERE hero_id = p_hero_id;
+  DELETE FROM public.heroes WHERE id = p_hero_id;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.delete_hero_cascade(uuid) FROM PUBLIC;

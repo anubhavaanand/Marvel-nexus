@@ -25,7 +25,7 @@ beforeEach(() => {
 describe('client-tmdb', () => {
   it('caches results per key', async () => {
     const { getTmdbImageUrl } = await import('./client-tmdb')
-    MOCK_FETCH_RESPONSES.set('/api/tmdb/search?query=Tony%20Stark', {
+    MOCK_FETCH_RESPONSES.set('/api/tmdb/search?type=person&query=Tony%20Stark', {
       status: 200,
       body: { person: { profile_path: '/abc.jpg' } },
     })
@@ -47,7 +47,7 @@ describe('client-tmdb', () => {
         return new Response(JSON.stringify(entry?.body ?? {}), { status: entry?.status ?? 404 })
       }),
     )
-    MOCK_FETCH_RESPONSES.set('/api/tmdb/search?query=Tony%20Stark', {
+    MOCK_FETCH_RESPONSES.set('/api/tmdb/search?type=person&query=Tony%20Stark', {
       status: 200,
       body: { person: { profile_path: '/abc.jpg' } },
     })
@@ -61,7 +61,7 @@ describe('client-tmdb', () => {
 
   it('returns null for missing profile path', async () => {
     const { getTmdbImageUrl } = await import('./client-tmdb')
-    MOCK_FETCH_RESPONSES.set('/api/tmdb/search?query=Nobody', {
+    MOCK_FETCH_RESPONSES.set('/api/tmdb/search?type=person&query=Nobody', {
       status: 200,
       body: { person: null },
     })
@@ -88,10 +88,27 @@ describe('client-tmdb', () => {
 
   it('keeps null when TMDB is unconfigured (server returns 500)', async () => {
     const { getTmdbImageUrl } = await import('./client-tmdb')
-    MOCK_FETCH_RESPONSES.set('/api/tmdb/search?query=Unconfigured', {
+    MOCK_FETCH_RESPONSES.set('/api/tmdb/search?type=person&query=Unconfigured', {
       status: 500,
       body: { error: 'TMDB API key not configured' },
     })
     expect(await getTmdbImageUrl('Anyone', 'Unconfigured')).toBeNull()
+  })
+
+  it('uses the movie endpoint and poster_path for film lookups (#419)', async () => {
+    const { getTmdbImageUrl } = await import('./client-tmdb')
+    let requestedUrl = ''
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL) => {
+        requestedUrl = String(input)
+        return new Response(JSON.stringify({ movie: { poster_path: '/poster.jpg' } }), {
+          status: 200,
+        })
+      }),
+    )
+    const url = await getTmdbImageUrl('The Avengers', 'The Avengers', 'movie')
+    expect(url).toBe('https://image.tmdb.org/t/p/w500/poster.jpg')
+    expect(requestedUrl).toContain('/api/tmdb/search?type=movie')
   })
 })

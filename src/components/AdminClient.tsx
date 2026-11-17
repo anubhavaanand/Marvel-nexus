@@ -37,6 +37,15 @@ import {
   type AdminStats,
 } from '@/app/actions/seed'
 
+// Malformed env values must not crash the dashboard render (#449).
+function safeSupabaseHost(url: string): string {
+  try {
+    return new URL(url).host
+  } catch {
+    return 'Invalid URL'
+  }
+}
+
 interface SeedStatus {
   heroes: 'idle' | 'loading' | 'success' | 'error'
   movies: 'idle' | 'loading' | 'success' | 'error'
@@ -191,6 +200,8 @@ export default function AdminPage({
       if (result.lastSeeded) {
         setLastSeeded((prev) => ({ ...prev, [key]: result.lastSeeded }))
       }
+      // #445: re-pull server props so HeroManager/stat cards reflect the new rows.
+      router.refresh()
       await refreshStats()
     } catch {
       setSeedStatus((prev) => ({ ...prev, [key]: 'error' }))
@@ -290,7 +301,7 @@ export default function AdminPage({
               <p className="text-sm text-neutral-400 mb-2">URL</p>
               <code className="text-xs text-cyan-400 font-mono break-all">
                 {process.env.NEXT_PUBLIC_SUPABASE_URL
-                  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).host
+                  ? safeSupabaseHost(process.env.NEXT_PUBLIC_SUPABASE_URL)
                   : 'Not configured'}
               </code>
             </div>

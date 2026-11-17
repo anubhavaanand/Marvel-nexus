@@ -35,6 +35,14 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
   const [newPower, setNewPower] = useState('')
   const [newWeakness, setNewWeakness] = useState('')
   const [visibleCount, setVisibleCount] = useState(50)
+  const [lastInitialHeroes, setLastInitialHeroes] = useState(initialHeroes)
+  // #445: follow refreshed server props (router.refresh after seeding). This is
+  // React's adjust-state-during-render pattern; it is skipped while an edit is
+  // open so unsaved changes are never clobbered.
+  if (!editingHero && initialHeroes !== lastInitialHeroes) {
+    setLastInitialHeroes(initialHeroes)
+    setHeroes(initialHeroes)
+  }
   const powersInputRef = useRef<HTMLInputElement>(null)
   const weaknessesInputRef = useRef<HTMLInputElement>(null)
 
@@ -167,7 +175,10 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
         </Badge>
         <Button
           className="bg-cyan-600 hover:bg-cyan-700 text-white"
-          onClick={() =>
+          onClick={() => {
+            // #427: never carry the previous hero's unsubmitted inputs over.
+            setNewPower('')
+            setNewWeakness('')
             setEditingHero({
               id: '',
               name: '',
@@ -180,7 +191,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
               image_url: '',
               is_locked_content: false,
             })
-          }
+          }}
         >
           Add Hero
         </Button>
@@ -494,7 +505,12 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                   size="icon"
                   variant="ghost"
                   className="h-8 w-8 text-neutral-400 hover:text-cyan-400 hover:bg-cyan-950/30"
-                  onClick={() => setEditingHero(hero)}
+                  onClick={() => {
+                    // #427: clear unsubmitted inputs from the previous hero.
+                    setNewPower('')
+                    setNewWeakness('')
+                    setEditingHero(hero)
+                  }}
                   disabled={inFlightIds.has(hero.id)}
                   aria-label={`Edit ${hero.alias}`}
                 >

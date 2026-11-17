@@ -38,31 +38,10 @@ export async function searchPerson(name: string): Promise<TMDBPerson | null> {
   }
 }
 
-// MCU Phase mapping based on release date.
-// Invalid/missing dates return null so they land in the timeline's "Unphased"
-// bucket instead of silently becoming Phase 6 (#461).
+// #436: canonical implementation lives in scripts/lib/mcu-phases.js so the Node
+// sync script and the app cannot drift apart.
+import { getMCUPhase as getSharedMCUPhase } from '../../scripts/lib/mcu-phases'
+
 export function getMCUPhase(releaseDate: string): string | null {
-  if (!releaseDate) return null
-  const date = new Date(releaseDate)
-  if (Number.isNaN(date.getTime())) return null
-  const year = date.getFullYear()
-  const month = date.getMonth() + 1
-
-  // Phase 1: May 2008 - May 2012
-  if (year < 2012 || (year === 2012 && month <= 5)) return 'Phase 1'
-
-  // Phase 2: May 2013 - July 2015
-  if (year <= 2015 && (year < 2015 || month <= 7)) return 'Phase 2'
-
-  // Phase 3: May 2016 - July 2019
-  if (year <= 2019 && (year < 2019 || month <= 7)) return 'Phase 3'
-
-  // Phase 4: July 2021 - November 2022
-  if (year <= 2022) return 'Phase 4'
-
-  // Phase 5: February 2023 - November 2024
-  if (year <= 2024) return 'Phase 5'
-
-  // Phase 6: 2025+
-  return 'Phase 6'
+  return getSharedMCUPhase(releaseDate)
 }
