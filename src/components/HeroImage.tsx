@@ -8,6 +8,8 @@ interface HeroImageProps {
   className?: string
   sizes?: string
   priority?: boolean
+  /** #419: movie cards look up posters via the movie endpoint. */
+  lookupType?: 'person' | 'movie'
 }
 
 export default function HeroImage({
@@ -17,6 +19,7 @@ export default function HeroImage({
   className = '',
   sizes = '(max-width: 768px) 50vw, 25vw',
   priority = false,
+  lookupType = 'person',
 }: HeroImageProps) {
   if (!imageUrl) {
     return <HeroImagePlaceholder alias={alias} className={className} />
@@ -29,6 +32,7 @@ export default function HeroImage({
       className={className}
       sizes={sizes}
       priority={priority}
+      lookupType={lookupType}
     >
       <Image
         src={imageUrl}
