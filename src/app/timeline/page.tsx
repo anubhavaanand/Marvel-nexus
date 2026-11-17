@@ -19,7 +19,7 @@ const mockMovies: Movie[] = [
     release_date: '2008-05-02',
     phase: 'Phase 1',
     poster_url: 'https://image.tmdb.org/t/p/w500/78lPtwv72eTNqFW9COBYI0dWDJa.jpg',
-    imdb_rating: 7.9,
+    tmdb_rating: 7.9,
   },
   {
     id: '2',
@@ -28,7 +28,7 @@ const mockMovies: Movie[] = [
     release_date: '2008-06-13',
     phase: 'Phase 1',
     poster_url: 'https://image.tmdb.org/t/p/w500/gKzYx79y0AQTL4UAk1cBQJ3nvrm.jpg',
-    imdb_rating: 6.7,
+    tmdb_rating: 6.7,
   },
   {
     id: '3',
@@ -37,7 +37,7 @@ const mockMovies: Movie[] = [
     release_date: '2010-05-07',
     phase: 'Phase 1',
     poster_url: 'https://image.tmdb.org/t/p/w500/6WBeq4fCfn7AN0o21W9qNcRF2l9.jpg',
-    imdb_rating: 7.0,
+    tmdb_rating: 7.0,
   },
   {
     id: '4',
@@ -46,7 +46,7 @@ const mockMovies: Movie[] = [
     release_date: '2011-05-06',
     phase: 'Phase 1',
     poster_url: 'https://image.tmdb.org/t/p/w500/prSfAi1xGrhLQNxVSUFh61xQ4Qy.jpg',
-    imdb_rating: 7.0,
+    tmdb_rating: 7.0,
   },
   {
     id: '5',
@@ -55,7 +55,7 @@ const mockMovies: Movie[] = [
     release_date: '2011-07-22',
     phase: 'Phase 1',
     poster_url: 'https://image.tmdb.org/t/p/w500/vSNxAJTlD0r02V9sPYpOjqDZXUK.jpg',
-    imdb_rating: 6.9,
+    tmdb_rating: 6.9,
   },
   {
     id: '6',
@@ -64,7 +64,7 @@ const mockMovies: Movie[] = [
     release_date: '2012-05-04',
     phase: 'Phase 1',
     poster_url: 'https://image.tmdb.org/t/p/w500/RYMX2wcKCBAr24UyPD7xwmjaTn.jpg',
-    imdb_rating: 8.0,
+    tmdb_rating: 8.0,
   },
   {
     id: '7',
@@ -73,7 +73,7 @@ const mockMovies: Movie[] = [
     release_date: '2013-05-03',
     phase: 'Phase 2',
     poster_url: 'https://image.tmdb.org/t/p/w500/qhPtAc1TKbMPqNvcdXSOn9Bn7hZ.jpg',
-    imdb_rating: 7.1,
+    tmdb_rating: 7.1,
   },
   {
     id: '8',
@@ -82,7 +82,7 @@ const mockMovies: Movie[] = [
     release_date: '2013-11-08',
     phase: 'Phase 2',
     poster_url: 'https://image.tmdb.org/t/p/w500/wp6OxE4poJ4G7c0U2ZIXasTSMR7.jpg',
-    imdb_rating: 6.8,
+    tmdb_rating: 6.8,
   },
   {
     id: '9',
@@ -91,7 +91,7 @@ const mockMovies: Movie[] = [
     release_date: '2014-04-04',
     phase: 'Phase 2',
     poster_url: 'https://image.tmdb.org/t/p/w500/tVFRpFw3xTedgPGqxW0AOI8Qhh0.jpg',
-    imdb_rating: 7.7,
+    tmdb_rating: 7.7,
   },
   {
     id: '10',
@@ -100,7 +100,7 @@ const mockMovies: Movie[] = [
     release_date: '2014-08-01',
     phase: 'Phase 2',
     poster_url: 'https://image.tmdb.org/t/p/w500/r7vmZjiyZw9rpJMQJdXpjgiCOk9.jpg',
-    imdb_rating: 8.0,
+    tmdb_rating: 8.0,
   },
   {
     id: '11',
@@ -109,7 +109,7 @@ const mockMovies: Movie[] = [
     release_date: '2015-05-01',
     phase: 'Phase 2',
     poster_url: 'https://image.tmdb.org/t/p/w500/4ssDuvEDkSArWEdyBl2X5EHvYKU.jpg',
-    imdb_rating: 7.3,
+    tmdb_rating: 7.3,
   },
   {
     id: '12',
@@ -118,7 +118,7 @@ const mockMovies: Movie[] = [
     release_date: '2015-07-17',
     phase: 'Phase 2',
     poster_url: 'https://image.tmdb.org/t/p/w500/rQRnQfUl3kfp78nCWq8Ks04vnq1.jpg',
-    imdb_rating: 7.3,
+    tmdb_rating: 7.3,
   },
   {
     id: '13',
@@ -127,7 +127,7 @@ const mockMovies: Movie[] = [
     release_date: '2016-05-06',
     phase: 'Phase 3',
     poster_url: 'https://image.tmdb.org/t/p/w500/rAGiXaUfPzY7CDEyNKUofk3Kw2e.jpg',
-    imdb_rating: 7.8,
+    tmdb_rating: 7.8,
   },
   {
     id: '14',
@@ -136,7 +136,7 @@ const mockMovies: Movie[] = [
     release_date: '2016-11-04',
     phase: 'Phase 3',
     poster_url: 'https://image.tmdb.org/t/p/w500/uGBVj3bEbCoZbDjjl9wTxcygko1.jpg',
-    imdb_rating: 7.5,
+    tmdb_rating: 7.5,
   },
   {
     id: '15',
@@ -145,7 +145,7 @@ const mockMovies: Movie[] = [
     release_date: '2017-05-05',
     phase: 'Phase 3',
     poster_url: 'https://image.tmdb.org/t/p/w500/y4MBh0EjBlMuOzv9axM4qJlmhzz.jpg',
-    imdb_rating: 7.6,
+    tmdb_rating: 7.6,
   },
   {
     id: '16',
@@ -154,7 +154,7 @@ const mockMovies: Movie[] = [
     release_date: '2017-07-07',
     phase: 'Phase 3',
     poster_url: 'https://image.tmdb.org/t/p/w500/c24sv2weTHPsmDa7jEMN0m2P3RT.jpg',
-    imdb_rating: 7.4,
+    tmdb_rating: 7.4,
   },
   {
     id: '17',
@@ -163,7 +163,7 @@ const mockMovies: Movie[] = [
     release_date: '2017-11-03',
     phase: 'Phase 3',
     poster_url: 'https://image.tmdb.org/t/p/w500/rzRwTcFvttcN1ZpX2xv4j3tSdJu.jpg',
-    imdb_rating: 7.9,
+    tmdb_rating: 7.9,
   },
   {
     id: '18',
@@ -172,7 +172,7 @@ const mockMovies: Movie[] = [
     release_date: '2018-02-16',
     phase: 'Phase 3',
     poster_url: 'https://image.tmdb.org/t/p/w500/uxzzxijgPIY7slzFvMotPv8wjKA.jpg',
-    imdb_rating: 7.3,
+    tmdb_rating: 7.3,
   },
   {
     id: '19',
@@ -181,7 +181,7 @@ const mockMovies: Movie[] = [
     release_date: '2018-04-27',
     phase: 'Phase 3',
     poster_url: 'https://image.tmdb.org/t/p/w500/7WsyChQLEftFiDOVTGkv3hFpyyt.jpg',
-    imdb_rating: 8.4,
+    tmdb_rating: 8.4,
   },
   {
     id: '20',
@@ -190,7 +190,7 @@ const mockMovies: Movie[] = [
     release_date: '2018-07-06',
     phase: 'Phase 3',
     poster_url: 'https://image.tmdb.org/t/p/w500/rv1AWImgx386ULjcf62VYaW8zSt.jpg',
-    imdb_rating: 7.0,
+    tmdb_rating: 7.0,
   },
   {
     id: '21',
@@ -199,7 +199,7 @@ const mockMovies: Movie[] = [
     release_date: '2019-03-08',
     phase: 'Phase 3',
     poster_url: 'https://image.tmdb.org/t/p/w500/AtsgWhDnHTq68L0lLsUrCnM7TjG.jpg',
-    imdb_rating: 6.8,
+    tmdb_rating: 6.8,
   },
   {
     id: '22',
@@ -208,7 +208,7 @@ const mockMovies: Movie[] = [
     release_date: '2019-04-26',
     phase: 'Phase 3',
     poster_url: 'https://image.tmdb.org/t/p/w500/or06FN3Dka5tukK1e9sl16pB3iy.jpg',
-    imdb_rating: 8.4,
+    tmdb_rating: 8.4,
   },
   {
     id: '23',
@@ -217,7 +217,7 @@ const mockMovies: Movie[] = [
     release_date: '2019-07-02',
     phase: 'Phase 3',
     poster_url: 'https://image.tmdb.org/t/p/w500/4q2NNj4S5dG2RLF9CpXsej7yXl.jpg',
-    imdb_rating: 7.4,
+    tmdb_rating: 7.4,
   },
   {
     id: '24',
@@ -226,7 +226,7 @@ const mockMovies: Movie[] = [
     release_date: '2021-07-09',
     phase: 'Phase 4',
     poster_url: 'https://image.tmdb.org/t/p/w500/qAZ0pzat24kLdO3o8ejmbLxyOac.jpg',
-    imdb_rating: 6.7,
+    tmdb_rating: 6.7,
   },
   {
     id: '25',
@@ -235,7 +235,7 @@ const mockMovies: Movie[] = [
     release_date: '2021-09-03',
     phase: 'Phase 4',
     poster_url: 'https://image.tmdb.org/t/p/w500/1BIoJGKbXjdFDAqUEiA2VHqkK1Z.jpg',
-    imdb_rating: 7.4,
+    tmdb_rating: 7.4,
   },
   {
     id: '26',
@@ -244,7 +244,7 @@ const mockMovies: Movie[] = [
     release_date: '2021-11-05',
     phase: 'Phase 4',
     poster_url: 'https://image.tmdb.org/t/p/w500/bcCBq9N1EMo3daNIjWJ8kYvrQm6.jpg',
-    imdb_rating: 6.3,
+    tmdb_rating: 6.3,
   },
   {
     id: '27',
@@ -253,7 +253,7 @@ const mockMovies: Movie[] = [
     release_date: '2021-12-17',
     phase: 'Phase 4',
     poster_url: 'https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg',
-    imdb_rating: 8.2,
+    tmdb_rating: 8.2,
   },
   {
     id: '28',
@@ -262,7 +262,7 @@ const mockMovies: Movie[] = [
     release_date: '2022-05-06',
     phase: 'Phase 4',
     poster_url: 'https://image.tmdb.org/t/p/w500/9Gtg2DzBhmYamXBS1hKAhiwbBKS.jpg',
-    imdb_rating: 6.9,
+    tmdb_rating: 6.9,
   },
   {
     id: '29',
@@ -271,7 +271,7 @@ const mockMovies: Movie[] = [
     release_date: '2022-07-08',
     phase: 'Phase 4',
     poster_url: 'https://image.tmdb.org/t/p/w500/pIkRyD18kl4FhoCNQuWxWu5cBLM.jpg',
-    imdb_rating: 6.2,
+    tmdb_rating: 6.2,
   },
   {
     id: '30',
@@ -280,7 +280,7 @@ const mockMovies: Movie[] = [
     release_date: '2022-11-11',
     phase: 'Phase 4',
     poster_url: 'https://image.tmdb.org/t/p/w500/sv1xJUazXeYqALzczSZ3O6nkH75.jpg',
-    imdb_rating: 6.7,
+    tmdb_rating: 6.7,
   },
   {
     id: '31',
@@ -289,7 +289,7 @@ const mockMovies: Movie[] = [
     release_date: '2023-02-17',
     phase: 'Phase 5',
     poster_url: 'https://image.tmdb.org/t/p/w500/ngl2FKBlU4fhbdsrtdom9LVLBXw.jpg',
-    imdb_rating: 6.0,
+    tmdb_rating: 6.0,
   },
   {
     id: '32',
@@ -298,7 +298,7 @@ const mockMovies: Movie[] = [
     release_date: '2023-05-05',
     phase: 'Phase 5',
     poster_url: 'https://image.tmdb.org/t/p/w500/r2J02Z2OpNTctfOSN1Ydgii51I3.jpg',
-    imdb_rating: 7.9,
+    tmdb_rating: 7.9,
   },
   {
     id: '33',
@@ -307,7 +307,7 @@ const mockMovies: Movie[] = [
     release_date: '2023-11-10',
     phase: 'Phase 5',
     poster_url: 'https://image.tmdb.org/t/p/w500/tUtgLOESpCx7ue4BaeCTqp3vn1b.jpg',
-    imdb_rating: 5.5,
+    tmdb_rating: 5.5,
   },
   {
     id: '34',
@@ -316,7 +316,7 @@ const mockMovies: Movie[] = [
     release_date: '2024-07-26',
     phase: 'Phase 5',
     poster_url: 'https://image.tmdb.org/t/p/w500/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg',
-    imdb_rating: 7.7,
+    tmdb_rating: 7.7,
   },
 ]
 
