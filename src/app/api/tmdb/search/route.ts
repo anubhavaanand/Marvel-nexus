@@ -146,8 +146,3 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to search TMDB' }, { status: 502 })
   }
 }
-
-export function resetTmdbSearchCache(): void {
-  cache.clear()
-  inflight.clear()
-}
