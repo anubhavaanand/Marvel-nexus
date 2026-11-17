@@ -71,6 +71,11 @@ export default function AdminPage({
     movies: 'idle',
     events: 'idle',
   })
+  // #492: keep the server's failure message so the admin can diagnose it.
+  const [seedErrors, setSeedErrors] = useState<
+    Partial<Record<'heroes' | 'movies' | 'events', string>>
+  >({})
+
   const [lastSeeded, setLastSeeded] = useState<
     Record<'heroes' | 'movies' | 'events', string | null>
   >({
@@ -203,9 +208,11 @@ export default function AdminPage({
       const result = await action()
       if (!result.ok) {
         setSeedStatus((prev) => ({ ...prev, [key]: 'error' }))
+        setSeedErrors((prev) => ({ ...prev, [key]: result.error ?? 'Seed action failed' }))
         return
       }
       setSeedStatus((prev) => ({ ...prev, [key]: 'success' }))
+      setSeedErrors((prev) => ({ ...prev, [key]: undefined }))
       if (result.lastSeeded) {
         setLastSeeded((prev) => ({ ...prev, [key]: result.lastSeeded }))
       }
@@ -214,6 +221,10 @@ export default function AdminPage({
       await refreshStats()
     } catch {
       setSeedStatus((prev) => ({ ...prev, [key]: 'error' }))
+      setSeedErrors((prev) => ({
+        ...prev,
+        [key]: 'Seed request failed before a response was received',
+      }))
     }
   }
 
@@ -268,6 +279,18 @@ export default function AdminPage({
       </header>
 
       {/* Load-error banners: surface DB/auth failures instead of swallowing them. */}
+
+      {Object.values(seedErrors).some(Boolean) && (
+        <div className="mb-6 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          {(Object.entries(seedErrors) as [string, string | undefined][])
+            .filter(([, msg]) => Boolean(msg))
+            .map(([key, msg]) => (
+              <p key={key}>
+                {key}: {msg}
+              </p>
+            ))}
+        </div>
+      )}
 
       {statsStale && (
         <div className="mb-6 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
@@ -398,7 +421,9 @@ export default function AdminPage({
               <Film className="w-8 h-8 text-purple-400" />
               <div>
                 <h3 className="font-orbitron text-white">Movies</h3>
-                <p className="text-xs text-neutral-400">34 films ready</p>
+                <p className="text-xs text-neutral-400">
+                  {stats ? `${stats.movies} movies in database` : 'Movies from the MCU'}
+                </p>
               </div>
               {getStatusIcon(seedStatus.movies)}
             </div>
@@ -452,7 +477,9 @@ export default function AdminPage({
               <Zap className="w-8 h-8 text-red-400" />
               <div>
                 <h3 className="font-orbitron text-white">Canon Events</h3>
-                <p className="text-xs text-neutral-400">Fixed points ready</p>
+                <p className="text-xs text-neutral-400">
+                  {stats ? `${stats.canonEvents} fixed points in database` : 'Fixed points ready'}
+                </p>
               </div>
               {getStatusIcon(seedStatus.events)}
             </div>
