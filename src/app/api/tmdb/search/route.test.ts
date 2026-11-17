@@ -33,8 +33,7 @@ describe('tmdb search route', () => {
         new Response(JSON.stringify({ results: [{ profile_path: '/a.jpg' }] }), { status: 200 }),
     )
     vi.stubGlobal('fetch', fetchMock)
-    const { GET, resetTmdbSearchCache } = await import('./route')
-    resetTmdbSearchCache()
+    const { GET } = await import('./route')
     const req = new NextRequest('http://localhost/api/tmdb/search?query=Tony')
     const res = await GET(req)
     expect(res.status).toBe(200)
@@ -50,8 +49,8 @@ describe('tmdb search route', () => {
   it('returns 429 shape when limited', async () => {
     const { isRateLimited } = await import('@/lib/rate-limit')
     vi.mocked(isRateLimited).mockReturnValue(true)
-    const { GET, resetTmdbSearchCache } = await import('./route')
-    resetTmdbSearchCache()
+    vi.resetModules()
+    const { GET } = await import('./route')
     // use unique query to avoid cache
     const req = new NextRequest('http://localhost/api/tmdb/search?query=UniqueX')
     const res = await GET(req)
