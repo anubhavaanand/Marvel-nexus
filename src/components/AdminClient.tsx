@@ -18,14 +18,12 @@ import {
   Zap,
   Globe,
   Lock,
-  Eye,
-  EyeOff,
   AlertTriangle,
 } from 'lucide-react'
 import type { Hero } from '@/lib/supabase'
 import HeroManager from '@/components/admin/HeroManager'
+import AdminLogin from '@/components/AdminLogin'
 import {
-  loginAdminAction,
   logoutAdminAction,
   checkAdminAuthAction,
   testDatabaseConnectionAction,
@@ -59,9 +57,6 @@ export default function AdminPage({
   statsError = null,
 }: AdminClientProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState('')
   const [seedStatus, setSeedStatus] = useState<SeedStatus>({
     heroes: 'idle',
     movies: 'idle',
@@ -119,34 +114,15 @@ export default function AdminPage({
     loadLastSeeded()
   }, [])
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    let success = false
-    try {
-      const result = await loginAdminAction(password)
-      success = result.ok
-    } catch {
-      // Unexpected server-action failure (e.g. misconfiguration): surface a
-      // generic failure message without revealing the cause.
-      success = false
-    }
-    if (success) {
-      setIsAuthenticated(true)
-      setError('')
-    } else {
-      setError('Login failed. Please try again.')
-      setPassword('')
-    }
-  }
-
   const handleLogout = async () => {
     await logoutAdminAction()
     setIsAuthenticated(false)
+    router.refresh()
   }
 
-  // If not authenticated, show login screen (with a checking state that avoids
-  // flashing the form for already-authenticated admins, #450).
+  // If not authenticated, defer to the shared AdminLogin component so there is a
+  // single login implementation (issue #431). It uses router.refresh() on
+  // success, which re-runs the server session check.
   if (!isAuthenticated) {
     if (authChecking) {
       return (
@@ -158,60 +134,7 @@ export default function AdminPage({
         </main>
       )
     }
-    return (
-      <main className="min-h-screen flex items-center justify-center px-4">
-        <motion.div
-          className="glass-panel rounded-2xl p-8 w-full max-w-md"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-        >
-          <div className="text-center mb-8">
-            <div className="flex justify-center mb-4">
-              <div className="p-4 rounded-full bg-cyan-950/50 border border-cyan-500/30">
-                <Lock className="w-8 h-8 text-cyan-400" />
-              </div>
-            </div>
-            <h1 className="text-2xl font-orbitron text-white mb-2">Admin Access</h1>
-            <p className="text-neutral-400 text-sm">Enter password to continue</p>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="relative">
-              <label htmlFor="admin-password" className="text-xs text-neutral-400">
-                Password
-              </label>
-              <input
-                id="admin-password"
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password"
-                className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-500 font-mono"
-                autoFocus
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white"
-              >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
-
-            {error && <p className="text-red-400 text-sm text-center">{error}</p>}
-
-            <Button
-              type="submit"
-              className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-orbitron"
-            >
-              <Lock className="w-4 h-4 mr-2" />
-              Access Admin
-            </Button>
-          </form>
-        </motion.div>
-      </main>
-    )
+    return <AdminLogin />
   }
 
   const checkConnection = async () => {
