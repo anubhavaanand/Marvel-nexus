@@ -282,10 +282,7 @@ export async function generateMetadata({ params }: PageProps) {
   // described as restricted instead of "not found" (#424).
   // getHeroVisibility and getHeroData are independent for non-locked heroes,
   // so fetch both concurrently then branch.
-  const [visibility, hero] = await Promise.all([
-    getHeroVisibility(slug),
-    getHeroData(slug),
-  ])
+  const [visibility, hero] = await Promise.all([getHeroVisibility(slug), getHeroData(slug)])
 
   if (!visibility) {
     return { title: 'Hero Not Found | Multiverse Archive' }
