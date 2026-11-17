@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Film, Clock } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { watchOrderData } from './data'
@@ -24,7 +24,11 @@ const WatchOrderTable = dynamic(() => import('./WatchOrderTable'), {
 })
 
 export default function WatchOrderClient() {
-  const [activeTab, setActiveTab] = useState<'MCU' | 'DC'>('MCU')
+  const franchises = useMemo(
+    () => Array.from(new Set(watchOrderData.map((item) => item.franchise))),
+    [],
+  )
+  const [activeTab, setActiveTab] = useState<string>(franchises[0] ?? 'MCU')
   const [sortBy, setSortBy] = useState<'chronological' | 'release'>('chronological')
 
   const filteredItems = watchOrderData.filter((item) => item.franchise === activeTab)
@@ -75,18 +79,15 @@ export default function WatchOrderClient() {
 
             <div className="flex justify-center mb-8">
               <div className="tabs-list">
-                <button
-                  onClick={() => setActiveTab('MCU')}
-                  className={`tab-trigger ${activeTab === 'MCU' ? 'active' : ''}`}
-                >
-                  MCU
-                </button>
-                <button
-                  onClick={() => setActiveTab('DC')}
-                  className={`tab-trigger ${activeTab === 'DC' ? 'active' : ''}`}
-                >
-                  DC
-                </button>
+                {franchises.map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => setActiveTab(f)}
+                    className={`tab-trigger ${activeTab === f ? 'active' : ''}`}
+                  >
+                    {f}
+                  </button>
+                ))}
               </div>
             </div>
 
