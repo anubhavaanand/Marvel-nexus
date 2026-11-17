@@ -72,6 +72,7 @@ export default function HeroCard({ hero, index = 0 }: HeroCardProps) {
             imageUrl={hero.image_url}
             alias={hero.alias}
             name={hero.actor_name || hero.name}
+            priority={index < 6}
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
           />
 
