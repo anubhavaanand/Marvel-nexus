@@ -4,6 +4,14 @@ import { useMemo, useState } from 'react'
 import { Film, Clock } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { watchOrderData } from './data'
+import { FRANCHISE_COLORS } from '@/lib/hero-update'
+
+// #516: labels for the tab-derived franchise, with a generic fallback so a new
+// franchise in data.ts never gets mislabelled as "DC Universe".
+const FRANCHISE_LABELS: Record<string, string> = {
+  MCU: 'Marvel Cinematic Universe',
+  DC: 'DC Universe',
+}
 
 // Lazy-load the table component (contains the bulk of the UI)
 const WatchOrderTable = dynamic(() => import('./WatchOrderTable'), {
@@ -39,7 +47,8 @@ export default function WatchOrderClient() {
   }, 0)
   const totalHours = Math.floor(totalMinutes / 60)
 
-  const accentColor = activeTab === 'MCU' ? 'var(--franchise-mcu)' : 'var(--franchise-dc)'
+  const accentColor = (FRANCHISE_COLORS[activeTab]?.primary ?? 'var(--franchise-mcu)') as string
+  const activeLabel = FRANCHISE_LABELS[activeTab] ?? activeTab
 
   return (
     <main className="min-h-screen">
@@ -73,8 +82,7 @@ export default function WatchOrderClient() {
             </h1>
 
             <p className="text-lg sm:text-xl text-[var(--fg-2)] max-w-2xl mx-auto mb-10 leading-relaxed">
-              The complete guide to watching the{' '}
-              {activeTab === 'MCU' ? 'Marvel Cinematic Universe' : 'DC Universe'} in perfect order.
+              The complete guide to watching the {activeLabel} in perfect order.
             </p>
 
             <div className="flex justify-center mb-8">
