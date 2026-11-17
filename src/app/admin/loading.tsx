@@ -2,7 +2,12 @@ import { Skeleton } from '@/components/Skeleton'
 
 export default function AdminLoading() {
   return (
-    <main role="status" aria-busy="true" aria-label="Loading" className="min-h-screen px-4 sm:px-8 pt-8 pb-32 bg-[var(--bg)]">
+    <main
+      role="status"
+      aria-busy="true"
+      aria-label="Loading"
+      className="min-h-screen px-4 sm:px-8 pt-8 pb-32 bg-[var(--bg)]"
+    >
       <div className="max-w-4xl mx-auto space-y-8">
         <div className="text-center mb-12 pt-8 space-y-4">
           <Skeleton className="h-4 w-48 mx-auto" />

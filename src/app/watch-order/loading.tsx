@@ -2,7 +2,12 @@ import { Skeleton } from '@/components/Skeleton'
 
 export default function WatchOrderLoading() {
   return (
-    <main role="status" aria-busy="true" aria-label="Loading" className="min-h-screen bg-[var(--bg)]">
+    <main
+      role="status"
+      aria-busy="true"
+      aria-label="Loading"
+      className="min-h-screen bg-[var(--bg)]"
+    >
       <div className="container-wide py-28 sm:py-36">
         <div className="max-w-4xl mx-auto text-center space-y-6">
           <Skeleton className="h-6 w-40 mx-auto" />

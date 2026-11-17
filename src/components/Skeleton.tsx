@@ -17,12 +17,19 @@ export function Skeleton({ className = '', variant = 'text' }: SkeletonProps) {
     badge: 'h-6 w-20 rounded-full',
   }
 
-  return <div aria-hidden="true" className={`${baseClasses} ${variantClasses[variant]} ${className}`} />
+  return (
+    <div aria-hidden="true" className={`${baseClasses} ${variantClasses[variant]} ${className}`} />
+  )
 }
 
 export function HeroCardSkeleton() {
   return (
-    <motion.div className="hero-card" initial={{ opacity: 0 }} animate={{ opacity: 1 }} aria-hidden="true">
+    <motion.div
+      className="hero-card"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      aria-hidden="true"
+    >
       {/* Image skeleton */}
       <div className="hero-image bg-[var(--surface)] animate-pulse" aria-hidden="true" />
 
