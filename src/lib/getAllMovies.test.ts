@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getAllMovies } from './supabase'
+import { compareMoviesByReleaseDate, getAllMovies } from './supabase'
 import type { Movie } from './supabase'
 
 function makeMovie(id: string, overrides: Partial<Movie> = {}): Movie {
@@ -34,7 +34,7 @@ describe('getAllMovies ordering', () => {
   })
 
   it('sort logic places null/empty release dates after valid dates', () => {
-    // Directly test the sort comparator logic used in the mock fallback
+    // #518: exercise the exported production comparator instead of re-implementing it.
     const movies: Movie[] = [
       makeMovie('1', { release_date: '2020-01-01' }),
       makeMovie('2', { release_date: '' }),
@@ -43,14 +43,8 @@ describe('getAllMovies ordering', () => {
       makeMovie('5', { release_date: '2021-01-01' }),
     ]
 
-    const sorted = [...movies].sort((a, b) => {
-      if (!a.release_date && !b.release_date) return 0
-      if (!a.release_date) return 1
-      if (!b.release_date) return -1
-      return a.release_date.localeCompare(b.release_date)
-    })
+    const sorted = [...movies].sort(compareMoviesByReleaseDate)
 
-    // Valid dates should be first, sorted chronologically
     expect(sorted[0].release_date).toBe('2019-01-01')
     expect(sorted[1].release_date).toBe('2020-01-01')
     expect(sorted[2].release_date).toBe('2021-01-01')
