@@ -856,7 +856,7 @@ export async function getSearchHeroes(): Promise<SearchHero[]> {
 
 /** Full hero list for the admin panel (includes locked content). */
 export async function getAllHeroesForAdmin(): Promise<Hero[]> {
-  if (!supabase) return getAllHeroes()
+  if (!supabase) return [...mockHeroes]
   let client: SupabaseClient
   try {
     client = getServiceSupabase()
