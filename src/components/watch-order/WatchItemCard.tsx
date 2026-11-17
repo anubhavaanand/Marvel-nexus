@@ -1,9 +1,10 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Film, Tv, Clock, Star } from 'lucide-react'
+import { Film, Tv, Clock, Star, Calendar } from 'lucide-react'
 import HeroImage from '@/components/HeroImage'
 import { WatchItem, phaseColors } from './data'
+import { formatReleaseDate } from './date-utils'
 
 interface WatchItemCardProps {
   item: WatchItem
@@ -13,6 +14,7 @@ interface WatchItemCardProps {
 
 export default function WatchItemCard({ item, index, accentColor }: WatchItemCardProps) {
   const colors = phaseColors[item.phase] || phaseColors['Phase 1']
+  const formattedDate = formatReleaseDate(item.release_date)
 
   return (
     <motion.div
@@ -54,8 +56,15 @@ export default function WatchItemCard({ item, index, accentColor }: WatchItemCar
                   )}
                   {item.type}
                 </span>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium glass text-[var(--muted)]">
-                  {item.year}
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium glass text-[var(--muted)]">
+                  {formattedDate ? (
+                    <>
+                      <Calendar className="w-3 h-3" />
+                      {formattedDate}
+                    </>
+                  ) : (
+                    item.year
+                  )}
                 </span>
               </div>
 

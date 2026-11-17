@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Home, Clock, Search, Play, Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 
 const navItems = [
   { icon: Home, label: 'Archive', href: '/' },
@@ -17,6 +17,7 @@ const SCROLL_THRESHOLD = 20
 
 export default function Navbar() {
   const pathname = usePathname()
+  const reducedMotion = useReducedMotion()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const isScrolledRef = useRef(isScrolled)
@@ -115,9 +116,9 @@ export default function Navbar() {
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           isScrolled ? 'glass-strong' : 'bg-transparent'
         }`}
-        initial={{ y: -80, opacity: 0 }}
+        initial={reducedMotion ? false : { y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        transition={reducedMotion ? { duration: 0 } : { duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       >
         <div className="max-w-[var(--container-wide)] mx-auto px-6">
           <div className="flex items-center justify-between h-14">
