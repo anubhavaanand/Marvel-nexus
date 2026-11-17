@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import RestrictedAccessMotion from './RestrictedAccessMotion'
 import { Lock, Shield, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -20,11 +20,7 @@ export default function RestrictedAccess() {
         }}
       />
 
-      <motion.div
-        className="glass-panel max-w-md w-full p-8 rounded-2xl text-center relative z-10 border-cyan-500/30"
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-      >
+      <RestrictedAccessMotion>
         <div className="flex justify-center mb-6">
           <div className="relative">
             <div className="absolute inset-0 bg-cyan-500/20 blur-xl rounded-full animate-pulse" />
@@ -57,7 +53,7 @@ export default function RestrictedAccess() {
             </Link>
           </Button>
         </div>
-      </motion.div>
+      </RestrictedAccessMotion>
     </main>
   )
 }
