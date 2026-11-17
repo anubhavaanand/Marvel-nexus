@@ -1017,14 +1017,16 @@ const mockMovies: Movie[] = SEED_MOVIES.map((m): Movie => ({
   tmdb_rating: null,
 }))
 
+/** Release-date ordering shared by the mock branch and tests (#518). */
+export function compareMoviesByReleaseDate(a: Movie, b: Movie): number {
+  if (!a.release_date && !b.release_date) return 0
+  if (!a.release_date) return 1
+  if (!b.release_date) return -1
+  return a.release_date.localeCompare(b.release_date)
+}
+
 export async function getAllMovies(options?: { allowEmpty?: boolean }): Promise<Movie[]> {
-  if (!supabase)
-    return [...mockMovies].sort((a, b) => {
-      if (!a.release_date && !b.release_date) return 0
-      if (!a.release_date) return 1
-      if (!b.release_date) return -1
-      return a.release_date.localeCompare(b.release_date)
-    })
+  if (!supabase) return [...mockMovies].sort(compareMoviesByReleaseDate)
 
   try {
     const { data, error } = await supabase
