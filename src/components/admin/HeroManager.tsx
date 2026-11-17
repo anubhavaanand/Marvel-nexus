@@ -522,18 +522,28 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                   className={`h-8 w-8 ${deleteConfirm === hero.id ? 'text-red-500 bg-red-950/30 ring-1 ring-red-500' : 'text-neutral-400 hover:text-red-400 hover:bg-red-950/30'}`}
                   onClick={() => handleDelete(hero.id)}
                   disabled={inFlightIds.has(hero.id)}
-                  aria-label={`Delete ${hero.alias}`}
+                  aria-label={
+                    deleteConfirm === hero.id
+                      ? `Confirm delete ${hero.alias}`
+                      : `Delete ${hero.alias}`
+                  }
                 >
                   {deleteConfirm === hero.id ? (
                     inFlightIds.has(hero.id) ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
                     ) : (
-                      <AlertTriangle className="w-4 h-4" />
+                      <>
+                        <AlertTriangle className="w-4 h-4" aria-hidden="true" />
+                        <span className="sr-only">Confirm delete</span>
+                      </>
                     )
                   ) : (
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4" aria-hidden="true" />
                   )}
                 </Button>
+                <div aria-live="polite" aria-atomic="true" className="sr-only">
+                  {deleteConfirm === hero.id ? `Confirm delete ${hero.alias}` : ''}
+                </div>
                 {deleteErrors[hero.id] && (
                   <span className="text-xs text-red-400 pr-2" title={deleteErrors[hero.id]}>
                     {deleteErrors[hero.id]}

@@ -1,12 +1,9 @@
-const { createClient } = require('@supabase/supabase-js')
 require('dotenv').config({ path: '.env.local' })
+const { createSupabaseClient } = require('./lib/supabase')
 
 const guard = require('./seed-guard')
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-)
+const supabase = createSupabaseClient()
 
 // Most reliable TMDB poster URLs (verified working)
 const imageUpdates = {
@@ -111,4 +108,7 @@ async function fixAllPosters() {
   console.log(`\n🎉 All posters fixed with reliable TMDB URLs!`)
 }
 
-fixAllPosters()
+fixAllPosters().catch((err) => {
+  console.error(err)
+  process.exitCode = 1
+})

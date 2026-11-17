@@ -133,6 +133,18 @@ export default function AdminPage({
   const handleLogout = async () => {
     await logoutAdminAction()
     setIsAuthenticated(false)
+    // Reset all panel state so a subsequent login cannot display the previous
+    // session's numbers (issue #781)
+    setSeedStatus({ heroes: 'idle', movies: 'idle', events: 'idle' })
+    setSeedErrors({})
+    setLastSeeded({ heroes: null, movies: null, events: null })
+    setSeedConfirm(null)
+    setConnectionStatus('unknown')
+    setConnectionTesting(false)
+    setConnectionLatency(null)
+    setConnectionError('')
+    setStats(null)
+    setStatsStale(false)
     router.refresh()
   }
 
