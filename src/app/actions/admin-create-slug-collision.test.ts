@@ -77,7 +77,7 @@ describe('createHeroAction slug collisions (#411)', () => {
       alias: 'Iron Man',
       franchise: 'MCU',
     })
-    expect(result).not.toBeNull()
+    expect(result.ok).toBe(true)
     expect(insertedPayload?.slug).toBe('iron-man')
   })
 
@@ -89,7 +89,7 @@ describe('createHeroAction slug collisions (#411)', () => {
       alias: 'Iron Man',
       franchise: 'MCU',
     })
-    expect(result).not.toBeNull()
+    expect(result.ok).toBe(true)
     const slug = String(insertedPayload?.slug)
     expect(slug).toMatch(/^iron-man-[0-9a-f]{4}$/)
   })

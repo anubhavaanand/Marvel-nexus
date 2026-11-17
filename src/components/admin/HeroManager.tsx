@@ -70,15 +70,17 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
         ? await createHeroAction(payload)
         : await updateHeroAction(editingHero.id, payload)
 
-      if (result) {
-        if (isNew) {
-          setHeroes((prev) => [result, ...prev])
-        } else {
-          setHeroes((prev) => prev.map((h) => (h.id === result.id ? result : h)))
-        }
+      // #819: the action reports why it failed; surface that instead of a generic notice.
+      if (result.ok) {
+        const saved = result.hero
+        setHeroes((prev) =>
+          isNew ? [saved, ...prev] : prev.map((h) => (h.id === saved.id ? saved : h)),
+        )
         setEditingHero(null)
       } else {
-        setSaveError('Save did not land — the server returned no update. Your edits are preserved.')
+        setSaveError(
+          `Save failed (${result.kind}) — ${result.message} Your edits are preserved and the form is still open.`,
+        )
       }
     } catch (error) {
       console.error('Failed to save hero:', error)
