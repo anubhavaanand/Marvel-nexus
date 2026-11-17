@@ -403,6 +403,7 @@ async function seedMaster() {
       .neq('id', '00000000-0000-0000-0000-000000000000')
     if (error) {
       console.error(`❌ Error clearing ${table}:`, error.message)
+      process.exitCode = 1
       return
     }
   }
@@ -414,6 +415,7 @@ async function seedMaster() {
     .neq('id', '00000000-0000-0000-0000-000000000000')
   if (deleteError) {
     console.error('❌ Error deleting heroes:', deleteError.message)
+    process.exitCode = 1
     return
   }
 

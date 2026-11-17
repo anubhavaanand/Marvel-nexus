@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import TimelineSagaTabs from '@/components/TimelineSagaTabs'
 import { TimelineSkeleton } from '@/components/Skeleton'
-import { getAllMovies, isSupabaseConfigured, type Movie } from '@/lib/supabase'
+import { getAllMovies, isSupabaseConfigured } from '@/lib/supabase'
 import { bucketMoviesByPhase } from '@/lib/movie-phases'
 import { Film } from 'lucide-react'
 import Link from 'next/link'
@@ -22,7 +22,10 @@ async function getMoviesData(options?: { allowEmpty?: boolean }) {
 export const metadata = {
   title: 'MCU Timeline | Multiverse Archive',
   description:
-    'Explore the complete Marvel Cinematic Universe timeline from Phase 1 to Phase 6. Every movie in chronological order.',
+    'Explore the complete Marvel Cinematic Universe timeline from Phase 1 to Phase 5. Every movie in chronological order.',
+  openGraph: {
+    images: ['/og-image.svg'],
+  },
 }
 
 export default async function TimelinePage() {

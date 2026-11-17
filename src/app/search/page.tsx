@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { getSearchHeroes, type SearchHero, isSupabaseConfigured } from '@/lib/supabase'
 import SearchClient from '@/components/SearchClient'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: 'Search | Multiverse Archive',
@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Search | Multiverse Archive',
     description: 'Search heroes across the multiverse — Marvel, DC, Anime and beyond.',
+    images: ['/og-image.svg'],
   },
   twitter: {
     card: 'summary',

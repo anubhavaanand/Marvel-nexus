@@ -38,11 +38,20 @@ export const metadata: Metadata = {
     description: 'Explore heroes across the Multiverse — Marvel, DC, Anime and beyond.',
     type: 'website',
     siteName: 'Multiverse Archive',
+    images: [
+      {
+        url: '/og-image.svg',
+        width: 1200,
+        height: 630,
+        alt: 'Multiverse Archive | Hero Database',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Multiverse Archive',
     description: 'The Ultimate Hero Database',
+    images: ['/og-image.svg'],
   },
   robots: {
     index: true,
