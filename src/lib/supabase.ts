@@ -886,15 +886,18 @@ const mockMovies: Movie[] = SEED_MOVIES.map((m): Movie => ({
 
 export async function getAllMovies(options?: { allowEmpty?: boolean }): Promise<Movie[]> {
   if (!supabase)
-    return [...mockMovies].sort((a, b) =>
-      (a.release_date || '').localeCompare(b.release_date || ''),
-    )
+    return [...mockMovies].sort((a, b) => {
+      if (!a.release_date && !b.release_date) return 0
+      if (!a.release_date) return 1
+      if (!b.release_date) return -1
+      return a.release_date.localeCompare(b.release_date)
+    })
 
   try {
     const { data, error } = await supabase
       .from('movies')
       .select('*')
-      .order('release_date', { ascending: true })
+      .order('release_date', { ascending: true, nullsFirst: false })
 
     if (error) {
       // Do not silently serve empty data when the real database fails, unless
