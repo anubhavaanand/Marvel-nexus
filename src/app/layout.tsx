@@ -67,7 +67,8 @@ export default function RootLayout({
           {children}
         </div>
         <footer className="relative z-10 border-t border-[var(--border)] py-6 px-4 text-center text-xs text-[var(--muted)]">
-          <p>
+          <p>&copy; {new Date().getFullYear()} Multiverse Archive. All rights reserved. </p>
+          <p className="mt-2">
             This product uses the TMDB API but is not endorsed or certified by TMDB.{' '}
             <a
               href="https://www.themoviedb.org"
