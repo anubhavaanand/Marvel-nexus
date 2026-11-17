@@ -8,28 +8,52 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
 )
 
-// Function to check if URL is accessible
-function checkUrl(url) {
+// #487: follow up to 3 redirects and treat 2xx/3xx as reachable.
+const REDIRECT_LIMIT = 3
+
+function checkUrlOnce(url) {
   return new Promise((resolve) => {
     if (!url) {
-      resolve(false)
+      resolve({ accessible: false, statusCode: null, location: null })
       return
     }
 
     const protocol = url.startsWith('https') ? https : http
     const request = protocol.get(url, (res) => {
-      resolve(res.statusCode === 200)
+      const result = {
+        accessible: res.statusCode >= 200 && res.statusCode < 400,
+        statusCode: res.statusCode,
+        location: res.headers.location || null,
+      }
+      res.destroy()
+      resolve(result)
     })
 
     request.on('error', () => {
-      resolve(false)
+      resolve({ accessible: false, statusCode: null, location: null })
     })
 
     request.setTimeout(5000, () => {
       request.destroy()
-      resolve(false)
+      resolve({ accessible: false, statusCode: null, location: null })
     })
   })
+}
+
+async function checkUrl(url) {
+  let current = url
+  for (let hop = 0; hop <= REDIRECT_LIMIT; hop++) {
+    const result = await checkUrlOnce(current)
+    if (
+      !result.accessible ||
+      !result.location ||
+      ![301, 302, 303, 307, 308].includes(result.statusCode)
+    ) {
+      return result.accessible
+    }
+    current = new URL(result.location, current).toString()
+  }
+  return false
 }
 
 async function findBrokenImages() {

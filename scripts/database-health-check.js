@@ -2,8 +2,11 @@ const { createSupabaseClient } = require('./lib/supabase')
 const https = require('https')
 const http = require('http')
 
-// Function to check if URL is accessible
-function checkUrl(url) {
+// #487: follow up to 3 redirects; 2xx and 3xx responses are "reachable"
+// (browsers render redirected images fine).
+const REDIRECT_LIMIT = 3
+
+function checkUrlOnce(url) {
   return new Promise((resolve) => {
     if (!url) {
       resolve({ accessible: false, reason: 'No URL' })
@@ -12,11 +15,10 @@ function checkUrl(url) {
 
     const protocol = url.startsWith('https') ? https : http
     const request = protocol.get(url, (res) => {
-      if (res.statusCode === 200) {
-        resolve({ accessible: true, statusCode: 200 })
-      } else {
-        resolve({ accessible: false, statusCode: res.statusCode })
-      }
+      const statusCode = res.statusCode
+      const location = res.headers.location
+      res.destroy()
+      resolve({ accessible: statusCode >= 200 && statusCode < 400, statusCode, location })
     })
 
     request.on('error', (err) => {
@@ -30,6 +32,21 @@ function checkUrl(url) {
   })
 }
 
+async function checkUrl(url) {
+  let current = url
+  for (let hop = 0; hop <= REDIRECT_LIMIT; hop++) {
+    const result = await checkUrlOnce(current)
+    if (
+      !result.accessible ||
+      !result.location ||
+      ![301, 302, 303, 307, 308].includes(result.statusCode)
+    ) {
+      return result
+    }
+    current = new URL(result.location, current).toString()
+  }
+  return { accessible: false, reason: 'Too many redirects' }
+}
 async function healthCheck() {
   const supabase = createSupabaseClient()
   console.log('╔═══════════════════════════════════════════════════════════╗')
