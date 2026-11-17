@@ -183,26 +183,28 @@ async function probeSessionsTable(): Promise<boolean> {
 
   probePromise = (async () => {
     dbMode.probing = true
+    let available = false
     try {
       const supabase = getServiceSupabase()
       const { error } = await supabase.from('admin_sessions').select('token_hash').limit(1)
-      const available = !error
+      available = !error
       dbMode.available = available
       dbMode.lastProbeAt = Date.now()
       if (available) {
         resetBackoff()
-      } else {
-        scheduleReprobe()
       }
       return available
     } catch {
       dbMode.available = false
       dbMode.lastProbeAt = Date.now()
-      scheduleReprobe()
       return false
     } finally {
       dbMode.probing = false
       probePromise = null
+      // #510: schedule the retry after clearing `probing`, otherwise the guard
+      // inside scheduleReprobe makes these calls no-ops and the backoff never
+      // grows.
+      if (!available) scheduleReprobe()
     }
   })()
 
