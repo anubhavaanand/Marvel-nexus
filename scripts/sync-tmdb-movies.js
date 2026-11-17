@@ -111,7 +111,9 @@ async function syncMovies() {
   const tmdbMovies = await fetchAllMarvelMovies()
 
   // 2. Get existing movies from DB to avoid re-inserting
-  const { data: existingMovies, error: existingError } = await supabase.from('movies').select('tmdb_id')
+  const { data: existingMovies, error: existingError } = await supabase
+    .from('movies')
+    .select('tmdb_id')
   if (existingError) {
     console.error('❌ Failed to fetch existing movies:', existingError.message)
     process.exit(1)
