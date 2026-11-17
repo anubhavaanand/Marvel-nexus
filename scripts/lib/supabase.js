@@ -10,7 +10,6 @@ const { createClient } = require('@supabase/supabase-js')
  * the caller remembering to load it.
  */
 function loadEnv() {
-  // eslint-disable-next-line global-require
   require('dotenv').config({ path: '.env.local' })
 }
 
