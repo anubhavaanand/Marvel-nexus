@@ -105,6 +105,27 @@ describe('sanitizeHeroUpdate', () => {
     })
   })
 
+  // #773: exact hosts only; evil suffix hosts must be rejected.
+  it('rejects evil/suffix hosts', () => {
+    expect(
+      sanitizeHeroUpdate(partial({ image_url: 'https://unsplash.com.evil.example/x.jpg' })),
+    ).toBeNull()
+    expect(sanitizeHeroUpdate(partial({ image_url: 'https://notunsplash.com/x.jpg' }))).toBeNull()
+    expect(
+      sanitizeHeroUpdate(partial({ image_url: 'https://image.tmdb.org.evil.com/x.jpg' })),
+    ).toBeNull()
+  })
+
+  // #773: legitimate *.supabase.co storage URL accepted.
+  it('accepts a legitimate Supabase storage URL', () => {
+    expect(
+      sanitizeHeroUpdate(partial({ image_url: 'https://abc.supabase.co/storage/v1/object/public/b/x.jpg' })),
+    ).toEqual({ image_url: 'https://abc.supabase.co/storage/v1/object/public/b/x.jpg' })
+    expect(
+      sanitizeHeroUpdate(partial({ image_url: 'https://abc.supabase.co/notstorage/x.jpg' })),
+    ).toBeNull()
+  })
+
   it('rejects unknown franchises', () => {
     expect(sanitizeHeroUpdate(partial({ franchise: 'Made Up' }))).toBeNull()
     expect(sanitizeHeroUpdate(partial({ franchise: 'The Boys' }))).toEqual({

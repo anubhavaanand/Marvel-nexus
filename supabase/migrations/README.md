@@ -5,14 +5,25 @@ Ordered SQL migrations for the Multiverse Archive schema. Filenames use a
 
 ## Current migrations
 
-| File                                | Purpose                                                                       |
-| ----------------------------------- | ----------------------------------------------------------------------------- |
-| `001_admin_sessions.sql`            | Adds the `admin_sessions` table for revocable admin logins (#7).              |
-| `002_franchise_constraint_full.sql` | Replaces the `heroes.franchise` CHECK with the canonical 11-value list (#40). |
-| `003_add_actor_name.sql`            | Adds the `actor_name` column to `heroes` (#50).                               |
-|                                     | `004_locked_content_rls.sql`                                                  | Excludes locked heroes from the public read policy (#116).                            |
-|                                     | `005_hero_slug_index.sql`                                                     | Adds an indexed `slug` column + trigger so slug lookups are a single DB query (#144). |
-| `006_hero_delete_cascade.sql`       | Re-adds `ON DELETE CASCADE` FKs for `canon_events`/`hero_movies` (#233).      |
+| File                                | Purpose                                                                                                |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `001_admin_sessions.sql`            | Admin sessions with server-side revocation.                                                            |
+| `002_franchise_constraint_full.sql` | Ensure the heroes.franchise CHECK allows every value the application expects.                          |
+| `003_add_actor_name.sql`            | Add the actor_name column that src/lib/supabase.ts and the hero UI expect.                             |
+| `004_locked_content_rls.sql`        | Restrict public reads so locked ("premium") heroes are never visible to users.                         |
+| `005_hero_slug_index.sql`           | Adds a denormalized, indexed `slug` column to `heroes` so slug lookups are fast.                       |
+| `006_hero_delete_cascade.sql`       | Ensure deleting a hero cascades to its dependent rows (#233).                                          |
+| `007_relations_rls.sql`             | Scope public reads on canon_events and hero_movies to non-locked heroes.                               |
+| `008_apostrophe_slug_parity.sql`    | Idempotent migration: align hero_slugify apostrophe handling with TS slugifyAlias (#444).              |
+| `008_password_epoch.sql`            | #443: sessions issued under a previous ADMIN_PASSWORD must stop validating.                            |
+| `009_slug_trigger_guard.sql`        | Idempotent migration: stop heroes_set_slug from overwriting a collision-safe slug.                     |
+| `010_delete_hero_cascade.sql`       | #440: deleting a hero must remove canon_events and hero_movies links in the correct order.             |
+| `011_admin_sessions_rls.sql`        | #413: admin_sessions stores sha256(session token). Without RLS and without policy it is fully exposed. |
+| `012_list_order_indexes.sql`        | #480: list queries order by these columns; give Postgres a supporting index.                           |
+| `013_seed_runs.sql`                 | #506: persist per-kind last-seeded timestamps so they survive restarts and redeploys.                  |
+| `014_rename_imdb_rating.sql`        | #499: the column stores TMDB's vote_average, not an IMDb score.                                        |
+
+> **Note:** Migrations `008_apostrophe_slug_parity.sql` and `008_password_epoch.sql` share the same numeric prefix. This is a known duplicate-numbering issue tracked separately; do not renumber files in this README.
 
 ## How to apply
 
