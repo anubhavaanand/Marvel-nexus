@@ -43,11 +43,11 @@ const createSupabaseMock = () => {
       if (mode !== 'update') mode = 'select'
       return chain
     },
-    eq: (_col: string, val: string) => {
+    eq: (_col: string) => {
       eqCol = _col
       return chain
     },
-    neq: (_col: string, val: string) => {
+    neq: (_col: string) => {
       neqCol = _col
       return chain
     },
