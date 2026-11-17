@@ -8,7 +8,7 @@ This application features a premium, Stark-Industries-style "JARVIS" visual inte
 
 ## ✨ Key Features
 
-- 🦸‍♂️ **Dynamic Hero Hub**: Explore 80+ heroes across multiple universes (MCU, X-Men, Spider-Verse, DC, Anime, The Boys, and Peacemaker).
+- 🦸‍♂️ **Dynamic Hero Hub**: Explore 48 heroes across multiple universes (MCU, X-Men, Spider-Verse, DC, Anime, The Boys, and Peacemaker). Count tracks the seed dataset in `src/lib/seed-data.ts` (verify with `npm run count:heroes`).
 - 🎨 **Premium Tech-Noir Visual Identity**: Experience a Stark-like HUD interface with biometric scanlines, energy-shield locks, holographic glows, and decryption overlays.
 - 📱 **Fully Mobile Responsive**: Optimized layouts that scroll and scale beautifully on any viewport width without vertical cut-offs or page overflows.
 - 📺 **Official Watch Orders**: Detailed, sortable chronological and release order movie lists for the Marvel and DC universes.

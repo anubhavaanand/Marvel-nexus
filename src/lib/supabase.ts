@@ -677,7 +677,12 @@ export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | n
     const hero = resolveMockHeroBySlug(slug)
     if (!hero) return null
     const enriched = await enrichHeroesWithTmdb([hero])
-    return enriched[0] || null
+    if (!enriched[0]) return null
+    return {
+      ...enriched[0],
+      canon_events: [],
+      hero_movies: [],
+    }
   }
 
   // Issue #144: resolve the slug against the indexed `slug` column in a single
@@ -728,7 +733,13 @@ export async function getHeroVisibility(
 ): Promise<{ is_locked_content: boolean } | null> {
   if (!supabase) {
     const hero = resolveMockHeroBySlug(slug)
-    // Ambiguous: missing and locked are indistinguishable to anonymous callers.
+    // INTENTIONAL FAIL-CLOSED BEHAVIOR (do not "fix" to oracle semantics):
+    // In the mock branch we cannot distinguish a truly missing slug from a
+    // locked one, so we report locked=true for BOTH. This masks missing-vs-
+    // locked for anonymous callers, but that is deliberate: we never want to
+    // leak slug existence or accidentally unlock content when the backing
+    // store is unavailable. Do NOT assume oracle semantics here — treat any
+    // `true` result as "not publicly visible", never as "confirmed locked".
     return { is_locked_content: hero ? (hero.is_locked_content ?? true) : true }
   }
   let client: SupabaseClient
@@ -856,7 +867,7 @@ export async function getSearchHeroes(): Promise<SearchHero[]> {
 
 /** Full hero list for the admin panel (includes locked content). */
 export async function getAllHeroesForAdmin(): Promise<Hero[]> {
-  if (!supabase) return getAllHeroes()
+  if (!supabase) return [...mockHeroes]
   let client: SupabaseClient
   try {
     client = getServiceSupabase()
