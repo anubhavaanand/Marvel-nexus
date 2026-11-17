@@ -14,7 +14,9 @@
   --color-background: var(--bg);
   --color-foreground: var(--fg);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-mono:
+    var(--font-roboto-mono-next), 'Roboto Mono', 'SF Mono', 'JetBrains Mono', ui-monospace,
+    monospace;
   --font-orbitron: var(--font-orbitron-next), 'Orbitron', sans-serif;
   --font-roboto-mono: var(--font-roboto-mono-next), 'Roboto Mono', monospace;
 
