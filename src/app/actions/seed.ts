@@ -159,12 +159,19 @@ export async function seedDemoHeroesAction() {
   const eventRows: Array<Record<string, unknown>> = []
   const links: Array<Record<string, unknown>> = []
   let skippedEvents = 0
+  const skippedEventNames: string[] = []
   for (const event of SEED_EVENTS) {
     const hero = heroKey.get(`${event.heroName}|${event.heroAlias}`)
     const movieId = movieIds.get(event.movieTitle)
     if (!hero || !movieId) {
-      // #522: a silently skipped event is how "all steps completed" lies.
+      // #572: count and report unresolvable canon events instead of a bare continue.
       skippedEvents += 1
+      const reason = !hero ? 'hero' : 'movie'
+      const name = `${event.heroName} (${event.heroAlias}) -> ${event.movieTitle}`
+      skippedEventNames.push(name)
+      console.warn(
+        `[admin-seed] seedDemoHeroesAction skipped canon event (${reason} unresolvable): ${name}`,
+      )
       continue
     }
     eventRows.push({
@@ -218,7 +225,7 @@ export async function seedDemoHeroesAction() {
   revalidatePath('/timeline')
   revalidatePath('/watch-order')
   log(
-    `seeded ${heroRows.length} heroes, ${movieRows.length} movies, ${eventRows.length} canon events`,
+    `seeded ${heroRows.length} heroes, ${movieRows.length} movies, ${eventRows.length} canon events (skipped ${skippedEvents})`,
   )
   const seededAt = await recordSeedRun('heroes')
   return {
@@ -228,6 +235,7 @@ export async function seedDemoHeroesAction() {
     events: eventRows.length,
     links: links.length,
     skippedEvents,
+    skippedEventNames,
     lastSeeded: seededAt,
     completedSteps,
   }
@@ -381,12 +389,19 @@ export async function createCanonEventsAction() {
   const rows: Array<Record<string, unknown>> = []
   const links: Array<Record<string, unknown>> = []
   let skipped = 0
-
+  const skippedEventNames: string[] = []
   for (const event of SEED_EVENTS) {
     const hero = heroKey.get(`${event.heroName}|${event.heroAlias}`)
     const movieId = movieIds.get(event.movieTitle)
     if (!hero || !movieId) {
+      // #572: count and report unresolvable canon events instead of a bare continue.
       skipped += 1
+      const reason = !hero ? 'hero' : 'movie'
+      const name = `${event.heroName} (${event.heroAlias}) -> ${event.movieTitle}`
+      skippedEventNames.push(name)
+      console.warn(
+        `[admin-seed] createCanonEventsAction skipped canon event (${reason} unresolvable): ${name}`,
+      )
       continue
     }
     rows.push({
@@ -418,7 +433,13 @@ export async function createCanonEventsAction() {
   revalidatePath('/admin')
   log(`created ${rows.length} canon events (skipped ${skipped})`)
   const seededAt = await recordSeedRun('events')
-  return { ok: true as const, created: rows.length, skipped, lastSeeded: seededAt }
+  return {
+    ok: true as const,
+    created: rows.length,
+    skipped,
+    skippedEventNames,
+    lastSeeded: seededAt,
+  }
 }
 
 export interface AdminStats {
