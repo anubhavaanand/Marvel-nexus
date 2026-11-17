@@ -8,7 +8,7 @@ let probeCount = 0
 vi.mock('./service-supabase', () => ({
   getServiceSupabase: () => ({
     from: () => ({
-      select: (_cols: string) => ({
+      select: () => ({
         limit: async () => {
           probeCount += 1
           if (shouldError) return { error: { message: 'transient error' } }
