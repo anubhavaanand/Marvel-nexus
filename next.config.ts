@@ -15,6 +15,10 @@ const cspHeader = [
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com",
   "connect-src 'self' https://*.supabase.co https://vitals.vercel-insights.com",
+  "media-src 'self' https://*.supabase.co",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
   "frame-ancestors 'none'",
 ].join('; ')
 

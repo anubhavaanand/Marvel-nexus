@@ -27,7 +27,11 @@ export async function searchPerson(name: string): Promise<TMDBPerson | null> {
     }
 
     const data = await res.json()
-    return data.results?.[0] || null
+    const results = (data.results ?? []) as TMDBPerson[]
+    // Prefer performers whose known department is Acting; fall back to the raw
+    // order only when TMDB omits the field (#455).
+    const actors = results.filter((r) => r?.known_for_department === 'Acting')
+    return (actors.length > 0 ? actors : results)[0] || null
   } catch (error) {
     console.error('Error searching person:', error)
     return null
