@@ -1,12 +1,10 @@
-const { createClient } = require('@supabase/supabase-js')
+// #488: maintenance checks must see locked heroes too, so use the service-role
+// client (anon RLS would silently skip them and report 'all images OK').
+const { createSupabaseClient } = require('./lib/supabase')
 const https = require('https')
 const http = require('http')
-require('dotenv').config({ path: '.env.local' })
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-)
+const supabase = createSupabaseClient()
 
 // Function to check if URL is accessible
 function checkUrl(url) {
