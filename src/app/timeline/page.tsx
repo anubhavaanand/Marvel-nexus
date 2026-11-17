@@ -3,6 +3,7 @@ import TimelineSagaTabs from '@/components/TimelineSagaTabs'
 import { TimelineSkeleton } from '@/components/Skeleton'
 import { getAllMovies, isSupabaseConfigured, type Movie } from '@/lib/supabase'
 import { Film } from 'lucide-react'
+import Link from 'next/link'
 
 // Movie data is public and changes infrequently. Cache at the edge with ISR
 // (revalidate = 3600s / 1 hour) instead of force-dynamic so getAllMovies()
@@ -393,6 +394,15 @@ export default async function TimelinePage() {
                 <p className="text-sm text-[var(--meta)] max-w-xs text-center">
                   Supabase is configured but the movies table is empty. Run the seed script to
                   populate the timeline.
+                </p>
+                <Link
+                  href="/admin"
+                  className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent)] text-white text-sm font-medium hover:opacity-90 transition"
+                >
+                  Seed database in Admin
+                </Link>
+                <p className="text-xs text-[var(--meta)]">
+                  Or run <code>npm run seed</code> locally — see docs for details.
                 </p>
               </div>
             )}
