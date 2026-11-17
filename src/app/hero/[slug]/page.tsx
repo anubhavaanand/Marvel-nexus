@@ -252,6 +252,21 @@ export default async function HeroPage({ params }: PageProps) {
 
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params
+
+  // Resolve visibility with the same source the page uses so a locked hero is
+  // described as restricted instead of "not found" (#424).
+  const visibility = await getHeroVisibility(slug)
+  if (!visibility) {
+    return { title: 'Hero Not Found | Multiverse Archive' }
+  }
+  if (visibility.is_locked_content) {
+    return {
+      title: 'Restricted Hero | Multiverse Archive',
+      description: 'This hero profile is available to registered members only.',
+      robots: { index: false },
+    }
+  }
+
   const hero = await getHeroData(slug)
 
   if (!hero) {
