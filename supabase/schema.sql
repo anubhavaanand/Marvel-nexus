@@ -75,6 +75,14 @@ INSERT INTO admin_password_epoch (id, epoch, password_hash)
 VALUES (1, 0, NULL)
 ON CONFLICT (id) DO NOTHING;
 
+-- #506: last-seeded timestamps that survive restarts and serverless instances.
+CREATE TABLE IF NOT EXISTS seed_runs (
+    key TEXT PRIMARY KEY,
+    seeded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE seed_runs ENABLE ROW LEVEL SECURITY;
+
 -- ============================================
 -- CANON EVENTS TABLE
 -- ============================================
@@ -200,6 +208,14 @@ DO $$ BEGIN
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'admin_password_epoch' AND policyname = 'Service role full access') THEN
     CREATE POLICY "Service role full access" ON admin_password_epoch FOR ALL USING (auth.role() = 'service_role');
+
+-- #506: same service-only posture for seed run timestamps.
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'seed_runs' AND policyname = 'Service role full access') THEN
+    CREATE POLICY "Service role full access" ON seed_runs FOR ALL USING (auth.role() = 'service_role');
+  END IF;
+END $$;
   END IF;
 END $$;
 
