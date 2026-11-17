@@ -3,7 +3,7 @@
 import { useMemo, useState, useRef, useEffect } from 'react'
 import { Film, Clock } from 'lucide-react'
 import dynamic from 'next/dynamic'
-import { watchOrderData } from './data'
+import type { WatchItem } from './meta'
 import { FRANCHISE_COLORS } from '@/lib/hero-update'
 
 // #516: labels for the tab-derived franchise, with a generic fallback so a new
@@ -31,15 +31,15 @@ const WatchOrderTable = dynamic(() => import('./WatchOrderTable'), {
   ),
 })
 
-export default function WatchOrderClient() {
+export default function WatchOrderClient({ items }: { items: WatchItem[] }) {
   const franchises = useMemo(
-    () => Array.from(new Set(watchOrderData.map((item) => item.franchise))),
-    [],
+    () => Array.from(new Set(items.map((item) => item.franchise))),
+    [items],
   )
   const [activeTab, setActiveTab] = useState<string>(franchises[0] ?? 'MCU')
   const [sortBy, setSortBy] = useState<'chronological' | 'release'>('chronological')
 
-  const filteredItems = watchOrderData.filter((item) => item.franchise === activeTab)
+  const filteredItems = items.filter((item) => item.franchise === activeTab)
 
   const totalMinutes = filteredItems.reduce((sum, item) => {
     const match = item.runtime?.match(/^(\d+)h (\d+)m$/)
