@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { getAllHeroes, getMockHeroes, isSupabaseConfigured } from '@/lib/supabase'
+import { getAllHeroes, getHeroesCount, getMockHeroes, isSupabaseConfigured } from '@/lib/supabase'
 import {
   bucketHeroes,
   EMPTY_HERO_BUCKETS,
@@ -21,7 +21,7 @@ export default async function Home() {
   let loadError: string | null = null
 
   try {
-    const allHeroes = await getAllHeroes()
+    const [allHeroes] = await Promise.all([getAllHeroes(), getHeroesCount()])
     if (allHeroes && allHeroes.length > 0) {
       buckets = bucketHeroes(allHeroes)
     }
