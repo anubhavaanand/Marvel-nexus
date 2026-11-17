@@ -559,21 +559,37 @@ async function seedUltimate() {
     {
       title: 'full database reseed — wipes existing data before inserting',
       destructive: [
-        'DELETE all existing rows from heroes (table is truncated via .delete().neq(id, ...))',
+        'DELETE all existing canon_events and hero_movies, then all rows from heroes (dependency order; movies are preserved because this script does not seed them)',
       ],
       safe: ['INSERT heroes from the ultimate list'],
     },
     'seed-ultimate.js',
   )
 
-  // 1. WIPE EVERYTHING — destructive, requires explicit opt-in
+  // 1. CLEAR EXISTING DATA — destructive, requires explicit opt-in.
+  // Delete child tables first so a missing ON DELETE CASCADE cannot leave
+  // orphaned canon_events/hero_movies behind. Movies are untouched: this script
+  // seeds heroes only (sync-tmdb-movies owns that table).
+  console.log('🗑️  Clearing existing relations...')
+  for (const table of ['canon_events', 'hero_movies']) {
+    const { error } = await supabase
+      .from(table)
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000')
+    if (error) {
+      console.error(`❌ Error clearing ${table}:`, error.message)
+      process.exitCode = 1
+      return
+    }
+  }
+
   console.log('🗑️  Clearing existing heroes...')
   const { error: deleteError } = await supabase
     .from('heroes')
     .delete()
     .neq('id', '00000000-0000-0000-0000-000000000000')
   if (deleteError) {
-    console.error('❌ Error wiping DB:', deleteError.message)
+    console.error('❌ Error deleting heroes:', deleteError.message)
     process.exitCode = 1
     return
   }
