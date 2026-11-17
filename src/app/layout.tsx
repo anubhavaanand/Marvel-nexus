@@ -21,10 +21,23 @@ const robotoMono = Roboto_Mono({
   display: 'swap',
 })
 
-const SITE_URL: string =
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '') ||
-  'https://multiversearchive.vercel.app'
+// #605: a malformed NEXT_PUBLIC_SITE_URL (no scheme, stray whitespace) made
+// `new URL()` throw at module load and take down every page. Fall back instead.
+function resolveSiteUrl(): string {
+  const raw =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '')
+  if (raw) {
+    try {
+      return new URL(raw.trim()).origin
+    } catch {
+      console.warn(`Ignoring invalid NEXT_PUBLIC_SITE_URL: ${JSON.stringify(raw)}`)
+    }
+  }
+  return 'https://multiversearchive.vercel.app'
+}
+
+const SITE_URL: string = resolveSiteUrl()
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
