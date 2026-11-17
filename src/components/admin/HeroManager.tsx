@@ -49,8 +49,6 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
     setLastInitialHeroes(initialHeroes)
     setHeroes(initialHeroes)
   }
-  const powersInputRef = useRef<HTMLInputElement>(null)
-  const weaknessesInputRef = useRef<HTMLInputElement>(null)
 
   const handleSave = async () => {
     if (!editingHero) return
@@ -403,7 +401,6 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                     ))}
                     <input
                       id="hero-powers-input"
-                      ref={powersInputRef}
                       maxLength={HERO_UPDATE_MAX_ARRAY_ITEM_LENGTH}
                       value={newPower}
                       onChange={(e) => setNewPower(e.target.value)}
@@ -458,7 +455,6 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                     ))}
                     <input
                       id="hero-weaknesses-input"
-                      ref={weaknessesInputRef}
                       maxLength={HERO_UPDATE_MAX_ARRAY_ITEM_LENGTH}
                       value={newWeakness}
                       onChange={(e) => setNewWeakness(e.target.value)}
