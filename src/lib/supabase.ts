@@ -114,7 +114,22 @@ async function enrichHeroesWithTmdb<T extends EnrichableHero>(heroes: T[]): Prom
   }))
 }
 
-// Only create client if credentials are available
+/** Fetches every row from the heroes table, paginating past Supabase's 1000-row default cap. */
+async function fetchAllHeroRows(client: SupabaseClient, columns: string): Promise<unknown[]> {
+  const PAGE = 1000
+  const result: unknown[] = []
+  let from = 0
+  while (true) {
+    const { data, error } = await client.from('heroes').select(columns).range(from, from + PAGE - 1)
+    if (error) throw error
+    const rows = Array.isArray(data) ? data : []
+    result.push(...rows)
+    if (rows.length < PAGE) break
+    from += PAGE
+  }
+  return result
+}
+
 let supabase: SupabaseClient | null = null
 if (supabaseUrl && supabaseAnonKey) {
   supabase = createClient(supabaseUrl, supabaseAnonKey)
@@ -744,10 +759,13 @@ export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | n
   // though the alias still matches. Resolve it cheaply: identity columns only,
   // bounded by PostgREST's max-rows, then fetch the winner's full row by id.
   if (!data) {
-    const { data: candidates, error: listError } = await supabase
-      .from('heroes')
-      .select('id, slug, alias')
-      .limit(1000)
+    let candidates: unknown[] = []
+    let listError: { message?: string } | null = null
+    try {
+      candidates = await fetchAllHeroRows(supabase, 'id, slug, alias')
+    } catch (err) {
+      listError = err as { message?: string }
+    }
     if (listError) {
       console.error('Error fetching heroes for slug fallback:', listError)
       throw new Error('Failed to load hero')
@@ -762,9 +780,9 @@ export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | n
     if (matches.length > 1) {
       // Duplicate aliases exist on purpose (three Spider-Men); pick a stable
       // winner instead of an arbitrary array order, and say so (#503).
-      matches.sort((a, b) => String(a.id).localeCompare(String(b.id)))
+      matches.sort((a, b) => String((a as { id?: unknown }).id).localeCompare(String((b as { id?: unknown }).id)))
       console.warn(
-        `slug fallback: ${matches.length} heroes match "${slug}"; using ${matches[0].id}`,
+        `slug fallback: ${matches.length} heroes match "${slug}"; using ${(matches[0] as { id?: unknown }).id}`,
       )
     }
     const match = matches[0] as { id?: string } | undefined
@@ -844,10 +862,13 @@ export async function getHeroVisibility(
   // Restricted Access. Lightweight identity-only scan, bounded by max-rows.
   let resolved = data
   if (!resolved) {
-    const { data: candidates, error: listError } = await client
-      .from('heroes')
-      .select('id, slug, alias, is_locked_content')
-      .limit(1000)
+    let candidates: unknown[] = []
+    let listError: { message?: string } | null = null
+    try {
+      candidates = await fetchAllHeroRows(client, 'id, slug, alias, is_locked_content')
+    } catch (err) {
+      listError = err as { message?: string }
+    }
     if (listError) {
       console.error('Error resolving hero visibility fallback:', listError)
       throw new Error('Failed to resolve hero')
@@ -860,9 +881,9 @@ export async function getHeroVisibility(
       )
     })
     if (matches.length > 1) {
-      matches.sort((a, b) => String(a.id).localeCompare(String(b.id)))
+      matches.sort((a, b) => String((a as { id?: unknown }).id).localeCompare(String((b as { id?: unknown }).id)))
       console.warn(
-        `visibility fallback: ${matches.length} heroes match "${slug}"; using ${matches[0].id}`,
+        `visibility fallback: ${matches.length} heroes match "${slug}"; using ${(matches[0] as { id?: unknown }).id}`,
       )
     }
     resolved = (matches[0] as typeof data) ?? null
@@ -908,10 +929,13 @@ export async function getHeroBySlugForAdmin(slug: string): Promise<HeroWithRelat
   // #509: mirror the anonymous alias fallback (#343/#503) so admins can open
   // (and repair slugs for) rows whose trigger did not populate `slug`.
   if (!data) {
-    const { data: candidates, error: listError } = await client
-      .from('heroes')
-      .select('id, slug, alias')
-      .limit(1000)
+    let candidates: unknown[] = []
+    let listError: { message?: string } | null = null
+    try {
+      candidates = await fetchAllHeroRows(client, 'id, slug, alias')
+    } catch (err) {
+      listError = err as { message?: string }
+    }
     if (listError) {
       console.error('Error fetching heroes for admin slug fallback:', listError)
       throw new Error('Failed to load hero')
@@ -924,9 +948,9 @@ export async function getHeroBySlugForAdmin(slug: string): Promise<HeroWithRelat
       )
     })
     if (matches.length > 1) {
-      matches.sort((a, b) => String(a.id).localeCompare(String(b.id)))
+      matches.sort((a, b) => String((a as { id?: unknown }).id).localeCompare(String((b as { id?: unknown }).id)))
       console.warn(
-        `admin slug fallback: ${matches.length} heroes match "${slug}"; using ${matches[0].id}`,
+        `admin slug fallback: ${matches.length} heroes match "${slug}"; using ${(matches[0] as { id?: unknown }).id}`,
       )
     }
     const match = matches[0] as { id?: string } | undefined
