@@ -1,7 +1,12 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { getAllHeroes, getHeroesCount, isSupabaseConfigured } from '@/lib/supabase'
-import { bucketHeroes, EMPTY_HERO_BUCKETS, type HeroBuckets } from '@/lib/stats'
+import { getAllHeroes, isSupabaseConfigured } from '@/lib/supabase'
+import {
+  bucketHeroes,
+  EMPTY_HERO_BUCKETS,
+  totalHeroes as countBucketedHeroes,
+  type HeroBuckets,
+} from '@/lib/stats'
 import HomeClient from '@/components/HomeClient'
 import FranchiseTabs from '@/components/FranchiseTabs'
 import { Shield, Zap, Swords, Star, Skull, ArrowRight, Sparkles, Bug } from 'lucide-react'
@@ -20,7 +25,9 @@ export default async function Home() {
     if (allHeroes && allHeroes.length > 0) {
       buckets = bucketHeroes(allHeroes)
     }
-    totalHeroes = await getHeroesCount()
+    // Derive the displayed total from the same capped list the pills render,
+    // so the stat and the franchise tabs can never disagree (#433).
+    totalHeroes = countBucketedHeroes(buckets)
   } catch {
     // Render the page but tell the visitor the live database is unavailable.
     loadError = 'Live hero database is unreachable. Showing limited sample data.'
