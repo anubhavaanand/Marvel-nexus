@@ -88,8 +88,10 @@ async function fetchAllMarvelMovies() {
 // ─── Map TMDB movie to our DB schema ─────────────────────────────────────────
 function mapToDbMovie(movie, details) {
   const posterUrl = movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : ''
-  // vote_average is TMDB's own score, not an IMDb rating; column is `imdb_rating` per schema
-  const tmdbRating = details?.vote_average ? parseFloat(details.vote_average.toFixed(1)) : 0
+  // vote_average is TMDB's own score, not an IMDb rating; column is `imdb_rating` per schema.
+  // #501: a missing/zero score means "unrated" — store null so the UI can show 0.0
+  // ratings without conflating them with absent data.
+  const tmdbRating = details?.vote_average ? parseFloat(details.vote_average.toFixed(1)) : null
   return {
     tmdb_id: movie.id,
     title: movie.title,
