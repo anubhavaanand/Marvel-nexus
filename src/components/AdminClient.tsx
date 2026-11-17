@@ -205,7 +205,13 @@ export default function AdminPage({
 
   const runSeedAction = async (
     key: 'heroes' | 'movies' | 'events',
-    action: () => Promise<{ ok: boolean; error?: string; lastSeeded?: string }>,
+    action: () => Promise<{
+      ok: boolean
+      error?: string
+      lastSeeded?: string
+      skippedEvents?: number
+      skippedEventNames?: string[]
+    }>,
   ) => {
     // If not yet confirmed, request confirmation and return.
     // #525: re-arming clears the stale success/error icon so a retry is visible.
@@ -229,6 +235,15 @@ export default function AdminPage({
       setSeedErrors((prev) => ({ ...prev, [key]: undefined }))
       if (result.lastSeeded) {
         setLastSeeded((prev) => ({ ...prev, [key]: result.lastSeeded }))
+      }
+      // #572: surface skipped canon events in the admin UI.
+      if (result.skippedEvents && result.skippedEvents > 0) {
+        const names = result.skippedEventNames?.join(', ') ?? 'unknown'
+        console.warn(`[admin-seed] ${key} seed skipped ${result.skippedEvents} events: ${names}`)
+        setSeedErrors((prev) => ({
+          ...prev,
+          [key]: `Seeded successfully but skipped ${result.skippedEvents} canon events (${names}). Check server logs for details.`,
+        }))
       }
       // #445: re-pull server props so HeroManager/stat cards reflect the new rows.
       router.refresh()
