@@ -8,7 +8,7 @@ import WatchItemCard from './WatchItemCard'
 interface WatchOrderTableProps {
   items: WatchItem[]
   sortBy: 'chronological' | 'release'
-  activeTab: 'MCU' | 'DC'
+  activeTab: string
   accentColor: string
   onSortChange: (sortBy: 'chronological' | 'release') => void
 }

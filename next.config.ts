@@ -71,7 +71,13 @@ const nextConfig: NextConfig = {
     ],
     // Performance optimization: Image quality and formats
     formats: ['image/avif', 'image/webp'],
-    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
+    // next/image minimumCacheTTL: how long the optimizer caches a transformed
+    // image before re-validating. Lowered from 30 days to 1 day (#369): hero
+    // art/posters can be updated upstream (new artwork, corrected assets) and a
+    // 30-day TTL could serve stale art for weeks. 1 day keeps pages fast (still
+    // cacheable) while bounding staleness to ~24h. If upstream image URLs are
+    // immutable/versioned, this can be raised again.
+    minimumCacheTTL: 60 * 60 * 24, // 1 day
   },
   // Enable React strict mode for better development experience
   reactStrictMode: true,

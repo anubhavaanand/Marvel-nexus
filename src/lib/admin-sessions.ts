@@ -30,6 +30,9 @@ let dbMode: DBModeState = {
   probing: false,
 }
 
+/** Shared in-flight probe promise, used to dedupe concurrent probes. */
+let probePromise: Promise<boolean> | null = null
+
 function hashToken(token: string): string {
   return crypto.createHash('sha256').update(token).digest('hex')
 }
@@ -60,29 +63,36 @@ function resetBackoff(): void {
  * Updates dbMode state based on result.
  */
 async function probeSessionsTable(): Promise<boolean> {
-  if (dbMode.probing) return dbMode.available
+  // Dedupe concurrent probes: reuse the in-flight promise instead of
+  // starting a second DB probe.
+  if (probePromise) return probePromise
 
-  dbMode.probing = true
-  try {
-    const supabase = getServiceSupabase()
-    const { error } = await supabase.from('admin_sessions').select('token_hash').limit(1)
-    const available = !error
-    dbMode.available = available
-    dbMode.lastProbeAt = Date.now()
-    if (available) {
-      resetBackoff()
-    } else {
+  probePromise = (async () => {
+    dbMode.probing = true
+    try {
+      const supabase = getServiceSupabase()
+      const { error } = await supabase.from('admin_sessions').select('token_hash').limit(1)
+      const available = !error
+      dbMode.available = available
+      dbMode.lastProbeAt = Date.now()
+      if (available) {
+        resetBackoff()
+      } else {
+        scheduleReprobe()
+      }
+      return available
+    } catch {
+      dbMode.available = false
+      dbMode.lastProbeAt = Date.now()
       scheduleReprobe()
+      return false
+    } finally {
+      dbMode.probing = false
+      probePromise = null
     }
-    return available
-  } catch {
-    dbMode.available = false
-    dbMode.lastProbeAt = Date.now()
-    scheduleReprobe()
-    return false
-  } finally {
-    dbMode.probing = false
-  }
+  })()
+
+  return probePromise
 }
 
 /**
@@ -206,6 +216,7 @@ export function __resetDbModeForTest(): void {
     backoffMs: REPROBE_BASE_DELAY_MS,
     probing: false,
   }
+  probePromise = null
 }
 
 // Exported for testing: advance time and force a re-probe check.
