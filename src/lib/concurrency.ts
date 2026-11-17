@@ -7,6 +7,9 @@ export async function mapWithConcurrency<T, R>(
   limit: number,
   fn: (item: T, index: number) => Promise<R>,
 ): Promise<R[]> {
+  if (!Number.isFinite(limit) || limit < 1) {
+    throw new RangeError('limit must be a positive finite number')
+  }
   const results = new Array<R>(items.length)
   const workerCount = Math.min(limit, items.length)
   let cursor = 0
