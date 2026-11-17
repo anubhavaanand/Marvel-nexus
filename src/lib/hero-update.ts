@@ -62,8 +62,10 @@ export function isAllowedImageUrl(value: string): boolean {
   for (const allowedHost of allowed) {
     if (host === allowedHost || host.endsWith('.' + allowedHost)) return true
   }
-  // Supabase storage hosts are *.supabase.co
-  if (host === 'supabase.co' || host.endsWith('.supabase.co')) return true
+  // Supabase storage hosts are *.supabase.co, but only /storage/** paths.
+  if (host === 'supabase.co' || host.endsWith('.supabase.co')) {
+    return url.pathname.startsWith('/storage/')
+  }
 
   return false
 }
