@@ -577,6 +577,7 @@ async function seedUltimate() {
     .neq('id', '00000000-0000-0000-0000-000000000000')
   if (deleteError) {
     console.error('❌ Error wiping DB:', deleteError.message)
+    process.exitCode = 1
     return
   }
 
