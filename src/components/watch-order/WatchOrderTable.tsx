@@ -121,13 +121,16 @@ export default function WatchOrderTable({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
-          role="tabpanel"
+          role="table"
+          aria-label="Watch order list"
           id={`sort-panel-${sortBy}`}
           aria-labelledby={`sort-tab-${sortBy}`}
           tabIndex={0}
         >
           {sortedItems.map((item, index) => (
-            <WatchItemCard key={item.id} item={item} index={index} accentColor={accentColor} />
+            <div key={item.id} role="row">
+              <WatchItemCard item={item} index={index} accentColor={accentColor} />
+            </div>
           ))}
         </motion.div>
       </AnimatePresence>
