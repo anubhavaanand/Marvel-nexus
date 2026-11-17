@@ -62,8 +62,10 @@ export function isAllowedImageUrl(value: string): boolean {
   for (const allowedHost of allowed) {
     if (host === allowedHost || host.endsWith('.' + allowedHost)) return true
   }
-  // Supabase storage hosts are *.supabase.co
-  if (host === 'supabase.co' || host.endsWith('.supabase.co')) return true
+  // Supabase storage hosts are *.supabase.co, but only /storage/** paths.
+  if (host === 'supabase.co' || host.endsWith('.supabase.co')) {
+    return url.pathname.startsWith('/storage/')
+  }
 
   return false
 }
@@ -143,7 +145,11 @@ export function sanitizeHeroUpdate(input: Partial<Hero>): Partial<Hero> | null {
       case 'powers':
       case 'weaknesses': {
         if (!Array.isArray(value) || !value.every((item) => typeof item === 'string')) return null
-        update[field] = value.filter((item) => item.trim() !== '').map((item) => item.trim())
+        // Trim, drop empties and de-duplicate so duplicate React keys/radar
+        // axes cannot come from imported or hand-edited data (#454).
+        update[field] = Array.from(
+          new Set(value.filter((item) => item.trim() !== '').map((item) => item.trim())),
+        )
         break
       }
     }
