@@ -638,11 +638,17 @@ export async function getAllHeroes(options?: GetAllHeroesOptions): Promise<Hero[
   const page = Math.max(1, options?.page ?? 1)
 
   if (!supabase) {
+    // #460: mirror the DB branch's keyset semantics on the mock array. Numeric
+    // ids compare numerically (demo data), anything else compares as text so
+    // UUID-shaped ids cannot silently turn into an empty page.
     if (options?.cursor) {
       const cursorId = Number(options.cursor)
-      const remaining = mockHeroes
-        .filter((h) => Number(h.id) > cursorId)
-        .sort((a, b) => Number(a.id) - Number(b.id))
+      const numeric = !Number.isNaN(cursorId)
+      const ordered = [...mockHeroes].sort((a, b) =>
+        numeric ? Number(a.id) - Number(b.id) : String(a.id).localeCompare(String(b.id)),
+      )
+      const remaining = ordered
+        .filter((h) => (numeric ? Number(h.id) > cursorId : String(h.id) > options!.cursor!))
         .slice(0, pageSize)
       return enrichHeroesWithTmdb([...remaining])
     }
