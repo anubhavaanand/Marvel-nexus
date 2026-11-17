@@ -16,10 +16,11 @@ export async function searchPerson(name: string): Promise<TMDBPerson | null> {
   }
 
   try {
-    const res = await fetch(
-      `${BASE_URL}/search/person?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(name)}`,
-      { next: { revalidate: 86400 } }, // Cache for 24 hours
-    )
+    const res = await fetch(`${BASE_URL}/search/person?query=${encodeURIComponent(name)}`, {
+      headers: { Authorization: `Bearer ${TMDB_API_KEY}` },
+      next: { revalidate: 86400 }, // Cache for 24 hours
+      signal: AbortSignal.timeout(5000),
+    })
 
     if (!res.ok) {
       throw new Error(`TMDB API error: ${res.status}`)
