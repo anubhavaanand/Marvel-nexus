@@ -27,12 +27,32 @@ export default function SearchPage({
   isDemoMode = false,
 }: SearchClientProps) {
   const router = useRouter()
-  const [query, setQuery] = useState('')
+  // #484: seed state from the URL so a search is shareable/bookmarkable and a
+  // refresh does not lose it. Read lazily (client-only) to avoid needing a
+  // Suspense boundary around useSearchParams.
+  const [query, setQuery] = useState(() =>
+    typeof window === 'undefined'
+      ? ''
+      : (new URLSearchParams(window.location.search).get('q') ?? ''),
+  )
   const [results, setResults] = useState<SearchHero[]>([])
   const [isSearching, setIsSearching] = useState(false)
-  const [selectedFranchise, setSelectedFranchise] = useState('All')
+  const [selectedFranchise, setSelectedFranchise] = useState(() =>
+    typeof window === 'undefined'
+      ? 'All'
+      : (new URLSearchParams(window.location.search).get('franchise') ?? 'All'),
+  )
   const [hasSearched, setHasSearched] = useState(false)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+
+  // Keep the query string in sync (replace, not push, so Back isn't spammed).
+  useEffect(() => {
+    const params = new URLSearchParams()
+    if (query.trim()) params.set('q', query.trim())
+    if (selectedFranchise !== 'All') params.set('franchise', selectedFranchise)
+    const qs = params.toString()
+    router.replace(qs ? `/search?${qs}` : '/search', { scroll: false })
+  }, [query, selectedFranchise, router])
 
   // Memoize the full filter pass so re-renders (and rapid keystrokes that
   // revisit the same query/franchise combo) don't re-scan allHeroes.
