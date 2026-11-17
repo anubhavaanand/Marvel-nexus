@@ -8,7 +8,12 @@ import { sanitizeHeroUpdate } from '@/lib/hero-update'
 import { isValidHeroUpdatePayload } from '@/lib/hero-update-guard'
 import { slugifyAlias } from '@/lib/slugs'
 import { getServiceSupabase as getAdminSupabase } from '@/lib/service-supabase'
-import { createSessionToken, revokeSessionToken, validateSessionToken } from '@/lib/admin-sessions'
+import {
+  createSessionToken,
+  ensurePasswordEpochFresh,
+  revokeSessionToken,
+  validateSessionToken,
+} from '@/lib/admin-sessions'
 import { checkActionRateLimit, getClientIp } from '@/lib/action-rate-limit'
 import { isRateLimited } from '@/lib/rate-limit'
 import { getSafeErrorMessage } from '@/lib/error'
@@ -29,7 +34,6 @@ export interface LoginAdminResult {
   ok: boolean
   error?: string
 }
-
 /**
  * Validates the password and sets a secure HttpOnly cookie.
  * Returns a result object instead of throwing for expected conditions
@@ -48,6 +52,9 @@ export async function loginAdminAction(password: string): Promise<LoginAdminResu
     return { ok: false, error: 'Login failed' }
   }
   if (secureCompare(password, correctPassword)) {
+    // A changed ADMIN_PASSWORD must invalidate sessions issued under the old
+    // credential (#443). Best-effort: never block a valid login on this.
+    await ensurePasswordEpochFresh(correctPassword)
     let token: string
     try {
       token = await createSessionToken()
