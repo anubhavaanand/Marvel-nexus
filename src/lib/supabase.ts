@@ -949,7 +949,7 @@ export async function getHeroBySlugForAdmin(slug: string): Promise<HeroWithRelat
 
 /** Fields the search UI actually renders (HeroCard + client-side filter). */
 const SEARCH_HERO_FIELDS =
-  'id,slug,name,alias,actor_name,franchise,origin_world,powers,weaknesses,image_url,is_locked_content' as const
+  'id,slug,name,alias,actor_name,franchise,origin_world,powers,image_url,is_locked_content' as const
 
 /** Lightweight hero shape for search results — omits heavy/unused columns. */
 export type SearchHero = Pick<
@@ -962,7 +962,6 @@ export type SearchHero = Pick<
   | 'franchise'
   | 'origin_world'
   | 'powers'
-  | 'weaknesses'
   | 'image_url'
   | 'is_locked_content'
 >
@@ -983,7 +982,6 @@ export async function getSearchHeroes(): Promise<SearchHero[]> {
         franchise,
         origin_world,
         powers,
-        weaknesses,
         image_url,
         is_locked_content,
       }) => ({
@@ -994,7 +992,6 @@ export async function getSearchHeroes(): Promise<SearchHero[]> {
         franchise,
         origin_world,
         powers,
-        weaknesses,
         image_url,
         is_locked_content,
       }),
