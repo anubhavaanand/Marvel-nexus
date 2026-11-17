@@ -7,9 +7,8 @@
 **Best Sources (in order):**
 
 1. **TMDB** (themoviedb.org) - Most reliable
-2. **Google Images** → Filter by "Large" → Right-click → Copy image address
-3. **Wikipedia** character pages
-4. **Official show/movie websites**
+2. **Wikipedia** character pages
+3. **Official show/movie websites**
 
 **⚠️ AVOID:**
 
@@ -82,18 +81,21 @@ https://image.tmdb.org/t/p/w500/{IMAGE_ID}.jpg
 
 ## 🎯 Pre-Verified Safe Image Domains
 
-These domains generally work:
+This list is generated from the admin validator (`scripts/lib/image-url-policy.js`, mirrored by `next.config.ts`). Only these hosts are accepted — anything else is rejected before it reaches `next/image`:
 
-- ✅ `image.tmdb.org/t/p/`
-- ✅ `upload.wikimedia.org/`
-- ✅ `m.media-amazon.com/images/`
+- ✅ `image.tmdb.org` (preferred: `https://image.tmdb.org/t/p/w500/{ID}.jpg`)
+- ✅ `images.unsplash.com` / `unsplash.com`
+- ✅ `cdn.myanimelist.net`
+- ✅ `static.wikia.nocookie.net`
+- ✅ Your project's Supabase host, and `*.supabase.co` **only** on `/storage/` paths
 
-These often FAIL:
+Not allowed (do not use, even if the URL downloads):
 
-- ❌ `static.wikia.nocookie.net` (sometimes blocks)
-- ❌ `i.pinimg.com` (Pinterest blocks)
-- ❌ `instagram.com`
-- ❌ URLs with `?` params (often expire)
+- ❌ Plain `http://` URLs — https only
+- ❌ Internal/reserved IPs and `localhost`
+- ❌ Signed URLs with `?` params that expire
+
+Before saving, verify a candidate with `node scripts/test-image-url.js "<url>"` — it checks both the allowlist and reachability.
 
 ---
 
