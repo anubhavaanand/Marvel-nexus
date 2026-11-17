@@ -2,6 +2,7 @@
   "name": "multiverse-archive",
   "version": "2.1.0",
   "private": true,
+  "packageManager": "npm@11.x",
   "engines": {
     "node": ">=20.9.0"
   },
