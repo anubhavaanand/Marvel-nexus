@@ -22,7 +22,11 @@ export default function WatchOrderTable({
 }: WatchOrderTableProps) {
   const sortedItems = [...items].sort((a, b) => {
     if (sortBy === 'chronological') {
-      return a.chronologicalOrder - b.chronologicalOrder
+      // #530: Elseworlds titles share chronologicalOrder 0, so fall back to the
+      // curated release order instead of relying on array insertion order.
+      const byChronological = a.chronologicalOrder - b.chronologicalOrder
+      if (byChronological !== 0) return byChronological
+      return a.releaseOrder - b.releaseOrder
     }
     return a.releaseOrder - b.releaseOrder
   })
