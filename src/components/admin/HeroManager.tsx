@@ -230,6 +230,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                 <Button
                   size="icon"
                   variant="ghost"
+                  className="min-h-11 min-w-11"
                   onClick={() => setEditingHero(null)}
                   aria-label="Close edit form"
                 >
@@ -504,7 +505,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-8 w-8 text-neutral-400 hover:text-cyan-400 hover:bg-cyan-950/30"
+                  className="min-h-11 min-w-11 h-8 w-8 text-neutral-400 hover:text-cyan-400 hover:bg-cyan-950/30"
                   onClick={() => {
                     // #427: clear unsubmitted inputs from the previous hero.
                     setNewPower('')
@@ -519,7 +520,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                 <Button
                   size="icon"
                   variant="ghost"
-                  className={`h-8 w-8 ${deleteConfirm === hero.id ? 'text-red-500 bg-red-950/30 ring-1 ring-red-500' : 'text-neutral-400 hover:text-red-400 hover:bg-red-950/30'}`}
+                  className={`min-h-11 min-w-11 h-8 w-8 ${deleteConfirm === hero.id ? 'text-red-500 bg-red-950/30 ring-1 ring-red-500' : 'text-neutral-400 hover:text-red-400 hover:bg-red-950/30'}`}
                   onClick={() => handleDelete(hero.id)}
                   disabled={inFlightIds.has(hero.id)}
                   aria-label={
