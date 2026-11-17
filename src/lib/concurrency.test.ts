@@ -29,4 +29,20 @@ describe('mapWithConcurrency', () => {
   it('handles empty input', async () => {
     await expect(mapWithConcurrency([], 3, async () => 1)).resolves.toEqual([])
   })
+
+  it('throws on limit <= 0', async () => {
+    await expect(mapWithConcurrency([1, 2, 3], 0, async (n) => n)).rejects.toThrow(RangeError)
+    await expect(mapWithConcurrency([1, 2, 3], -1, async (n) => n)).rejects.toThrow(RangeError)
+    await expect(mapWithConcurrency([1, 2, 3], -5, async (n) => n)).rejects.toThrow(RangeError)
+  })
+
+  it('throws on non-finite limit', async () => {
+    await expect(mapWithConcurrency([1, 2, 3], NaN, async (n) => n)).rejects.toThrow(RangeError)
+    await expect(mapWithConcurrency([1, 2, 3], Infinity, async (n) => n)).rejects.toThrow(
+      RangeError,
+    )
+    await expect(mapWithConcurrency([1, 2, 3], -Infinity, async (n) => n)).rejects.toThrow(
+      RangeError,
+    )
+  })
 })
