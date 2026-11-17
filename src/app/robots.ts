@@ -1,25 +1,21 @@
 import type { MetadataRoute } from 'next'
+import { getSiteUrl } from '@/lib/site-url'
 
-const SITE_URL: string =
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '') ||
-  'https://multiversearchive.vercel.app'
-
-function normalizeSiteUrl(url: string): string {
-  return url.replace(/\/$/, '')
-}
+// #604: shared resolver — no duplicated hardcoded host, no build-time throw.
+const SITE_URL: string | null = getSiteUrl()
 
 // Deterministic at build time, matching src/app/sitemap.ts (#434).
 export const dynamic = 'force-static'
 
 export default function robots(): MetadataRoute.Robots {
-  const base = normalizeSiteUrl(SITE_URL)
   return {
     rules: {
       userAgent: '*',
       allow: '/',
       disallow: ['/admin', '/api'],
     },
-    sitemap: `${base}/sitemap.xml`,
+    // #604: omit the Sitemap line when no host is configured instead of
+    // throwing during the build.
+    ...(SITE_URL ? { sitemap: `${SITE_URL}/sitemap.xml` } : {}),
   }
 }
