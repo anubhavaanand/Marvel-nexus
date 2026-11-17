@@ -36,10 +36,13 @@ export default function AdminLogin() {
       const result = await loginAdminAction(password)
       if (result.ok) {
         setError('')
+        setPassword('')
+        setShowPassword(false)
         router.refresh()
       } else {
         setError(result.error || 'Login failed. Please try again.')
         setPassword('')
+        setShowPassword(false)
       }
     } catch {
       // Unexpected server-action failure (e.g. misconfiguration): surface a
@@ -76,7 +79,11 @@ export default function AdminLogin() {
             <input
               ref={passwordInputRef}
               id="admin-password"
+              name="admin-password"
               type={showPassword ? 'text' : 'password'}
+              autoComplete="current-password"
+              autoCapitalize="none"
+              spellCheck={false}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter password"
