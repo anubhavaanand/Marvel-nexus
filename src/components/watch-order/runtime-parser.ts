@@ -44,9 +44,7 @@ export function parseRuntime(runtime?: string): {
 /**
  * Parses an array of runtimes, returning total minutes and unparseable entries.
  */
-export function parseRuntimes(
-  runtimes: (string | undefined)[]
-): {
+export function parseRuntimes(runtimes: (string | undefined)[]): {
   totalMinutes: number
   unparseable: Array<{ original: string; index: number }>
 } {

@@ -42,9 +42,7 @@ export default function WatchOrderClient({ items }: { items: WatchItem[] }) {
 
   const filteredItems = items.filter((item) => item.franchise === activeTab)
 
-  const { totalMinutes, unparseable } = parseRuntimes(
-    filteredItems.map((item) => item.runtime),
-  )
+  const { totalMinutes, unparseable } = parseRuntimes(filteredItems.map((item) => item.runtime))
 
   // Report unsupported/unparseable runtimes so they're visible (count + sample)
   if (unparseable.length > 0) {
