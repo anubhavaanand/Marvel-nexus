@@ -7,17 +7,25 @@
 -- safe.
 DROP TRIGGER IF EXISTS heroes_set_slug ON heroes;
 
-CREATE TRIGGER heroes_set_slug
-  BEFORE INSERT OR UPDATE OF alias, name
+-- #811: TG_OP is not available inside a trigger WHEN clause (Postgres raises
+-- "column tg_op does not exist"), so the guarded trigger is split per event.
+DROP TRIGGER IF EXISTS heroes_set_slug_insert ON heroes;
+CREATE TRIGGER heroes_set_slug_insert
+  BEFORE INSERT
   ON heroes
   FOR EACH ROW
   WHEN (
         NEW.slug IS NULL OR NEW.slug = ''
-        OR (
-          (TG_OP = 'INSERT'
-           OR OLD.alias IS DISTINCT FROM NEW.alias
-           OR OLD.name IS DISTINCT FROM NEW.name)
-          AND public.hero_slugify(NEW.alias) IS DISTINCT FROM NEW.slug
-        )
+        OR public.hero_slugify(NEW.alias) IS DISTINCT FROM NEW.slug
+  )
+  EXECUTE FUNCTION public.heros_set_slug();
+
+DROP TRIGGER IF EXISTS heroes_set_slug_update ON heroes;
+CREATE TRIGGER heroes_set_slug_update
+  BEFORE UPDATE OF alias, name
+  ON heroes
+  FOR EACH ROW
+  WHEN (
+        public.hero_slugify(NEW.alias) IS DISTINCT FROM NEW.slug
   )
   EXECUTE FUNCTION public.heros_set_slug();

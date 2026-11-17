@@ -10,5 +10,14 @@ REVOKE ALL ON admin_sessions FROM authenticated;
 -- Service role access is implicit (bypasses RLS); keep it explicit for clarity.
 GRANT SELECT, INSERT, UPDATE, DELETE ON admin_sessions TO service_role;
 
-CREATE POLICY IF NOT EXISTS "admin_sessions deny anon" ON admin_sessions
-  FOR ALL TO anon USING (false);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+     WHERE tablename = 'admin_sessions'
+       AND policyname = 'admin_sessions deny anon'
+  ) THEN
+    CREATE POLICY "admin_sessions deny anon" ON admin_sessions
+      FOR ALL TO anon USING (false);
+  END IF;
+END $$;
