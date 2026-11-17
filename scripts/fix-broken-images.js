@@ -89,4 +89,7 @@ imageGuard.requireImageUpdateConfirm(
   'fix-broken-images.js',
 )
 
-updateImages()
+updateImages().catch(err => {
+  console.error(err)
+  process.exitCode = 1
+})

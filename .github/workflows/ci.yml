@@ -62,11 +62,14 @@ jobs:
         run: npm run build
 
   # #463: build and serve with non-production credentials so the Supabase/TMDB
-  # code paths are exercised instead of only the mock/demo branch. When the
-  # secrets are not configured the build falls back to demo mode and this job
-  # still verifies the rendered routes.
+  # code paths are exercised instead of only the mock/demo branch.
+  # #784: Previously this job silently passed in demo mode when secrets were
+  # absent, masking untested real paths. Guard explicitly: if the secrets are
+  # missing the job FAILS rather than reporting green. Forks/PRs without
+  # access to secrets should not expect this job to pass; configure the
+  # secrets or rely on lint-build for demo-mode coverage.
   smoke:
-    name: Build Smoke (Supabase path)
+    name: Build Smoke (Supabase path, secrets required)
     runs-on: ubuntu-latest
     needs: audit
     steps:
@@ -80,6 +83,22 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Verify Supabase/TMDB secrets present
+        # #784: Make the secrets-gating explicit instead of silently falling
+        # back to demo mode. Fail fast with a clear message when any secret is
+        # missing so the job cannot report green without exercising real paths.
+        run: |
+          missing=""
+          [ -z "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" ] && missing="$missing NEXT_PUBLIC_SUPABASE_URL"
+          [ -z "${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" ] && missing="$missing NEXT_PUBLIC_SUPABASE_ANON_KEY"
+          [ -z "${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" ] && missing="$missing SUPABASE_SERVICE_ROLE_KEY"
+          [ -z "${{ secrets.TMDB_API_KEY }}" ] && missing="$missing TMDB_API_KEY"
+          if [ -n "$missing" ]; then
+            echo "::error::Smoke job requires these secrets but they are missing:$missing"
+            echo "Configure them in repository settings or rely on lint-build for demo-mode coverage."
+            exit 1
+          fi
 
       - name: Build with Supabase env
         env:

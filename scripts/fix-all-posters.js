@@ -108,4 +108,7 @@ async function fixAllPosters() {
   console.log(`\n🎉 All posters fixed with reliable TMDB URLs!`)
 }
 
-fixAllPosters()
+fixAllPosters().catch(err => {
+  console.error(err)
+  process.exitCode = 1
+})
