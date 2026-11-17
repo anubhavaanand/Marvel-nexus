@@ -71,9 +71,9 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
 
       if (result) {
         if (isNew) {
-          setHeroes([result, ...heroes])
+          setHeroes((prev) => [result, ...prev])
         } else {
-          setHeroes(heroes.map((h) => (h.id === result.id ? result : h)))
+          setHeroes((prev) => prev.map((h) => (h.id === result.id ? result : h)))
         }
         setEditingHero(null)
       } else {
@@ -110,7 +110,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
     try {
       const success = await deleteHeroAction(id)
       if (success) {
-        setHeroes(heroes.filter((h) => h.id !== id))
+        setHeroes((prev) => prev.filter((h) => h.id !== id))
         setDeleteConfirm(null)
       } else {
         setDeleteErrors((prev) => ({
