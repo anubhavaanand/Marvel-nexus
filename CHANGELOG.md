@@ -25,7 +25,7 @@ All notable changes to the **Multiverse Archive** project will be documented in 
 - **Tech-Noir Visual Identity Overhaul**: Implemented Stark-Industries-style HUD theme.
 - Dynamic mouse-tracking 3D hover parallax tilt and holographic reflection glare animations on hero cards.
 - Scanning biometric overlay animations (`.tactical-scan`) on the Navigation Bar and active components.
-- Integrated `DecryptionOverlay` loader component with simulated console readouts during connection phase.
+- ~~Integrated `DecryptionOverlay` loader component~~ — removed since 2.1.0; loading states now use the current components.
 - Color theme upgrade to custom HSL Huds (Stark Cyan-500, Canon Rose-500 warning states, and void background).
 - Swapped body and header fonts to Google Fonts (Orbitron for headers, Inter for copy, and Roboto Mono for telemetry).
 
@@ -39,7 +39,7 @@ All notable changes to the **Multiverse Archive** project will be documented in 
 
 ### Fixed
 
-- ESLint and React 19 code purity compliance: refactored static rendering loops in `TimelineScroll.tsx` and `VisualEffects.tsx` to remove impure `Math.random()` calls.
+- ESLint and React 19 code purity compliance: refactored static rendering loops (the old `TimelineScroll.tsx`/`VisualEffects.tsx` components have since been removed; the fix lives on in their successors).
 - Resolved variable hoisting compiler warning (`fetchHeroes`) in `HeroManager.tsx` and cleaned up unused package dependencies.
 - Corrected A-Train name assignment (from "Ashley Barrett" to "Reggie Franklin").
 - Verified and updated 10 incomplete/broken TMDB database image poster URLs.
