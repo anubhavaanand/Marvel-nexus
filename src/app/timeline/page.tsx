@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import TimelineSagaTabs from '@/components/TimelineSagaTabs'
 import { TimelineSkeleton } from '@/components/Skeleton'
 import { getAllMovies, isSupabaseConfigured, type Movie } from '@/lib/supabase'
+import { bucketMoviesByPhase } from '@/lib/movie-phases'
 import { Film } from 'lucide-react'
 import Link from 'next/link'
 
@@ -30,15 +31,8 @@ export default async function TimelinePage() {
   })
   const isEmpty = isSupabaseConfigured && movies.length === 0
 
-  const phases: Record<string, Movie[]> = {
-    'Phase 1': movies.filter((m) => m.phase === 'Phase 1'),
-    'Phase 2': movies.filter((m) => m.phase === 'Phase 2'),
-    'Phase 3': movies.filter((m) => m.phase === 'Phase 3'),
-    'Phase 4': movies.filter((m) => m.phase === 'Phase 4'),
-    'Phase 5': movies.filter((m) => m.phase === 'Phase 5'),
-    'Phase 6': movies.filter((m) => m.phase === 'Phase 6'),
-    Unphased: movies.filter((m) => m.phase == null),
-  }
+  // #529: bucket through the shared helper so tests cover production logic.
+  const phases = bucketMoviesByPhase(movies)
 
   return (
     <main className="min-h-screen">

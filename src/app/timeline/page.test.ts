@@ -1,18 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import type { Movie } from '@/lib/supabase'
 
-// Test the phase bucketing logic directly
-function getPhases(movies: Movie[]): Record<string, Movie[]> {
-  return {
-    'Phase 1': movies.filter((m) => m.phase === 'Phase 1'),
-    'Phase 2': movies.filter((m) => m.phase === 'Phase 2'),
-    'Phase 3': movies.filter((m) => m.phase === 'Phase 3'),
-    'Phase 4': movies.filter((m) => m.phase === 'Phase 4'),
-    'Phase 5': movies.filter((m) => m.phase === 'Phase 5'),
-    'Phase 6': movies.filter((m) => m.phase === 'Phase 6'),
-    Unphased: movies.filter((m) => m.phase == null),
-  }
-}
+// #529: exercise the production helper instead of re-implementing bucketing.
+import { bucketMoviesByPhase } from '@/lib/movie-phases'
+
+const getPhases = bucketMoviesByPhase
 
 function makeMovie(id: string, overrides: Partial<Movie> = {}): Movie {
   return {
