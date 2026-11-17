@@ -10,6 +10,7 @@ async function checkImages() {
   console.log('🔍 Checking specific hero image URLs...\n')
 
   const heroesToCheck = ['Hulk', 'Hawkeye', 'Drax', 'Gamora', 'Iron Man', 'Thor']
+  let hasErrors = false
 
   for (const alias of heroesToCheck) {
     const { data, error } = await supabase
@@ -18,14 +19,22 @@ async function checkImages() {
       .eq('alias', alias)
       .single()
 
-    if (data) {
+    if (error) {
+      console.error(`❌ ${alias}: Query error - ${error.message}`)
+      hasErrors = true
+    } else if (data) {
       console.log(`${alias}:`)
       console.log(`  Real Name: ${data.name}`)
       console.log(`  Image URL: ${data.image_url}`)
       console.log('')
     } else {
-      console.log(`${alias}: Not found`)
+      console.error(`❌ ${alias}: Not found in database`)
+      hasErrors = true
     }
+  }
+
+  if (hasErrors) {
+    process.exitCode = 1
   }
 }
 
