@@ -269,10 +269,13 @@ export async function generateMetadata({ params }: PageProps) {
     }
     return {
       title: `${hero.alias} (${hero.name}) | Multiverse Archive`,
-      description: `Explore ${hero.alias}'s powers, weaknesses, and canon events. Origin: ${hero.origin_world}. Franchise: ${hero.franchise}.`,
+      // #554: origin_world is nullable; never emit "Origin: null." into metadata.
+      description: `Explore ${hero.alias}'s powers, weaknesses, and canon events. Origin: ${
+        hero.origin_world ?? 'Unknown'
+      }. Franchise: ${hero.franchise}.`,
       openGraph: {
         title: `${hero.alias} | Multiverse Archive`,
-        description: `${hero.name} from ${hero.origin_world}`,
+        description: `${hero.name}${hero.origin_world ? ` from ${hero.origin_world}` : ''}`,
         images: hero.image_url ? [hero.image_url] : [],
       },
     }
@@ -301,10 +304,13 @@ export async function generateMetadata({ params }: PageProps) {
 
   return {
     title: `${hero.alias} (${hero.name}) | Multiverse Archive`,
-    description: `Explore ${hero.alias}'s powers, weaknesses, and canon events. Origin: ${hero.origin_world}. Franchise: ${hero.franchise}.`,
+    // #554: origin_world is nullable; never emit "Origin: null." into metadata.
+    description: `Explore ${hero.alias}'s powers, weaknesses, and canon events. Origin: ${
+      hero.origin_world ?? 'Unknown'
+    }. Franchise: ${hero.franchise}.`,
     openGraph: {
       title: `${hero.alias} | Multiverse Archive`,
-      description: `${hero.name} from ${hero.origin_world}`,
+      description: `${hero.name}${hero.origin_world ? ` from ${hero.origin_world}` : ''}`,
       images: hero.image_url ? [hero.image_url] : [],
     },
   }

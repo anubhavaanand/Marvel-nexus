@@ -116,6 +116,10 @@ export default function Navbar() {
     }
   }, [])
 
+  // #623: a nested route (/hero/x) should highlight its top-level section.
+  const isItemActive = (href: string) =>
+    href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`)
+
   return (
     <>
       {/* Apple-style translucent glass nav */}
@@ -145,7 +149,7 @@ export default function Navbar() {
             {/* Desktop nav links */}
             <nav className="hidden md:flex items-center gap-1">
               {navItems.map((item) => {
-                const isActive = pathname === item.href
+                const isActive = isItemActive(item.href)
                 return (
                   <Link
                     key={item.href}
@@ -209,7 +213,7 @@ export default function Navbar() {
               </h2>
               <div className="flex flex-col gap-1">
                 {navItems.map((item) => {
-                  const isActive = pathname === item.href
+                  const isActive = isItemActive(item.href)
                   return (
                     <Link
                       key={item.href}
@@ -241,7 +245,7 @@ export default function Navbar() {
       >
         <div className="flex items-center gap-1">
           {navItems.map((item) => {
-            const isActive = pathname === item.href
+            const isActive = isItemActive(item.href)
             return (
               <Link key={item.href} href={item.href} aria-label={item.label}>
                 <motion.div
