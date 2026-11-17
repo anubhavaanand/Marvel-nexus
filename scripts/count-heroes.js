@@ -1,10 +1,7 @@
-const { createClient } = require('@supabase/supabase-js')
 require('dotenv').config({ path: '.env.local' })
+const { createSupabaseClient } = require('./lib/supabase')
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-)
+const supabase = createSupabaseClient()
 
 async function countHeroes() {
   const { data, error, count } = await supabase.from('heroes').select('*', { count: 'exact' })

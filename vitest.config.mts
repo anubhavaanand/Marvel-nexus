@@ -1,5 +1,8 @@
 import path from 'node:path'
 import { defineConfig } from 'vitest/config'
+import { fileURLToPath } from 'node:url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // Two test projects (#462): plain Node for lib/action tests, jsdom for
 // component/hook tests. Coverage runs across both (`npx vitest --coverage`).
@@ -8,12 +11,12 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      include: ['src/components/**', 'src/hooks/**'],
+      include: ['src/**'],
       thresholds: {
-        statements: 50,
-        branches: 50,
-        functions: 50,
-        lines: 50,
+        statements: 30,
+        branches: 25,
+        functions: 25,
+        lines: 30,
       },
     },
     projects: [

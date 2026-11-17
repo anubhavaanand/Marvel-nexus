@@ -14,6 +14,7 @@ async function checkImages() {
 
   if (error) {
     console.error('Error:', error)
+    process.exitCode = 1
     return
   }
 
@@ -31,4 +32,7 @@ async function checkImages() {
   )
 }
 
-checkImages()
+checkImages().catch((err) => {
+  console.error('Error:', err)
+  process.exitCode = 1
+})
