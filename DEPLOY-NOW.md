@@ -18,8 +18,16 @@ git push
 4. Select your `Marvel-nexus` repository
 5. Add environment variables:
    - `NEXT_PUBLIC_SUPABASE_URL` = (your Supabase URL)
-   - `SUPABASE_SERVICE_ROLE_KEY` = (your Supabase key)
-6. Click "Deploy"
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = (your Supabase anon/public key — without it the app silently runs in demo mode)
+   - `SUPABASE_SERVICE_ROLE_KEY` = (your Supabase service role key, server-only)
+   - `ADMIN_PASSWORD` = (password for /admin; login always fails without it)
+   - `TMDB_API_KEY` = (image enrichment + search proxy)
+   - `NEXT_PUBLIC_SITE_URL` = (canonical origin, e.g. https://your-domain.com)
+   - `TRUST_PROXY` = true
+   - `TRUST_PROXY_DEPTH` = 1 (Vercel hop count; a wrong value shares one rate-limit bucket)
+
+6. Apply the database schema: run `supabase/schema.sql` (or the migrations in `supabase/migrations/` in order) so the `slug` column, triggers and `admin_sessions` table exist. See `DEPLOYMENT.md` for the full walkthrough.
+7. Click "Deploy"
 
 **Done!** Your site will be live at `https://marvel-nexus.vercel.app`
 
@@ -91,6 +99,6 @@ Both will work! Vercel automatically redirects.
 ✅ Environment variables in Vercel (not in code)
 ✅ `.env.local` in `.gitignore`
 ✅ SSL auto-enabled
-✅ Supabase RLS rules enabled
+✅ Supabase schema applied (`supabase/schema.sql` / migrations) with RLS enabled
 
 You're all set! 🚀

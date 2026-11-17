@@ -74,9 +74,11 @@ Follow conventional commits structure:
 
 ### 3. Pull Request Process
 
-1. Run static checks and linters before committing:
+1. Run the full local verification set before committing:
    ```bash
-   npm run lint
+   npm test            # vitest suite
+   npm run lint        # eslint --max-warnings 0
+   npm run format:check
    ```
 2. Verify the production build compiles successfully:
    ```bash

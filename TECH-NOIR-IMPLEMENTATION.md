@@ -59,7 +59,7 @@ This document outlines the comprehensive Tech-Noir design enhancements applied t
 
 #### Decryption Overlay ✨ NEW
 
-- **Location**: `/src/components/DecryptionOverlay.tsx`
+- **Location**: `/src/components/DecryptionOverlay.tsx` _(removed in 2.1.0; superseded by the current loading components)_
 - **Features**:
   - Full-screen blur with progress bar
   - System messages: "ESTABLISHING_CONNECTION", "DECRYPTING_DATA"
@@ -158,7 +158,7 @@ This document outlines the comprehensive Tech-Noir design enhancements applied t
 
 ### New Components
 
-8. **`/src/components/DecryptionOverlay.tsx`** ✨ NEW
+8. **`/src/components/DecryptionOverlay.tsx`** ✨ NEW _(since removed — kept for history)_
    - Immersive loading experience
    - Progress bars with glow effects
    - System boot messages
@@ -292,14 +292,14 @@ Every button click feels like a "system command":
 ### Using the Decryption Overlay
 
 ```tsx
-import DecryptionOverlay from '@/components/DecryptionOverlay'
+// Removed in 2.1.0: import DecryptionOverlay from '@/components/DecryptionOverlay'
 
 function MyPage() {
   const [loading, setLoading] = useState(true)
 
   return (
     <>
-      <DecryptionOverlay isLoading={loading} title="HERO_DATABASE" />
+      {/* Removed in 2.1.0: <DecryptionOverlay isLoading={loading} title="HERO_DATABASE" /> */}
       {/* Your content */}
     </>
   )
@@ -333,7 +333,7 @@ The Marvel-nexus project has been successfully upgraded with a complete Tech-Noi
 
 - **346 lines** of new CSS animations and utilities
 - **8 components** enhanced with spring physics
-- **1 new component** (DecryptionOverlay) for immersive loading
+- **1 new component** (DecryptionOverlay, removed in 2.1.0) for immersive loading
 - **Complete terminal-style** language system
 - **3D effects**, holographic glare, and tactical scanning throughout
 
