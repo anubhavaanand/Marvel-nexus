@@ -2,10 +2,19 @@ import type { MetadataRoute } from 'next'
 import { getAllHeroes, type Hero } from '@/lib/supabase'
 import { slugifyAlias } from '@/lib/slugs'
 
-const SITE_URL: string =
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '') ||
-  'https://multiversearchive.vercel.app'
+function getSiteUrl(): string {
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`
+  }
+  throw new Error(
+    'NEXT_PUBLIC_SITE_URL or VERCEL_URL must be set — no hardcoded fallback domain allowed',
+  )
+}
+
+const SITE_URL: string = getSiteUrl()
 
 function normalizeSiteUrl(url: string): string {
   return url.replace(/\/$/, '')
