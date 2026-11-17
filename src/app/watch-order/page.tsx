@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Watch Order | Multiverse Archive',
     description: 'Watch the MCU and DC Universe in perfect order — chronological or release.',
+    images: ['/og-image.svg'],
   },
   twitter: {
     card: 'summary',

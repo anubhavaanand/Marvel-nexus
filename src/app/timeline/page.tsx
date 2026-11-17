@@ -23,6 +23,9 @@ export const metadata = {
   title: 'MCU Timeline | Multiverse Archive',
   description:
     'Explore the complete Marvel Cinematic Universe timeline from Phase 1 to Phase 5. Every movie in chronological order.',
+  openGraph: {
+    images: ['/og-image.svg'],
+  },
 }
 
 export default async function TimelinePage() {

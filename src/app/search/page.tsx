@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Search | Multiverse Archive',
     description: 'Search heroes across the multiverse — Marvel, DC, Anime and beyond.',
+    images: ['/og-image.svg'],
   },
   twitter: {
     card: 'summary',
