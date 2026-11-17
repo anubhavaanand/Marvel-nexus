@@ -15,6 +15,8 @@ interface CacheEntry {
 
 const cache = new Map<string, CacheEntry>()
 
+const inflight = new Map<string, Promise<unknown>>()
+
 function getCached(query: string): unknown | undefined {
   const entry = cache.get(query)
   if (!entry) return undefined
@@ -22,14 +24,12 @@ function getCached(query: string): unknown | undefined {
     cache.delete(query)
     return undefined
   }
-  // LRU: move to end
   cache.delete(query)
   cache.set(query, entry)
   return entry.person
 }
 
 function setCached(query: string, person: unknown): void {
-  // prune expired on insert
   const now = Date.now()
   for (const [k, v] of cache) {
     if (now >= v.expiresAt) cache.delete(k)
@@ -39,6 +39,41 @@ function setCached(query: string, person: unknown): void {
     if (first !== undefined) cache.delete(first)
   }
   cache.set(query, { person, expiresAt: now + CACHE_TTL_MS })
+}
+
+async function fetchPerson(trimmed: string): Promise<unknown> {
+  const cached = getCached(trimmed)
+  if (cached !== undefined) return cached
+
+  if (!TMDB_API_KEY) {
+    throw new Error('TMDB API key not configured')
+  }
+
+  const res = await fetch(`${BASE_URL}/search/person?query=${encodeURIComponent(trimmed)}`, {
+    headers: { Authorization: `Bearer ${TMDB_API_KEY}` },
+    next: { revalidate: 3600 },
+    signal: AbortSignal.timeout(5000),
+  })
+
+  if (!res.ok) {
+    console.error('TMDB upstream error:', res.status)
+    throw new Error('Failed to search TMDB')
+  }
+
+  const data = await res.json()
+  const person = data.results?.[0] || null
+  setCached(trimmed, person)
+  return person
+}
+
+function coalescedFetch(trimmed: string): Promise<unknown> {
+  const existing = inflight.get(trimmed)
+  if (existing) return existing
+  const promise = fetchPerson(trimmed).finally(() => {
+    inflight.delete(trimmed)
+  })
+  inflight.set(trimmed, promise)
+  return promise
 }
 
 export async function GET(request: NextRequest) {
@@ -81,32 +116,22 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const res = await fetch(`${BASE_URL}/search/person?query=${encodeURIComponent(trimmed)}`, {
-      headers: { Authorization: `Bearer ${TMDB_API_KEY}` },
-      next: { revalidate: 3600 },
-      signal: AbortSignal.timeout(5000),
-    })
-
-    if (!res.ok) {
-      console.error('TMDB upstream error:', res.status)
-      return NextResponse.json({ error: 'Failed to search TMDB' }, { status: 502 })
-    }
-
-    const data = await res.json()
-    const person = data.results?.[0] || null
-
-    setCached(trimmed, person)
-
+    const person = await coalescedFetch(trimmed)
     return NextResponse.json(
       { person },
       { headers: { 'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400' } },
     )
   } catch (error) {
     console.error('TMDB search error:', error)
-    return NextResponse.json({ error: 'Failed to search TMDB' }, { status: 500 })
+    const message = error instanceof Error ? error.message : ''
+    if (message === 'TMDB API key not configured') {
+      return NextResponse.json({ error: 'TMDB API key not configured' }, { status: 500 })
+    }
+    return NextResponse.json({ error: 'Failed to search TMDB' }, { status: 502 })
   }
 }
 
 export function resetTmdbSearchCache(): void {
   cache.clear()
+  inflight.clear()
 }
