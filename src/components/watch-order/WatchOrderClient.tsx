@@ -5,6 +5,7 @@ import { Film, Clock } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import type { WatchItem } from './meta'
 import { FRANCHISE_COLORS } from '@/lib/hero-update'
+import { parseRuntimes } from './runtime-parser'
 
 // #516: labels for the tab-derived franchise, with a generic fallback so a new
 // franchise in data.ts never gets mislabelled as "DC Universe".
@@ -41,10 +42,15 @@ export default function WatchOrderClient({ items }: { items: WatchItem[] }) {
 
   const filteredItems = items.filter((item) => item.franchise === activeTab)
 
-  const totalMinutes = filteredItems.reduce((sum, item) => {
-    const match = item.runtime?.match(/^(\d+)h (\d+)m$/)
-    return match ? sum + parseInt(match[1], 10) * 60 + parseInt(match[2], 10) : sum
-  }, 0)
+  const { totalMinutes, unparseable } = parseRuntimes(filteredItems.map((item) => item.runtime))
+
+  // Report unsupported/unparseable runtimes so they're visible (count + sample)
+  if (unparseable.length > 0) {
+    console.warn(
+      `[watch-order] ${unparseable.length} runtime(s) could not be parsed:`,
+      unparseable.slice(0, 5).map((u) => u.original),
+    )
+  }
   const totalHours = Math.floor(totalMinutes / 60)
 
   const accentColor = (FRANCHISE_COLORS[activeTab]?.primary ?? 'var(--franchise-mcu)') as string
