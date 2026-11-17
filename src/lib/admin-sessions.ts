@@ -115,6 +115,9 @@ export async function rotatePasswordEpoch(): Promise<number> {
   } catch {
     // Keep the in-memory increment.
   }
+  // Revoke all existing sessions so the epoch bump takes effect immediately
+  // rather than waiting for expiry/pruning. Best-effort.
+  void revokeAllSessions().catch(() => {})
   return currentPasswordEpoch
 }
 
@@ -348,10 +351,4 @@ export function __resetDbModeForTest(): void {
   probePromise = null
   currentPasswordEpoch = 0
   lastKnownPasswordHash = null
-}
-
-// Exported for testing: advance time and force a re-probe check.
-export function __advanceTimeForTest(): void {
-  // This is a no-op in production; tests can use vi.useFakeTimers() instead.
-  // Kept for API compatibility if needed.
 }
