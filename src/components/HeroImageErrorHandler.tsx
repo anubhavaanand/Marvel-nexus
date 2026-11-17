@@ -11,6 +11,8 @@ interface HeroImageErrorHandlerProps {
   className?: string
   sizes?: string
   priority?: boolean
+  /** #419: film titles must fall back to the movie search, not people. */
+  lookupType?: 'person' | 'movie'
 }
 
 export default function HeroImageErrorHandler({
@@ -20,6 +22,7 @@ export default function HeroImageErrorHandler({
   className = '',
   sizes = '(max-width: 768px) 50vw, 25vw',
   priority = false,
+  lookupType = 'person',
 }: HeroImageErrorHandlerProps) {
   const [imageError, setImageError] = useState(false)
   const [tmdbAttempted, setTmdbAttempted] = useState(false)
@@ -30,7 +33,7 @@ export default function HeroImageErrorHandler({
     setImageError(true)
 
     try {
-      const tmdbUrl = await getTmdbImageUrl(name, alias)
+      const tmdbUrl = await getTmdbImageUrl(name, alias, lookupType)
       if (tmdbUrl) {
         setTmdbSrc(tmdbUrl)
         setImageError(false)
