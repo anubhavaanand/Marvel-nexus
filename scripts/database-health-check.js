@@ -2,8 +2,11 @@ const { createSupabaseClient } = require('./lib/supabase')
 const https = require('https')
 const http = require('http')
 
-// Function to check if URL is accessible
-function checkUrl(url) {
+// #487: follow up to 3 redirects; 2xx and 3xx responses are "reachable"
+// (browsers render redirected images fine).
+const REDIRECT_LIMIT = 3
+
+function checkUrlOnce(url) {
   return new Promise((resolve) => {
     if (!url) {
       resolve({ accessible: false, reason: 'No URL' })
@@ -12,11 +15,10 @@ function checkUrl(url) {
 
     const protocol = url.startsWith('https') ? https : http
     const request = protocol.get(url, (res) => {
-      if (res.statusCode === 200) {
-        resolve({ accessible: true, statusCode: 200 })
-      } else {
-        resolve({ accessible: false, statusCode: res.statusCode })
-      }
+      const statusCode = res.statusCode
+      const location = res.headers.location
+      res.destroy()
+      resolve({ accessible: statusCode >= 200 && statusCode < 400, statusCode, location })
     })
 
     request.on('error', (err) => {
@@ -30,6 +32,21 @@ function checkUrl(url) {
   })
 }
 
+async function checkUrl(url) {
+  let current = url
+  for (let hop = 0; hop <= REDIRECT_LIMIT; hop++) {
+    const result = await checkUrlOnce(current)
+    if (
+      !result.accessible ||
+      !result.location ||
+      ![301, 302, 303, 307, 308].includes(result.statusCode)
+    ) {
+      return result
+    }
+    current = new URL(result.location, current).toString()
+  }
+  return { accessible: false, reason: 'Too many redirects' }
+}
 async function healthCheck() {
   const supabase = createSupabaseClient()
   console.log('╔═══════════════════════════════════════════════════════════╗')
@@ -87,22 +104,30 @@ async function healthCheck() {
   const slowImages = []
   let checked = 0
 
-  for (const hero of heroes) {
-    checked++
-    process.stdout.write(`\rProgress: ${checked}/${heroes.length}`)
-
-    const startTime = Date.now()
-    const result = await checkUrl(hero.image_url)
-    const responseTime = Date.now() - startTime
-
-    if (!result.accessible) {
-      brokenImages.push({
-        ...hero,
-        reason: result.reason || `Status: ${result.statusCode}`,
-      })
-    } else if (responseTime > 3000) {
-      slowImages.push({ ...hero, responseTime })
+  // #486: bound concurrency (5 at a time) instead of one 5s-timeout request per
+  // hero; progress still ticks after each settled batch.
+  const CONCURRENCY = 5
+  for (let i = 0; i < heroes.length; i += CONCURRENCY) {
+    const batch = heroes.slice(i, i + CONCURRENCY)
+    const results = await Promise.all(
+      batch.map(async (hero) => {
+        const startTime = Date.now()
+        const result = await checkUrl(hero.image_url)
+        return { hero, result, responseTime: Date.now() - startTime }
+      }),
+    )
+    for (const { hero, result, responseTime } of results) {
+      checked++
+      if (!result.accessible) {
+        brokenImages.push({
+          ...hero,
+          reason: result.reason || `Status: ${result.statusCode}`,
+        })
+      } else if (responseTime > 3000) {
+        slowImages.push({ ...hero, responseTime })
+      }
     }
+    process.stdout.write(`\rProgress: ${checked}/${heroes.length}`)
   }
 
   console.log('\n')
