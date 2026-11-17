@@ -107,6 +107,9 @@ CREATE INDEX IF NOT EXISTS idx_heroes_franchise ON heroes(franchise);
 CREATE INDEX IF NOT EXISTS idx_heroes_alias ON heroes(alias);
 CREATE INDEX IF NOT EXISTS idx_canon_events_hero ON canon_events(hero_id);
 CREATE INDEX IF NOT EXISTS idx_movies_phase ON movies(phase);
+-- #480: hot list queries order by these columns.
+CREATE INDEX IF NOT EXISTS idx_heroes_name ON heroes(name);
+CREATE INDEX IF NOT EXISTS idx_movies_release_date ON movies(release_date);
 CREATE INDEX IF NOT EXISTS idx_heroes_slug ON heroes(slug);
 
 -- ============================================
