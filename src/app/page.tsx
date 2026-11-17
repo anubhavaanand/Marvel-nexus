@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { getAllHeroes, isSupabaseConfigured } from '@/lib/supabase'
+import { getAllHeroes, getMockHeroes, isSupabaseConfigured } from '@/lib/supabase'
 import {
   bucketHeroes,
   EMPTY_HERO_BUCKETS,
@@ -29,7 +29,11 @@ export default async function Home() {
     // so the stat and the franchise tabs can never disagree (#433).
     totalHeroes = countBucketedHeroes(buckets)
   } catch {
-    // Render the page but tell the visitor the live database is unavailable.
+    // #482: the banner promises sample data, so actually fall back to it and
+    // derive the stats from that same list instead of rendering an empty grid.
+    const demoHeroes = getMockHeroes()
+    buckets = bucketHeroes(demoHeroes)
+    totalHeroes = countBucketedHeroes(buckets)
     loadError = 'Live hero database is unreachable. Showing limited sample data.'
   }
 

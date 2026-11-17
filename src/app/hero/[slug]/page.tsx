@@ -35,17 +35,6 @@ const getHeroDataForAdmin = cache(async function getHeroDataForAdmin(
   return getHeroBySlugForAdmin(slug)
 })
 
-const franchiseColors: Record<string, { primary: string; glow: string }> = {
-  MCU: { primary: 'var(--franchise-mcu)', glow: 'rgba(0, 113, 227, 0.3)' },
-  'X-Men': { primary: 'var(--franchise-xmen)', glow: 'rgba(234, 179, 8, 0.3)' },
-  'Spider-Verse': { primary: 'var(--franchise-spider)', glow: 'rgba(239, 68, 68, 0.3)' },
-  Defenders: { primary: '#a855f7', glow: 'rgba(168, 85, 247, 0.3)' },
-  DC: { primary: 'var(--franchise-dc)', glow: 'rgba(59, 130, 246, 0.3)' },
-  Anime: { primary: 'var(--franchise-anime)', glow: 'rgba(249, 115, 22, 0.3)' },
-  'The Boys': { primary: 'var(--franchise-theboys)', glow: 'rgba(220, 38, 38, 0.3)' },
-  Invincible: { primary: '#eab308', glow: 'rgba(234, 179, 8, 0.3)' },
-}
-
 export default async function HeroPage({ params }: PageProps) {
   const { slug } = await params
 

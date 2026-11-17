@@ -349,7 +349,7 @@ export function __resetDbModeForTest(): void {
 }
 
 // Exported for testing: advance time and force a re-probe check.
-export function __advanceTimeForTest(_ms: number): void {
+export function __advanceTimeForTest(): void {
   // This is a no-op in production; tests can use vi.useFakeTimers() instead.
   // Kept for API compatibility if needed.
 }
