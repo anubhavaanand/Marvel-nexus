@@ -119,7 +119,9 @@ describe('sanitizeHeroUpdate', () => {
   // #773: legitimate *.supabase.co storage URL accepted.
   it('accepts a legitimate Supabase storage URL', () => {
     expect(
-      sanitizeHeroUpdate(partial({ image_url: 'https://abc.supabase.co/storage/v1/object/public/b/x.jpg' })),
+      sanitizeHeroUpdate(
+        partial({ image_url: 'https://abc.supabase.co/storage/v1/object/public/b/x.jpg' }),
+      ),
     ).toEqual({ image_url: 'https://abc.supabase.co/storage/v1/object/public/b/x.jpg' })
     expect(
       sanitizeHeroUpdate(partial({ image_url: 'https://abc.supabase.co/notstorage/x.jpg' })),
