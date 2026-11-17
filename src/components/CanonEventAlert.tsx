@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useDocumentVisible } from '@/hooks/useDocumentVisible'
 import { AlertTriangle, Zap, Clock, Shield } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 
@@ -36,13 +36,7 @@ export default function CanonEventAlert({
   // prefers-reduced-motion so motion-sensitive users (and idle tabs) never
   // run composited loops forever.
   const reducedMotion = useReducedMotion()
-  const [visible, setVisible] = useState(true)
-
-  useEffect(() => {
-    const onVisibilityChange = () => setVisible(!document.hidden)
-    document.addEventListener('visibilitychange', onVisibilityChange)
-    return () => document.removeEventListener('visibilitychange', onVisibilityChange)
-  }, [])
+  const visible = useDocumentVisible()
 
   const shouldAnimate = visible && !reducedMotion
 
