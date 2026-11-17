@@ -1,6 +1,11 @@
 const MAX_KEYS = 100_000
 const PRUNE_INTERVAL_MS = 60_000
 
+// #465: production keeps the 100k cap, but tests can shrink it so eviction
+// coverage no longer needs 100k insertions per case (those loops were the flaky,
+// CPU-starved slow ones).
+let maxKeys = MAX_KEYS
+
 interface Bucket {
   timestamps: number[]
   /** When the entry stops being useful; used to prune without knowing the window. */
@@ -24,8 +29,8 @@ function enforceCap(now: number): void {
   // Evict expired entries first so legitimate recent users survive a flood.
   evictExpired(now)
   // Then evict least-recently-used (front of Map = oldest access).
-  if (buckets.size > MAX_KEYS) {
-    const excess = buckets.size - MAX_KEYS
+  if (buckets.size > maxKeys) {
+    const excess = buckets.size - maxKeys
     const keys = Array.from(buckets.keys())
     for (let i = 0; i < excess; i++) {
       buckets.delete(keys[i])
@@ -52,7 +57,7 @@ export function isRateLimited(key: string, limit: number, windowMs: number): boo
   const entry = buckets.get(key)
   const timestamps = (entry?.timestamps ?? []).filter((t) => now - t < windowMs)
   // Evict before inserting a brand-new key when at capacity.
-  if (!entry && buckets.size >= MAX_KEYS) {
+  if (!entry && buckets.size >= maxKeys) {
     enforceCap(now)
   }
   const record = () => {
@@ -60,7 +65,7 @@ export function isRateLimited(key: string, limit: number, windowMs: number): boo
     // Move to end (most-recently-used) by delete+set.
     buckets.delete(key)
     buckets.set(key, bucket)
-    if (buckets.size > MAX_KEYS) {
+    if (buckets.size > maxKeys) {
       enforceCap(now)
     }
   }
@@ -77,6 +82,12 @@ export function isRateLimited(key: string, limit: number, windowMs: number): boo
 export function resetRateLimiter(): void {
   buckets.clear()
   lastPrune = Date.now()
+  maxKeys = MAX_KEYS
+}
+
+/** Test-only: override the tracked-key cap (restored by resetRateLimiter). */
+export function __setMaxKeysForTest(value: number): void {
+  maxKeys = Math.max(1, value)
 }
 
 export function getRateLimiterSize(): number {
