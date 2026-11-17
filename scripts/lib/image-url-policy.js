@@ -64,9 +64,12 @@ function isAllowedImageUrl(value) {
   if (supabaseHost) allowed.add(supabaseHost.toLowerCase())
 
   for (const allowedHost of allowed) {
-    if (host === allowedHost || host.endsWith('.' + allowedHost)) return true
+    // Exact match only (#773): suffix matching allowed evil hosts like
+    // unsplash.com.evil.example and notunsplash.com.
+    if (host === allowedHost) return true
   }
-  // Supabase storage hosts are *.supabase.co, but only /storage/** paths.
+  // Supabase storage hosts are *.supabase.co (and the bare host), but only
+  // /storage/** paths (#773 keeps an explicit wildcard rule here).
   if (host === 'supabase.co' || host.endsWith('.supabase.co')) {
     return url.pathname.startsWith('/storage/')
   }
