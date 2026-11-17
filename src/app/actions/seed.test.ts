@@ -47,17 +47,37 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-function tmdbResponse(releaseDate: string | null, id = 1, posterPath: string | null = null) {
-  return () =>
-    new Response(
-      JSON.stringify({ results: [{ id, release_date: releaseDate, poster_path: posterPath }] }),
+/**
+ * Realistic TMDB double for #418: the upstream result carries a title matching
+ * the queried movie (otherwise the new title-match logic legitimately skips it).
+ */
+function tmdbTitleEchoResponse(
+  releaseDate: string | null,
+  id = 1,
+  posterPath: string | null = null,
+) {
+  return async (url: string) => {
+    const query = decodeURIComponent(new URL(url).searchParams.get('query') ?? 'Iron Man')
+    return new Response(
+      JSON.stringify({
+        results: [
+          {
+            id,
+            release_date: releaseDate,
+            poster_path: posterPath,
+            title: query,
+            original_title: query,
+          },
+        ],
+      }),
       { status: 200 },
     )
+  }
 }
 
 describe('syncMoviesAction phase sync', () => {
   it('recomputes phase when TMDB changes release_date', async () => {
-    fetchMock.mockResolvedValueOnce(tmdbResponse('2014-08-01')())
+    fetchMock.mockImplementation(tmdbTitleEchoResponse('2014-08-01'))
     const { syncMoviesAction } = await import('./seed')
     const result = await syncMoviesAction()
     expect(result.ok).toBe(true)
@@ -70,7 +90,7 @@ describe('syncMoviesAction phase sync', () => {
   })
 
   it('recomputes phase to Phase 5 when enriched release date lands in Phase 5 range', async () => {
-    fetchMock.mockResolvedValueOnce(tmdbResponse('2024-07-26')())
+    fetchMock.mockImplementation(tmdbTitleEchoResponse('2024-07-26'))
     const { syncMoviesAction } = await import('./seed')
     await syncMoviesAction()
     expect(mockUpdate).toHaveBeenCalledWith(
@@ -82,7 +102,7 @@ describe('syncMoviesAction phase sync', () => {
   })
 
   it('sets phase to null for seed movies that have no phase', async () => {
-    fetchMock.mockImplementation(tmdbResponse('2008-05-02'))
+    fetchMock.mockImplementation(tmdbTitleEchoResponse('2008-05-02'))
     const { syncMoviesAction } = await import('./seed')
     await syncMoviesAction()
     const nullPhaseCalls = mockUpdate.mock.calls.some((call) => call[0]?.phase === null)
@@ -90,7 +110,7 @@ describe('syncMoviesAction phase sync', () => {
   })
 
   it('keeps seed release_date and recomputes phase when TMDB returns no release_date', async () => {
-    fetchMock.mockImplementation(tmdbResponse(null))
+    fetchMock.mockImplementation(tmdbTitleEchoResponse(null))
     const { syncMoviesAction } = await import('./seed')
     await syncMoviesAction()
     expect(mockUpdate).toHaveBeenCalledWith(
@@ -99,5 +119,29 @@ describe('syncMoviesAction phase sync', () => {
         phase: 'Phase 1',
       }),
     )
+  })
+
+  it('skips TMDB results whose title does not match the queried movie', async () => {
+    fetchMock.mockImplementation(
+      async () =>
+        new Response(
+          JSON.stringify({
+            results: [
+              {
+                id: 99,
+                release_date: '1999-01-01',
+                title: 'A Completely Different Movie',
+                original_title: 'A Completely Different Movie',
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+    )
+    const { syncMoviesAction } = await import('./seed')
+    const result = await syncMoviesAction()
+    expect(result.ok).toBe(true)
+    expect(result.enriched).toBe(0)
+    expect(mockUpdate).not.toHaveBeenCalled()
   })
 })

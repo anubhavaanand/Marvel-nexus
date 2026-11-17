@@ -261,9 +261,8 @@ export async function syncMoviesAction() {
       if (typeof match.poster_path === 'string' && match.poster_path) {
         update.poster_url = `https://image.tmdb.org/t/p/w500/${match.poster_path}`
       }
-      if (movie.phase && enrichedReleaseDate) {
-        update.phase = getMCUPhase(enrichedReleaseDate)
-      }
+      // Keep the explicit null so unphased seed entries stay Unphased (#461).
+      update.phase = movie.phase && enrichedReleaseDate ? getMCUPhase(enrichedReleaseDate) : null
       await supabase.from('movies').update(update).eq('id', movie.id)
       enriched += 1
     } catch {
