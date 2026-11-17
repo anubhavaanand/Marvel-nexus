@@ -18,20 +18,60 @@ function log(message: string) {
   console.log(`[admin-seed] ${message}`)
 }
 
-// Lightweight in-memory store of the last successful seed run per action.
-// Resets on server restart; intentionally no new DB table (see issue #372).
-const lastSeededAt: Record<'heroes' | 'movies' | 'events', string | null> = {
+type SeedKind = 'heroes' | 'movies' | 'events'
+
+// In-memory mirror for the last successful seed run per action. It is only a
+// cache of what is persisted in `seed_runs` (#506): the database row survives
+// restarts and is shared by every serverless instance.
+const lastSeededAt: Record<SeedKind, string | null> = {
   heroes: null,
   movies: null,
   events: null,
 }
 
+/** Persist (and cache) the timestamp of a successful seed run. */
+async function recordSeedRun(kind: SeedKind): Promise<string> {
+  const seededAt = new Date().toISOString()
+  lastSeededAt[kind] = seededAt
+  try {
+    const client = getServiceSupabase()
+    const { error } = await client
+      .from('seed_runs')
+      .upsert({ key: kind, seeded_at: seededAt }, { onConflict: 'key' })
+    if (error) console.warn(`recordSeedRun(${kind}) failed: ${error.message}`)
+  } catch (err) {
+    console.warn(`recordSeedRun(${kind}) unavailable: ${(err as Error).message}`)
+  }
+  return seededAt
+}
+
+/** Read persisted timestamps; falls back to the in-memory cache. */
+async function readSeedRuns(): Promise<Record<SeedKind, string | null>> {
+  try {
+    const client = getServiceSupabase()
+    const { data, error } = await client.from('seed_runs').select('key, seeded_at')
+    if (!error && Array.isArray(data)) {
+      const out: Record<SeedKind, string | null> = { heroes: null, movies: null, events: null }
+      for (const row of data as { key: string; seeded_at: string }[]) {
+        if (row.key === 'heroes' || row.key === 'movies' || row.key === 'events') {
+          out[row.key] = row.seeded_at
+        }
+      }
+      return out
+    }
+    if (error) console.warn(`readSeedRuns failed: ${error.message}`)
+  } catch (err) {
+    console.warn(`readSeedRuns unavailable: ${(err as Error).message}`)
+  }
+  return { ...lastSeededAt }
+}
+
 export async function getLastSeededStatusAction(): Promise<{
   ok: true
-  lastSeeded: Record<'heroes' | 'movies' | 'events', string | null>
+  lastSeeded: Record<SeedKind, string | null>
 }> {
   await requireAdmin()
-  return { ok: true, lastSeeded: { ...lastSeededAt } }
+  return { ok: true, lastSeeded: await readSeedRuns() }
 }
 
 /**
@@ -171,14 +211,14 @@ export async function seedDemoHeroesAction() {
   log(
     `seeded ${heroRows.length} heroes, ${movieRows.length} movies, ${eventRows.length} canon events`,
   )
-  lastSeededAt.heroes = new Date().toISOString()
+  const seededAt = await recordSeedRun('heroes')
   return {
     ok: true as const,
     seeded: heroRows.length,
     movies: movieRows.length,
     events: eventRows.length,
     links: links.length,
-    lastSeeded: lastSeededAt.heroes,
+    lastSeeded: seededAt,
     completedSteps,
   }
 }
@@ -290,13 +330,13 @@ export async function syncMoviesAction() {
   revalidatePath('/watch-order')
   revalidatePath('/admin')
   log(`synced ${rows.length} movies (${enriched} enriched from TMDB, ${timedOut} timed out)`)
-  lastSeededAt.movies = new Date().toISOString()
+  const seededAt = await recordSeedRun('movies')
   return {
     ok: true as const,
     seeded: rows.length,
     enriched,
     timedOut,
-    lastSeeded: lastSeededAt.movies,
+    lastSeeded: seededAt,
   }
 }
 
@@ -367,8 +407,8 @@ export async function createCanonEventsAction() {
   revalidatePath('/timeline')
   revalidatePath('/admin')
   log(`created ${rows.length} canon events (skipped ${skipped})`)
-  lastSeededAt.events = new Date().toISOString()
-  return { ok: true as const, created: rows.length, skipped, lastSeeded: lastSeededAt.events }
+  const seededAt = await recordSeedRun('events')
+  return { ok: true as const, created: rows.length, skipped, lastSeeded: seededAt }
 }
 
 export interface AdminStats {
