@@ -71,6 +71,11 @@ export default function AdminPage({
     movies: 'idle',
     events: 'idle',
   })
+  // #492: keep the server's failure message so the admin can diagnose it.
+  const [seedErrors, setSeedErrors] = useState<
+    Partial<Record<'heroes' | 'movies' | 'events', string>>
+  >({})
+
   const [lastSeeded, setLastSeeded] = useState<
     Record<'heroes' | 'movies' | 'events', string | null>
   >({
@@ -194,9 +199,11 @@ export default function AdminPage({
       const result = await action()
       if (!result.ok) {
         setSeedStatus((prev) => ({ ...prev, [key]: 'error' }))
+        setSeedErrors((prev) => ({ ...prev, [key]: result.error ?? 'Seed action failed' }))
         return
       }
       setSeedStatus((prev) => ({ ...prev, [key]: 'success' }))
+      setSeedErrors((prev) => ({ ...prev, [key]: undefined }))
       if (result.lastSeeded) {
         setLastSeeded((prev) => ({ ...prev, [key]: result.lastSeeded }))
       }
@@ -205,6 +212,10 @@ export default function AdminPage({
       await refreshStats()
     } catch {
       setSeedStatus((prev) => ({ ...prev, [key]: 'error' }))
+      setSeedErrors((prev) => ({
+        ...prev,
+        [key]: 'Seed request failed before a response was received',
+      }))
     }
   }
 
@@ -259,6 +270,18 @@ export default function AdminPage({
       </header>
 
       {/* Load-error banners: surface DB/auth failures instead of swallowing them. */}
+
+      {Object.values(seedErrors).some(Boolean) && (
+        <div className="mb-6 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          {(Object.entries(seedErrors) as [string, string | undefined][])
+            .filter(([, msg]) => Boolean(msg))
+            .map(([key, msg]) => (
+              <p key={key}>
+                {key}: {msg}
+              </p>
+            ))}
+        </div>
+      )}
 
       {(heroesError || statsError) && (
         <div className="max-w-4xl mx-auto mb-8 space-y-3">
