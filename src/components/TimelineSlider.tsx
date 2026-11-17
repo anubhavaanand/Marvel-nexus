@@ -24,7 +24,7 @@ const phaseColors: Record<string, string> = {
 export default function TimelineSlider({ movies, title = 'MCU Timeline' }: TimelineSliderProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
-  const [canScrollRight, setCanScrollRight] = useState(true)
+  const [canScrollRight, setCanScrollRight] = useState(false)
   const canScrollLeftRef = useRef(canScrollLeft)
   const canScrollRightRef = useRef(canScrollRight)
   const rafRef = useRef<number | null>(null)
@@ -75,11 +75,22 @@ export default function TimelineSlider({ movies, title = 'MCU Timeline' }: Timel
       idleTimeout = setTimeout(updateScrollButtons, 100)
     }
     container.addEventListener('scroll', onScroll, { passive: true })
+    // Initial measurement after mount.
+    updateScrollButtons()
+    // Recompute on resize / content size changes.
+    let resizeObserver: ResizeObserver | null = null
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => updateScrollButtons())
+      resizeObserver.observe(container)
+    }
+    window.addEventListener('resize', updateScrollButtons)
     return () => {
       if (idleTimeout) clearTimeout(idleTimeout)
       if (scrollSettleTimeoutRef.current) clearTimeout(scrollSettleTimeoutRef.current)
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
       container.removeEventListener('scroll', onScroll)
+      if (resizeObserver) resizeObserver.disconnect()
+      window.removeEventListener('resize', updateScrollButtons)
     }
   }, [])
 
