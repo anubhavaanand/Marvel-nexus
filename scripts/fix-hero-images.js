@@ -1,11 +1,8 @@
-const { createClient } = require('@supabase/supabase-js')
 require('dotenv').config({ path: '.env.local' })
+const { createSupabaseClient } = require('./lib/supabase')
 
 // Use service role key for admin-level access
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-)
+const supabase = createSupabaseClient()
 
 // Using ACTUAL aliases from database (checked with check-hero-aliases.js)
 // These are the only 2 heroes with broken Wikia URLs
