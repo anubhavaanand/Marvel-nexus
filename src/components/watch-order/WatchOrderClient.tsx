@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useRef, useEffect } from 'react'
 import { Film, Clock } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { watchOrderData } from './data'
@@ -50,6 +50,52 @@ export default function WatchOrderClient() {
   const accentColor = (FRANCHISE_COLORS[activeTab]?.primary ?? 'var(--franchise-mcu)') as string
   const activeLabel = FRANCHISE_LABELS[activeTab] ?? activeTab
 
+  const franchiseTablistRef = useRef<HTMLDivElement>(null)
+  const [focusedFranchiseTab, setFocusedFranchiseTab] = useState<string>(activeTab as string)
+
+  // Sync focused tab with activeTab
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setFocusedFranchiseTab(activeTab)
+  }, [activeTab])
+
+  const handleFranchiseKeyDown = (e: React.KeyboardEvent, franchise: string) => {
+    const tabs = franchises as string[]
+    const currentIndex = tabs.indexOf(franchise)
+    let nextIndex = currentIndex
+
+    switch (e.key) {
+      case 'ArrowRight':
+        e.preventDefault()
+        nextIndex = (currentIndex + 1) % tabs.length
+        break
+      case 'ArrowLeft':
+        e.preventDefault()
+        nextIndex = (currentIndex - 1 + tabs.length) % tabs.length
+        break
+      case 'Home':
+        e.preventDefault()
+        nextIndex = 0
+        break
+      case 'End':
+        e.preventDefault()
+        nextIndex = tabs.length - 1
+        break
+      case 'Enter':
+      case ' ':
+        e.preventDefault()
+        setActiveTab(franchise)
+        return
+      default:
+        return
+    }
+
+    const nextFranchise = tabs[nextIndex]
+    setFocusedFranchiseTab(nextFranchise)
+    const nextElement = franchiseTablistRef.current?.querySelector(`[data-franchise-tab="${nextFranchise}"]`)
+    ;(nextElement as HTMLElement | null)?.focus()
+  }
+
   return (
     <main className="min-h-screen">
       <section className="relative bg-[var(--bg)] overflow-hidden">
@@ -86,16 +132,31 @@ export default function WatchOrderClient() {
             </p>
 
             <div className="flex justify-center mb-8">
-              <div className="tabs-list">
-                {franchises.map((f) => (
-                  <button
-                    key={f}
-                    onClick={() => setActiveTab(f)}
-                    className={`tab-trigger ${activeTab === f ? 'active' : ''}`}
-                  >
-                    {f}
-                  </button>
-                ))}
+              <div
+                ref={franchiseTablistRef}
+                role="tablist"
+                aria-label="Franchise"
+                className="tabs-list"
+              >
+                {franchises.map((f) => {
+                  const isSelected = activeTab === f
+                  return (
+                    <button
+                      key={f}
+                      role="tab"
+                      id={`franchise-tab-${f}`}
+                      aria-selected={isSelected}
+                      aria-controls={`franchise-panel-${f}`}
+                      tabIndex={isSelected || focusedFranchiseTab === f ? 0 : -1}
+                      data-franchise-tab={f}
+                      onClick={() => setActiveTab(f)}
+                      onKeyDown={(e) => handleFranchiseKeyDown(e, f)}
+                      className={`tab-trigger ${isSelected ? 'active' : ''}`}
+                    >
+                      {f}
+                    </button>
+                  )
+                })}
               </div>
             </div>
 
@@ -121,13 +182,19 @@ export default function WatchOrderClient() {
 
       <section className="section bg-[var(--bg)]">
         <div className="container-wide">
-          <WatchOrderTable
-            items={filteredItems}
-            sortBy={sortBy}
-            activeTab={activeTab}
-            accentColor={accentColor}
-            onSortChange={setSortBy}
-          />
+          <div
+            role="tabpanel"
+            id={`franchise-panel-${activeTab}`}
+            aria-labelledby={`franchise-tab-${activeTab}`}
+          >
+            <WatchOrderTable
+              items={filteredItems}
+              sortBy={sortBy}
+              activeTab={activeTab}
+              accentColor={accentColor}
+              onSortChange={setSortBy}
+            />
+          </div>
         </div>
       </section>
     </main>
