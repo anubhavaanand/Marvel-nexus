@@ -7,7 +7,7 @@ const db = new Map<string, Record<string, unknown>>()
 
 function makeClient() {
   return {
-    from: (_table: string) => ({
+    from: () => ({
       upsert: async (rows: Array<Record<string, unknown>>) => {
         for (const r of rows) db.set(String(r.id), { ...db.get(String(r.id)), ...r })
         return { error: null }
