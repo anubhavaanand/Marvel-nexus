@@ -22,7 +22,7 @@ async function getMoviesData(options?: { allowEmpty?: boolean }) {
 export const metadata = {
   title: 'MCU Timeline | Multiverse Archive',
   description:
-    'Explore the complete Marvel Cinematic Universe timeline from Phase 1 to Phase 6. Every movie in chronological order.',
+    'Explore the complete Marvel Cinematic Universe timeline from Phase 1 to Phase 5. Every movie in chronological order.',
 }
 
 export default async function TimelinePage() {
