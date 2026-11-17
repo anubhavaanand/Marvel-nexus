@@ -54,6 +54,20 @@ describe('sanitizeHeroUpdate', () => {
     expect(sanitizeHeroUpdate(partial({ name: '   ' }))).toBeNull()
   })
 
+  // #454: duplicate/blank power strings must be collapsed.
+  it('de-duplicates and trims powers and weaknesses', () => {
+    const result = sanitizeHeroUpdate(
+      partial({
+        powers: [' Flight ', 'Flight', '', 'Super Strength'],
+        weaknesses: ['Ego', 'Ego', '  '],
+      }),
+    )
+    expect(result).toEqual({
+      powers: ['Flight', 'Super Strength'],
+      weaknesses: ['Ego'],
+    })
+  })
+
   it('accepts an empty image url but rejects non-http urls', () => {
     expect(sanitizeHeroUpdate(partial({ image_url: '' }))).toEqual({ image_url: '' })
     expect(sanitizeHeroUpdate(partial({ image_url: 'javascript:alert(1)' }))).toBeNull()

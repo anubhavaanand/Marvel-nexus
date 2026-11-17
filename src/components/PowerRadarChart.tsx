@@ -183,9 +183,9 @@ export default function PowerRadarChart({ powers, className = '' }: PowerRadarCh
 
       {/* Power List */}
       <div className="mt-4 flex flex-wrap gap-2">
-        {powers.map((power) => (
+        {powers.map((power, index) => (
           <span
-            key={power}
+            key={`${power}-${index}`}
             className="px-2 py-1 text-xs bg-cyan-950/50 border border-cyan-500/30 rounded-md text-cyan-400 font-mono"
             style={{
               opacity: reducedMotion ? 1 : 0,

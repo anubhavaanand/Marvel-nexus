@@ -145,7 +145,11 @@ export function sanitizeHeroUpdate(input: Partial<Hero>): Partial<Hero> | null {
       case 'powers':
       case 'weaknesses': {
         if (!Array.isArray(value) || !value.every((item) => typeof item === 'string')) return null
-        update[field] = value.filter((item) => item.trim() !== '').map((item) => item.trim())
+        // Trim, drop empties and de-duplicate so duplicate React keys/radar
+        // axes cannot come from imported or hand-edited data (#454).
+        update[field] = Array.from(
+          new Set(value.filter((item) => item.trim() !== '').map((item) => item.trim())),
+        )
         break
       }
     }
