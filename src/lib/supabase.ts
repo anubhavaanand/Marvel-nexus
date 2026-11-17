@@ -838,7 +838,37 @@ export async function getHeroVisibility(
     console.error('Error resolving hero visibility:', error)
     throw new Error('Failed to resolve hero')
   }
-  return { is_locked_content: data ? data.is_locked_content : true }
+
+  // #508: getHeroBySlug falls back to the normalized alias when `slug` is NULL,
+  // so visibility must use the same resolution or a public hero renders as
+  // Restricted Access. Lightweight identity-only scan, bounded by max-rows.
+  let resolved = data
+  if (!resolved) {
+    const { data: candidates, error: listError } = await client
+      .from('heroes')
+      .select('id, slug, alias, is_locked_content')
+      .limit(1000)
+    if (listError) {
+      console.error('Error resolving hero visibility fallback:', listError)
+      throw new Error('Failed to resolve hero')
+    }
+    const matches = (Array.isArray(candidates) ? candidates : []).filter((r) => {
+      const row = r as Record<string, unknown>
+      return (
+        typeof row?.alias === 'string' &&
+        (compareSlug(row.alias as string, slug) || row.slug === slug)
+      )
+    })
+    if (matches.length > 1) {
+      matches.sort((a, b) => String(a.id).localeCompare(String(b.id)))
+      console.warn(
+        `visibility fallback: ${matches.length} heroes match "${slug}"; using ${matches[0].id}`,
+      )
+    }
+    resolved = (matches[0] as typeof data) ?? null
+  }
+
+  return { is_locked_content: resolved ? Boolean(resolved.is_locked_content) : true }
 }
 
 /** Service-role lookup used by authenticated admins, including locked heroes. */
