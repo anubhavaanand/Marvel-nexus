@@ -1,7 +1,17 @@
 # #497: keep the SHA-pinned GitHub Actions fresh.
+# #570: add npm dependency updates.
 version: 2
 updates:
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
       interval: 'weekly'
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    groups:
+      production-dependencies:
+        dependency-type: 'production'
+      development-dependencies:
+        dependency-type: 'development'
