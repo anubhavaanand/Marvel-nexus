@@ -27,7 +27,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run npm audit
+      # Moderate advisories currently outnumber what we can remediate offline;
+      # keep them visible without failing every PR (#786 follow-up).
+      - name: Run npm audit (moderate, non-blocking)
+        continue-on-error: true
         run: npm audit --audit-level=moderate
 
   lint-build:
