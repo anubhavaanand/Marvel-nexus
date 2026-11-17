@@ -31,11 +31,11 @@ async function testImageURL(url) {
     const headers = {
       'User-Agent': 'Mozilla/5.0 (compatible; Multiverse Archive/1.0)',
     }
-    let response = await fetch(url, { method: 'HEAD', headers })
+    let response = await fetch(url, { method: 'HEAD', headers, signal: AbortSignal.timeout(10000) })
 
     // Some hosts answer HEAD with 405/403 but serve GET fine: retry with a range.
     if (!response.ok && (response.status === 405 || response.status === 403)) {
-      response = await fetch(url, { method: 'GET', headers: { ...headers, Range: 'bytes=0-0' } })
+      response = await fetch(url, { method: 'GET', headers: { ...headers, Range: 'bytes=0-0' }, signal: AbortSignal.timeout(10000) })
     }
 
     if (response.ok) {
