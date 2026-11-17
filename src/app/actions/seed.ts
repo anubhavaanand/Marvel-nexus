@@ -236,24 +236,34 @@ export async function syncMoviesAction() {
       )
       if (!response.ok) continue
       const payload = (await response.json()) as { results?: Array<Record<string, unknown>> }
-      const match = payload.results?.[0]
-      if (!match) continue
+      const normalizedExpected = slugifyAlias(movie.title)
+      const match = (payload.results ?? []).find((candidate) => {
+        const tmdbTitle =
+          typeof candidate.original_title === 'string'
+            ? candidate.original_title
+            : typeof candidate.title === 'string'
+              ? candidate.title
+              : ''
+        return tmdbTitle && slugifyAlias(tmdbTitle) === normalizedExpected
+      })
+      if (!match) {
+        log(`skipped ${movie.title}: no TMDB title match`)
+        continue
+      }
       const enrichedReleaseDate =
         typeof match.release_date === 'string' && match.release_date
           ? match.release_date
           : movie.release_date
-      await supabase
-        .from('movies')
-        .update({
-          tmdb_id: typeof match.id === 'number' ? match.id : null,
-          poster_url:
-            typeof match.poster_path === 'string' && match.poster_path
-              ? `https://image.tmdb.org/t/p/w500/${match.poster_path}`
-              : '',
-          release_date: enrichedReleaseDate,
-          phase: movie.phase && enrichedReleaseDate ? getMCUPhase(enrichedReleaseDate) : null,
-        })
-        .eq('id', movie.id)
+      const update: Record<string, unknown> = {
+        tmdb_id: typeof match.id === 'number' ? match.id : null,
+        release_date: enrichedReleaseDate,
+      }
+      if (typeof match.poster_path === 'string' && match.poster_path) {
+        update.poster_url = `https://image.tmdb.org/t/p/w500/${match.poster_path}`
+      }
+      // Keep the explicit null so unphased seed entries stay Unphased (#461).
+      update.phase = movie.phase && enrichedReleaseDate ? getMCUPhase(enrichedReleaseDate) : null
+      await supabase.from('movies').update(update).eq('id', movie.id)
       enriched += 1
     } catch {
       // Enrichment is best-effort; a failed lookup must not fail the whole sync.

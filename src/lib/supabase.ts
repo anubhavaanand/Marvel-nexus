@@ -638,19 +638,40 @@ export async function getAllHeroes(options?: GetAllHeroesOptions): Promise<Hero[
   const page = Math.max(1, options?.page ?? 1)
 
   if (!supabase) {
+    if (options?.cursor) {
+      const cursorId = Number(options.cursor)
+      const remaining = mockHeroes
+        .filter((h) => Number(h.id) > cursorId)
+        .sort((a, b) => Number(a.id) - Number(b.id))
+        .slice(0, pageSize)
+      return enrichHeroesWithTmdb([...remaining])
+    }
     const start = (page - 1) * pageSize
     const slice = mockHeroes.slice(start, start + pageSize)
     return enrichHeroesWithTmdb([...slice])
   }
 
-  let query = supabase.from('heroes').select('*').order('name')
   if (options?.cursor) {
-    query = query.gt('id', options.cursor).limit(pageSize)
-  } else {
-    const from = (page - 1) * pageSize
-    query = query.range(from, from + pageSize - 1)
+    const query = supabase
+      .from('heroes')
+      .select('*')
+      .order('id')
+      .gt('id', options.cursor)
+      .limit(pageSize)
+    const { data, error } = await query
+    if (error) {
+      console.error('Error fetching heroes:', error)
+      throw new Error('Failed to load heroes')
+    }
+    return enrichHeroesWithTmdb(data || [])
   }
 
+  const from = (page - 1) * pageSize
+  const query = supabase
+    .from('heroes')
+    .select('*')
+    .order('name')
+    .range(from, from + pageSize - 1)
   const { data, error } = await query
 
   if (error) {

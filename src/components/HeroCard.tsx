@@ -87,20 +87,20 @@ export default function HeroCard({ hero, index = 0 }: HeroCardProps) {
             </span>
           </div>
 
-          {hero.powers && hero.powers.length > 0 && (
-            <div className="absolute top-3 right-3">
-              <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium glass text-[var(--fg)]">
-                <Zap className="w-3 h-3 text-[var(--accent)]" />
-                {hero.powers.length}
-              </span>
-            </div>
-          )}
-
           {hero.is_locked_content && (
             <div className="absolute top-3 right-3">
               <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium glass text-[var(--fg)]">
                 <Lock className="w-3 h-3" />
                 Premium
+              </span>
+            </div>
+          )}
+
+          {hero.powers && hero.powers.length > 0 && (
+            <div className="absolute top-12 left-3">
+              <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium glass text-[var(--fg)]">
+                <Zap className="w-3 h-3 text-[var(--accent)]" />
+                {hero.powers.length}
               </span>
             </div>
           )}

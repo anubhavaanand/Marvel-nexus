@@ -83,15 +83,21 @@ export default function AdminPage({
   const [connectionError, setConnectionError] = useState('')
   const [stats, setStats] = useState<AdminStats | null>(initialStats)
   const router = useRouter()
+  // True until the server session check finishes, so authenticated admins
+  // never see the login form flash (#450).
+  const [authChecking, setAuthChecking] = useState(true)
 
   // Check if already authenticated (server session check)
   useEffect(() => {
     const checkAuth = async () => {
-      const isAuth = await checkAdminAuthAction()
-      if (isAuth) {
-        setIsAuthenticated(true)
-      } else {
-        setIsAuthenticated(false)
+      let isAuth = false
+      try {
+        isAuth = await checkAdminAuthAction()
+      } catch {
+        isAuth = false
+      } finally {
+        setIsAuthenticated(isAuth)
+        setAuthChecking(false)
       }
     }
     requestAnimationFrame(() => {
@@ -139,8 +145,19 @@ export default function AdminPage({
     setIsAuthenticated(false)
   }
 
-  // If not authenticated, show login screen
+  // If not authenticated, show login screen (with a checking state that avoids
+  // flashing the form for already-authenticated admins, #450).
   if (!isAuthenticated) {
+    if (authChecking) {
+      return (
+        <main className="min-h-screen flex items-center justify-center px-4">
+          <div className="flex flex-col items-center gap-3 text-neutral-400" role="status">
+            <div className="w-6 h-6 border-2 border-cyan-500/40 border-t-cyan-400 rounded-full animate-spin" />
+            <span className="text-sm">Checking access…</span>
+          </div>
+        </main>
+      )
+    }
     return (
       <main className="min-h-screen flex items-center justify-center px-4">
         <motion.div
