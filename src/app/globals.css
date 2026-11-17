@@ -1003,3 +1003,182 @@
     overflow: visible !important;
   }
 }
+
+/* ─── #586: previously-undefined classes ───────────────────────── */
+
+/* skeleton: shimmering placeholder surface for not-yet-loaded media */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-glass);
+}
+
+/* scanlines: subtle horizontal scanline overlay */
+.scanlines {
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.03) 0px,
+    rgba(255, 255, 255, 0.03) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+}
+
+/* tactical-scan: biometric scan line sweeping top-to-bottom */
+.tactical-scan {
+  position: relative;
+  overflow: hidden;
+}
+.tactical-scan::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -2px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  box-shadow: 0 0 12px var(--accent);
+  animation: tacticalScan 4s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+@keyframes tacticalScan {
+  0% {
+    top: -2px;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+/* hazard-alert: critical warning styling */
+.hazard-alert {
+  border-color: var(--danger) !important;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), transparent);
+  animation: hazardPulse 1.5s ease-in-out infinite;
+}
+@keyframes hazardPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+  }
+}
+
+/* holographic-glare: mouse-tracking reflection (static fallback) */
+.holographic-glare {
+  position: relative;
+  overflow: hidden;
+}
+.holographic-glare::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.08), transparent 60%);
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+/* glass-card-hover: card hover lift */
+.glass-card-hover {
+  transition:
+    transform var(--motion-base) var(--ease-out),
+    box-shadow var(--motion-base) var(--ease-out),
+    border-color var(--motion-base) var(--ease-out);
+}
+.glass-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--elev-raised), var(--elev-glow);
+  border-color: var(--border-strong);
+}
+
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  animation: skeletonShimmer 1.6s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes skeletonShimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Motion-sensitive users get static treatments instead of looping effects. */
+@media (prefers-reduced-motion: reduce) {
+  .hazard-alert,
+  .tactical-scan::before,
+  .skeleton::after {
+    animation: none !important;
+  }
+
+  .glass-card-hover,
+  .glass-card-hover:hover {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* custom-scrollbar: thin themed scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--meta) transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--meta);
+  border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+/* skeleton: shimmer loading placeholder */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface);
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+  animation: skeletonShimmer 1.6s linear infinite;
+}
+@keyframes skeletonShimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tactical-scan::before,
+  .hazard-alert,
+  .skeleton::after {
+    animation: none !important;
+  }
+}
