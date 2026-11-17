@@ -167,7 +167,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
             aria-label="Search heroes"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-neutral-900/50 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-cyan-500 font-mono text-sm"
+            className="w-full pl-10 pr-4 py-2 bg-neutral-900/50 border border-neutral-700 rounded-lg text-white focus:border-cyan-500 font-mono text-sm"
           />
         </div>
         <Badge variant="outline" className="h-10 px-4 border-cyan-500/30 text-cyan-400 font-mono">
