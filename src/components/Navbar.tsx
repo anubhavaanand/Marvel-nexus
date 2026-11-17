@@ -103,8 +103,15 @@ export default function Navbar() {
       })
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
+    // Compute on mount (and after back/forward-cache restores) so a page
+    // loaded mid-scroll starts in the scrolled state instead of flashing the
+    // transparent navbar until the next scroll event (#452).
+    handleScroll()
+    const handlePageShow = () => handleScroll()
+    window.addEventListener('pageshow', handlePageShow)
     return () => {
       window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('pageshow', handlePageShow)
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
     }
   }, [])
