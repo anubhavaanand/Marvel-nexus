@@ -23,9 +23,12 @@ function getSupabaseHost() {
 
 function isCanonicalIpv4(hostname) {
   // Exactly four decimal octets 0-255, no leading zeros (except '0' itself)
-  const match = /^(?:(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-5]|0)\.){3}(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-5]|0)$/.exec(hostname)
+  const match =
+    /^(?:(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-5]|0)\.){3}(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-5]|0)$/.exec(
+      hostname,
+    )
   if (!match) return null
-  return hostname.split('.').map(n => Number(n))
+  return hostname.split('.').map((n) => Number(n))
 }
 
 function isPrivateOrReservedIp(hostname) {
