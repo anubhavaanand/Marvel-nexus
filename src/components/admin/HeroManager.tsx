@@ -175,7 +175,10 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
         </Badge>
         <Button
           className="bg-cyan-600 hover:bg-cyan-700 text-white"
-          onClick={() =>
+          onClick={() => {
+            // #427: never carry the previous hero's unsubmitted inputs over.
+            setNewPower('')
+            setNewWeakness('')
             setEditingHero({
               id: '',
               name: '',
@@ -188,7 +191,7 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
               image_url: '',
               is_locked_content: false,
             })
-          }
+          }}
         >
           Add Hero
         </Button>
@@ -502,7 +505,12 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                   size="icon"
                   variant="ghost"
                   className="h-8 w-8 text-neutral-400 hover:text-cyan-400 hover:bg-cyan-950/30"
-                  onClick={() => setEditingHero(hero)}
+                  onClick={() => {
+                    // #427: clear unsubmitted inputs from the previous hero.
+                    setNewPower('')
+                    setNewWeakness('')
+                    setEditingHero(hero)
+                  }}
                   disabled={inFlightIds.has(hero.id)}
                   aria-label={`Edit ${hero.alias}`}
                 >
