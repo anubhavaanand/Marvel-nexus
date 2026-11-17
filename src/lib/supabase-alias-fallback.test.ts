@@ -83,4 +83,20 @@ describe('getHeroBySlug alias fallback (#343)', () => {
     expect(hero).not.toBeNull()
     expect(hero?.name).toBe('Iron Man')
   })
+
+  it('admin lookup falls back too (#509)', async () => {
+    vi.doMock('@supabase/supabase-js', () => ({
+      createClient: () => makeClient({ kind: 'slug-miss' }) as never,
+    }))
+    vi.doMock('./service-supabase', () => ({
+      getServiceSupabase: () =>
+        makeClient({ kind: 'miss-then-alias-list', rows: [HERO_ROW] }) as never,
+    }))
+    vi.doMock('./tmdb', () => ({ searchPerson: () => null }))
+
+    const mod = await import('./supabase')
+    const hero = await mod.getHeroBySlugForAdmin('anthony-stark')
+    expect(hero).not.toBeNull()
+    expect(hero?.name).toBe('Iron Man')
+  })
 })
