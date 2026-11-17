@@ -165,7 +165,7 @@ imageGuard.requireImageUpdateConfirm(
   'verify-and-fix-images.js',
 )
 
-updateImages().catch(err => {
+updateImages().catch((err) => {
   console.error(err)
   process.exitCode = 1
 })
