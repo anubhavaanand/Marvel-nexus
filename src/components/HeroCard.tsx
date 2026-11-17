@@ -28,7 +28,7 @@ const franchiseColors: Record<string, { primary: string; glow: string }> = {
 
 export default function HeroCard({ hero, index = 0 }: HeroCardProps) {
   const colors = franchiseColors[hero.franchise] || franchiseColors['MCU']
-  const slug = slugifyAlias(hero.alias)
+  const slug = hero.slug || slugifyAlias(hero.alias)
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useSharedInView(ref, { once: true, rootMargin: '-50px' })
   const reducedMotion = useReducedMotion()
