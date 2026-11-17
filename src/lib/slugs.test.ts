@@ -11,6 +11,7 @@ describe('slugifyAlias', () => {
     ['Spider-Man (Andrew)', 'spider-man-andrew'],
     ['One Punch Man', 'one-punch-man'],
     ["T'Challa", 'tchalla'],
+    ['T’Challa', 'tchalla'],
   ])('maps %s to %s', (alias, expected) => {
     expect(slugifyAlias(alias)).toBe(expected)
   })

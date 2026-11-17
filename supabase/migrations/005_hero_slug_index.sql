@@ -21,7 +21,7 @@ AS $$
   SELECT
     regexp_replace(
       regexp_replace(
-        regexp_replace(lower(trim(coalesce(alias, ''))), '[\''']', '', 'g'),
+        regexp_replace(lower(trim(coalesce(alias, ''))), '[''’]', '', 'g'),
         '[^a-z0-9]+', '-', 'g'
       ),
       '^-+|-+$', '', 'g'
