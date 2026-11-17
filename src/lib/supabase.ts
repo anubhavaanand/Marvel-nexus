@@ -131,7 +131,7 @@ export interface Movie {
   release_date: string
   phase: 'Phase 1' | 'Phase 2' | 'Phase 3' | 'Phase 4' | 'Phase 5' | 'Phase 6' | null
   poster_url: string
-  imdb_rating: number | null
+  tmdb_rating: number | null
 }
 
 export interface Hero {
@@ -974,7 +974,7 @@ const mockMovies: Movie[] = SEED_MOVIES.map((m): Movie => ({
   release_date: m.release_date ?? '',
   phase: m.phase as Movie['phase'],
   poster_url: m.poster_url,
-  imdb_rating: null,
+  tmdb_rating: null,
 }))
 
 export async function getAllMovies(options?: { allowEmpty?: boolean }): Promise<Movie[]> {
