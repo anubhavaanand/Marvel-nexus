@@ -104,6 +104,15 @@ export default function PowerRadarChart({ powers, className = '' }: PowerRadarCh
   // Memoized so chart data is stable across renders (and deterministic per power).
   const data = useMemo(() => generatePowerStats(powers), [powers])
 
+  // Accessible text alternative summarising the radar for assistive tech.
+  const ariaLabel = useMemo(
+    () =>
+      `Power radar chart: ${powers
+        .map((p) => `${p} ${powerValues[p] ?? stableFallbackValue(p)}`)
+        .join(', ')}`,
+    [powers],
+  )
+
   if (!powers || powers.length === 0) {
     return (
       <div className={`glass-panel rounded-xl p-6 ${className}`}>
@@ -127,7 +136,7 @@ export default function PowerRadarChart({ powers, className = '' }: PowerRadarCh
         Power Analysis
       </h3>
 
-      <div className="h-72">
+      <div className="h-72" role="img" aria-label={ariaLabel}>
         {mounted ? (
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
