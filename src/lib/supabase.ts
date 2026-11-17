@@ -645,13 +645,13 @@ export async function getAllHeroes(options?: GetAllHeroesOptions): Promise<Hero[
 
   let query = supabase.from('heroes').select('*').order('name')
   if (options?.cursor) {
-    query = query.gt('id', options.cursor)
+    query = query.gt('id', options.cursor).limit(pageSize)
   } else {
     const from = (page - 1) * pageSize
     query = query.range(from, from + pageSize - 1)
   }
 
-  const { data, error } = await query.limit(pageSize)
+  const { data, error } = await query
 
   if (error) {
     console.error('Error fetching heroes:', error)
