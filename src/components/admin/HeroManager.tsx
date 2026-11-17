@@ -522,7 +522,11 @@ export default function HeroManager({ initialHeroes }: HeroManagerProps) {
                   className={`h-8 w-8 ${deleteConfirm === hero.id ? 'text-red-500 bg-red-950/30 ring-1 ring-red-500' : 'text-neutral-400 hover:text-red-400 hover:bg-red-950/30'}`}
                   onClick={() => handleDelete(hero.id)}
                   disabled={inFlightIds.has(hero.id)}
-                  aria-label={deleteConfirm === hero.id ? `Confirm delete ${hero.alias}` : `Delete ${hero.alias}`}
+                  aria-label={
+                    deleteConfirm === hero.id
+                      ? `Confirm delete ${hero.alias}`
+                      : `Delete ${hero.alias}`
+                  }
                 >
                   {deleteConfirm === hero.id ? (
                     inFlightIds.has(hero.id) ? (

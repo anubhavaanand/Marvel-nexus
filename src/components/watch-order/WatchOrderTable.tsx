@@ -19,7 +19,7 @@ const sortTabs = [
   { id: 'release', label: 'Release Date', shortLabel: 'Release', icon: Calendar },
 ] as const
 
-type SortTabId = typeof sortTabs[number]['id']
+type SortTabId = (typeof sortTabs)[number]['id']
 
 export default function WatchOrderTable({
   items,
@@ -82,12 +82,7 @@ export default function WatchOrderTable({
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex justify-center mb-10">
-        <div
-          ref={tablistRef}
-          role="tablist"
-          aria-label="Sort order"
-          className="tabs-list"
-        >
+        <div ref={tablistRef} role="tablist" aria-label="Sort order" className="tabs-list">
           {sortTabs.map((tab) => {
             const isSelected = sortBy === tab.id
             const Icon = tab.icon

@@ -92,7 +92,9 @@ export default function WatchOrderClient() {
 
     const nextFranchise = tabs[nextIndex]
     setFocusedFranchiseTab(nextFranchise)
-    const nextElement = franchiseTablistRef.current?.querySelector(`[data-franchise-tab="${nextFranchise}"]`)
+    const nextElement = franchiseTablistRef.current?.querySelector(
+      `[data-franchise-tab="${nextFranchise}"]`,
+    )
     ;(nextElement as HTMLElement | null)?.focus()
   }
 
