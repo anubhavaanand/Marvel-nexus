@@ -1,10 +1,22 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Orbitron, Roboto_Mono } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/Navbar'
 
 const inter = Inter({
   variable: '--font-inter',
+  subsets: ['latin'],
+  display: 'swap',
+})
+
+const orbitron = Orbitron({
+  variable: '--font-orbitron-next',
+  subsets: ['latin'],
+  display: 'swap',
+})
+
+const robotoMono = Roboto_Mono({
+  variable: '--font-roboto-mono-next',
   subsets: ['latin'],
   display: 'swap',
 })
@@ -54,7 +66,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${inter.variable} antialiased min-h-screen bg-[var(--bg)] text-[var(--fg)]`}
+        className={`${inter.variable} ${orbitron.variable} ${robotoMono.variable} antialiased min-h-screen bg-[var(--bg)] text-[var(--fg)]`}
       >
         <a
           href="#main"
