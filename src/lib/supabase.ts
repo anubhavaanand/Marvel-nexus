@@ -677,7 +677,12 @@ export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | n
     const hero = resolveMockHeroBySlug(slug)
     if (!hero) return null
     const enriched = await enrichHeroesWithTmdb([hero])
-    return enriched[0] || null
+    if (!enriched[0]) return null
+    return {
+      ...enriched[0],
+      canon_events: [],
+      hero_movies: [],
+    }
   }
 
   // Issue #144: resolve the slug against the indexed `slug` column in a single
