@@ -24,7 +24,7 @@ export async function GET() {
     console.error('health check failed')
     return NextResponse.json(
       { status: 'error', db: 'error', latencyMs: Date.now() - startedAt },
-      { status: 503, headers: { 'Cache-Control': 'no-store' } },
+      { status: 503, headers: { 'Cache-Control': 'no-store', 'Retry-After': '5' } },
     )
   }
 }
