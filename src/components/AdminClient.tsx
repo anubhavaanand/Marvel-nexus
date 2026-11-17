@@ -195,9 +195,11 @@ export default function AdminPage({
     key: 'heroes' | 'movies' | 'events',
     action: () => Promise<{ ok: boolean; error?: string; lastSeeded?: string }>,
   ) => {
-    // If not yet confirmed, request confirmation and return
+    // If not yet confirmed, request confirmation and return.
+    // #525: re-arming clears the stale success/error icon so a retry is visible.
     if (seedConfirm !== key) {
       setSeedConfirm(key)
+      setSeedStatus((prev) => ({ ...prev, [key]: 'idle' }))
       return
     }
 
