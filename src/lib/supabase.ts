@@ -120,7 +120,10 @@ async function fetchAllHeroRows(client: SupabaseClient, columns: string): Promis
   const result: unknown[] = []
   let from = 0
   while (true) {
-    const { data, error } = await client.from('heroes').select(columns).range(from, from + PAGE - 1)
+    const { data, error } = await client
+      .from('heroes')
+      .select(columns)
+      .range(from, from + PAGE - 1)
     if (error) throw error
     const rows = Array.isArray(data) ? data : []
     result.push(...rows)
@@ -780,7 +783,9 @@ export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | n
     if (matches.length > 1) {
       // Duplicate aliases exist on purpose (three Spider-Men); pick a stable
       // winner instead of an arbitrary array order, and say so (#503).
-      matches.sort((a, b) => String((a as { id?: unknown }).id).localeCompare(String((b as { id?: unknown }).id)))
+      matches.sort((a, b) =>
+        String((a as { id?: unknown }).id).localeCompare(String((b as { id?: unknown }).id)),
+      )
       console.warn(
         `slug fallback: ${matches.length} heroes match "${slug}"; using ${(matches[0] as { id?: unknown }).id}`,
       )
@@ -881,7 +886,9 @@ export async function getHeroVisibility(
       )
     })
     if (matches.length > 1) {
-      matches.sort((a, b) => String((a as { id?: unknown }).id).localeCompare(String((b as { id?: unknown }).id)))
+      matches.sort((a, b) =>
+        String((a as { id?: unknown }).id).localeCompare(String((b as { id?: unknown }).id)),
+      )
       console.warn(
         `visibility fallback: ${matches.length} heroes match "${slug}"; using ${(matches[0] as { id?: unknown }).id}`,
       )
@@ -948,7 +955,9 @@ export async function getHeroBySlugForAdmin(slug: string): Promise<HeroWithRelat
       )
     })
     if (matches.length > 1) {
-      matches.sort((a, b) => String((a as { id?: unknown }).id).localeCompare(String((b as { id?: unknown }).id)))
+      matches.sort((a, b) =>
+        String((a as { id?: unknown }).id).localeCompare(String((b as { id?: unknown }).id)),
+      )
       console.warn(
         `admin slug fallback: ${matches.length} heroes match "${slug}"; using ${(matches[0] as { id?: unknown }).id}`,
       )
