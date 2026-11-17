@@ -16,6 +16,7 @@ const imageUpdates = {
 }
 
 async function updateImages() {
+  await imageGuard.backupCurrentImages(supabase, Object.keys(imageUpdates), 'fix-hero-images.js')
   console.log('🔄 Fixing Spider-Man image URLs...\n')
   console.log('Using verified TMDB sources for Andrew and Tobey variants\n')
 
@@ -63,5 +64,16 @@ async function updateImages() {
     console.log('    Run: node scripts/check-hero-aliases.js to verify')
   }
 }
+
+const imageGuard = require('./image-update-guard')
+const imageFlags = imageGuard.parseFlags(process.argv.slice(2))
+imageGuard.requireImageUpdateConfirm(
+  imageFlags,
+  {
+    title: 'overwrite production hero image_url values',
+    updates: Object.entries(imageUpdates).map(([alias, url]) => `${alias} -> ${url}`),
+  },
+  'fix-hero-images.js',
+)
 
 updateImages()

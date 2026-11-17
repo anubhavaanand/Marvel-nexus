@@ -113,9 +113,19 @@ node scripts/check-broken-images.js
 # Weekly health check
 node scripts/database-health-check.js
 
-# Fix any broken images found
-node scripts/verify-and-fix-images.js
+# Preview image repairs (no writes)
+node scripts/verify-and-fix-images.js --dry-run
+
+# Apply them; current values are exported to scripts/backups/ first
+node scripts/verify-and-fix-images.js --confirm
 ```
+
+All image-fix scripts (`fix-hero-images.js`, `fix-broken-images.js`,
+`final-image-fix.js`, `verify-and-fix-images.js`) go through
+`scripts/image-update-guard.js`: they print the exact rows they would overwrite,
+require `--confirm` to write, and export the previous `image_url` values to
+`scripts/backups/` so a bad run can be rolled back. Never schedule them without
+reviewing the dry-run output first (#441).
 
 ---
 
