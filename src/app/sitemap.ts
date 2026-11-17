@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { getAllHeroes } from '@/lib/supabase'
+import { getAllHeroes, type Hero } from '@/lib/supabase'
 import { slugifyAlias } from '@/lib/slugs'
 
 const SITE_URL: string =
@@ -11,10 +11,29 @@ function normalizeSiteUrl(url: string): string {
   return url.replace(/\/$/, '')
 }
 
-// Deterministic: captured once at module load (build time under force-static)
-// rather than per request/render.
-export const dynamic = 'force-static'
+// #423: rendered per request and paginated, so newly added heroes are included
+// without a rebuild. The old force-static version froze the hero list (and the
+// first 100 rows) into the build output.
+export const dynamic = 'force-dynamic'
 const LAST_MODIFIED: string = new Date().toISOString().split('T')[0]
+
+/** Fetch every hero by following the id cursor past the single-page cap. */
+async function fetchAllHeroesPaginated(limitPerRequest = 1000): Promise<Hero[]> {
+  const collected: Hero[] = []
+  let cursor: string | undefined
+  for (;;) {
+    const page = await getAllHeroes({ pageSize: limitPerRequest, cursor })
+    if (!page || page.length === 0) break
+    collected.push(...page)
+    if (page.length < limitPerRequest) break
+    const last = page[page.length - 1]
+    const nextCursor = String(last.id)
+    if (!nextCursor || nextCursor === cursor) break
+    cursor = nextCursor
+    if (collected.length > 20000) break // hard stop against pathological data
+  }
+  return collected
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = normalizeSiteUrl(SITE_URL)
@@ -48,7 +67,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]
 
   try {
-    const heroes = await getAllHeroes()
+    const heroes = await fetchAllHeroesPaginated()
     const heroEntries: MetadataRoute.Sitemap = (heroes || [])
       .filter((hero) => hero.alias && hero.alias.trim().length > 0)
       .map((hero) => {
