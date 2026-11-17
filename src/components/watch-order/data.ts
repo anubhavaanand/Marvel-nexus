@@ -14,6 +14,8 @@ export interface WatchItem {
   rating?: number
   platform: 'Disney+' | 'Netflix' | 'Theater' | 'HBO Max'
   description: string
+  /** Poster already known for this title; avoids a TMDB lookup (#419). */
+  poster_url?: string
 }
 
 export const watchOrderData: WatchItem[] = [

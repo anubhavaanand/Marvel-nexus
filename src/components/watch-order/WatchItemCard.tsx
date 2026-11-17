@@ -33,10 +33,11 @@ export default function WatchItemCard({ item, index, accentColor }: WatchItemCar
 
           <div className="relative w-full sm:w-28 h-44 sm:h-auto flex-shrink-0 bg-[var(--surface)]">
             <HeroImage
-              imageUrl={null}
+              imageUrl={item.poster_url ?? null}
               alias={item.title}
               name={item.title}
               sizes="(max-width: 640px) 100vw, 112px"
+              lookupType="movie"
             />
           </div>
 

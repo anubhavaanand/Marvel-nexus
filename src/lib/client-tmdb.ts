@@ -84,22 +84,33 @@ function enqueue<T>(fn: () => Promise<T>): Promise<T> {
   })
 }
 
-async function fetchWithRateLimitHandling(query: string): Promise<Response> {
-  const res = await fetch(`/api/tmdb/search?query=${encodeURIComponent(query)}`, {
+function searchUrl(query: string, lookupType: 'person' | 'movie'): string {
+  return `/api/tmdb/search?type=${lookupType}&query=${encodeURIComponent(query)}`
+}
+
+async function fetchWithRateLimitHandling(
+  query: string,
+  lookupType: 'person' | 'movie',
+): Promise<Response> {
+  const res = await fetch(searchUrl(query, lookupType), {
     signal: AbortSignal.timeout(5000),
   })
   if (res.status === 429) {
     // Back off briefly, then retry once. Never hammer the proxy.
     await new Promise((r) => setTimeout(r, RATE_LIMIT_COOLDOWN_MS))
-    return fetch(`/api/tmdb/search?query=${encodeURIComponent(query)}`, {
+    return fetch(searchUrl(query, lookupType), {
       signal: AbortSignal.timeout(5000),
     })
   }
   return res
 }
 
-export async function getTmdbImageUrl(name: string, alias: string): Promise<string | null> {
-  const key = `${name}|${alias}`
+export async function getTmdbImageUrl(
+  name: string,
+  alias: string,
+  lookupType: 'person' | 'movie' = 'person',
+): Promise<string | null> {
+  const key = `${lookupType}|${name}|${alias}`
   const cached = getCached(key)
   if (cached !== undefined) return cached
 
@@ -117,10 +128,11 @@ export async function getTmdbImageUrl(name: string, alias: string): Promise<stri
     let value: string | null = null
     try {
       const search = name || alias
-      const res = await fetchWithRateLimitHandling(search)
+      const res = await fetchWithRateLimitHandling(search, lookupType)
       if (res.ok) {
         const data = await res.json()
-        const path = data.person?.profile_path
+        // #419: movies expose poster_path, people expose profile_path.
+        const path = lookupType === 'movie' ? data.movie?.poster_path : data.person?.profile_path
         value = path ? `${IMAGE_BASE}${path}` : null
       }
     } catch {
