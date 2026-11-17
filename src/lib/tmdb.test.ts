@@ -13,4 +13,12 @@ describe('getMCUPhase', () => {
   ])('maps %s to %s', (releaseDate, expected) => {
     expect(getMCUPhase(releaseDate)).toBe(expected)
   })
+
+  // #461: invalid/empty dates must not silently become Phase 6.
+  it.each([[''], ['not-a-date'], ['2025-99-99']] as const)(
+    'returns null for invalid date %p',
+    (releaseDate: string) => {
+      expect(getMCUPhase(releaseDate)).toBeNull()
+    },
+  )
 })
