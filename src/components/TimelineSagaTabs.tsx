@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useCallback, useMemo } from 'react'
 import { Sparkles } from 'lucide-react'
 import TimelineSlider from '@/components/TimelineSlider'
 import type { Movie } from '@/lib/supabase'
@@ -28,6 +28,11 @@ function getPhaseColor(phase: string): string {
 export default function TimelineSagaTabs({ phases }: { phases: Record<string, Movie[]> }) {
   const [saga, setSaga] = useState<Saga>('all')
   const [visible, setVisible] = useState<Record<string, number>>({})
+  const tabRefs = useRef<Record<Saga, HTMLButtonElement | null>>({
+    all: null,
+    infinity: null,
+    multiverse: null,
+  })
 
   const entries = Object.entries(phases).filter(([phase, movies]) => {
     if (movies.length === 0) return false
@@ -37,11 +42,48 @@ export default function TimelineSagaTabs({ phases }: { phases: Record<string, Mo
     return true
   })
 
-  const tabs: { key: Saga; label: string }[] = [
-    { key: 'all', label: 'All Phases' },
-    { key: 'infinity', label: 'Infinity Saga' },
-    { key: 'multiverse', label: 'Multiverse Saga' },
-  ]
+  const tabs = useMemo<{ key: Saga; label: string }[]>(
+    () => [
+      { key: 'all', label: 'All Phases' },
+      { key: 'infinity', label: 'Infinity Saga' },
+      { key: 'multiverse', label: 'Multiverse Saga' },
+    ],
+    [],
+  )
+
+  const focusTab = useCallback((key: Saga) => {
+    tabRefs.current[key]?.focus()
+  }, [])
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLButtonElement>, key: Saga) => {
+      const idx = tabs.findIndex((t) => t.key === key)
+      if (idx < 0) return
+      let next: Saga | null = null
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'ArrowDown':
+          next = tabs[(idx + 1) % tabs.length].key
+          break
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          next = tabs[(idx - 1 + tabs.length) % tabs.length].key
+          break
+        case 'Home':
+          next = tabs[0].key
+          break
+        case 'End':
+          next = tabs[tabs.length - 1].key
+          break
+        default:
+          return
+      }
+      e.preventDefault()
+      setSaga(next)
+      focusTab(next)
+    },
+    [tabs, focusTab],
+  )
 
   return (
     <>
@@ -49,10 +91,17 @@ export default function TimelineSagaTabs({ phases }: { phases: Record<string, Mo
         {tabs.map((t) => (
           <button
             key={t.key}
+            ref={(el) => {
+              tabRefs.current[t.key] = el
+            }}
             type="button"
             role="tab"
-            aria-pressed={saga === t.key}
+            id={`tab-${t.key}`}
+            aria-selected={saga === t.key}
+            aria-controls={`tabpanel-${t.key}`}
+            tabIndex={saga === t.key ? 0 : -1}
             onClick={() => setSaga(t.key)}
+            onKeyDown={(e) => handleKeyDown(e, t.key)}
             className={`tab-trigger ${saga === t.key ? 'active' : ''}`}
           >
             {t.key === 'all' && <Sparkles className="w-4 h-4" />}
@@ -63,7 +112,13 @@ export default function TimelineSagaTabs({ phases }: { phases: Record<string, Mo
         ))}
       </div>
 
-      <div className="space-y-16">
+      <div
+        id={`tabpanel-${saga}`}
+        role="tabpanel"
+        aria-labelledby={`tab-${saga}`}
+        tabIndex={0}
+        className="space-y-16"
+      >
         {entries.map(([phase, phaseMovies]) => {
           const visibleCount = Math.min(visible[phase] ?? PAGE_SIZE, phaseMovies.length)
           const shown = phaseMovies.slice(0, visibleCount)
