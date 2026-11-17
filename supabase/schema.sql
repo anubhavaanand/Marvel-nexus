@@ -113,6 +113,9 @@ CREATE TABLE IF NOT EXISTS hero_movies (
 CREATE INDEX IF NOT EXISTS idx_heroes_franchise ON heroes(franchise);
 CREATE INDEX IF NOT EXISTS idx_heroes_alias ON heroes(alias);
 CREATE INDEX IF NOT EXISTS idx_canon_events_hero ON canon_events(hero_id);
+-- #777: relation queries filter on movie_id.
+CREATE INDEX IF NOT EXISTS idx_canon_events_movie_id ON canon_events(movie_id);
+CREATE INDEX IF NOT EXISTS idx_hero_movies_movie_id ON hero_movies(movie_id);
 CREATE INDEX IF NOT EXISTS idx_movies_phase ON movies(phase);
 -- #480: hot list queries order by these columns.
 CREATE INDEX IF NOT EXISTS idx_heroes_name ON heroes(name);
