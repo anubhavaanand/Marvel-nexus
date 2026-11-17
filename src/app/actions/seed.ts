@@ -18,6 +18,22 @@ function log(message: string) {
   console.log(`[admin-seed] ${message}`)
 }
 
+// Lightweight in-memory store of the last successful seed run per action.
+// Resets on server restart; intentionally no new DB table (see issue #372).
+const lastSeededAt: Record<'heroes' | 'movies' | 'events', string | null> = {
+  heroes: null,
+  movies: null,
+  events: null,
+}
+
+export async function getLastSeededStatusAction(): Promise<{
+  ok: true
+  lastSeeded: Record<'heroes' | 'movies' | 'events', string | null>
+}> {
+  await requireAdmin()
+  return { ok: true, lastSeeded: { ...lastSeededAt } }
+}
+
 /**
  * Upserts the curated demo hero set into the database.
  */
@@ -50,11 +66,20 @@ export async function seedDemoHeroesAction() {
     image_url: hero.image_url,
     is_locked_content: hero.is_locked_content,
   }))
+  const completedSteps: string[] = []
+  const allSteps = ['heroes', 'movies', 'canon_events', 'hero_movies']
   const { error: heroError } = await supabase.from('heroes').upsert(heroRows, { onConflict: 'id' })
   if (heroError) {
     console.error('seedDemoHeroesAction upsert failed:', heroError)
-    return { ok: false as const, error: getSafeErrorMessage(heroError, 'Hero seed failed') }
+    return {
+      ok: false as const,
+      error: getSafeErrorMessage(heroError, 'Hero seed failed'),
+      failedStep: 'heroes',
+      completedSteps,
+      remaining: allSteps.slice(allSteps.indexOf('heroes')),
+    }
   }
+  completedSteps.push('heroes')
 
   // Seed movies too so hero_movie links and canon events can resolve.
   const movieRows = SEED_MOVIES.map((movie) => ({
@@ -69,8 +94,15 @@ export async function seedDemoHeroesAction() {
     .upsert(movieRows, { onConflict: 'id' })
   if (movieError) {
     console.error('seedDemoHeroesAction movie upsert failed:', movieError)
-    return { ok: false as const, error: getSafeErrorMessage(movieError, 'Movie seed failed') }
+    return {
+      ok: false as const,
+      error: getSafeErrorMessage(movieError, 'Movie seed failed'),
+      failedStep: 'movies',
+      completedSteps: [...completedSteps],
+      remaining: allSteps.slice(allSteps.indexOf('movies')),
+    }
   }
+  completedSteps.push('movies')
 
   // Seed canon events + hero_movies links (idempotent via upsert).
   const [{ data: heroes }, { data: movies }] = await Promise.all([
@@ -108,14 +140,29 @@ export async function seedDemoHeroesAction() {
       return {
         ok: false as const,
         error: getSafeErrorMessage(eventError, 'Canon events seed failed'),
+        failedStep: 'canon_events',
+        completedSteps: [...completedSteps],
+        remaining: allSteps.slice(allSteps.indexOf('canon_events')),
       }
     }
   }
+  completedSteps.push('canon_events')
   if (links.length > 0) {
-    await supabase
+    const { error: linkError } = await supabase
       .from('hero_movies')
       .upsert(links, { onConflict: 'hero_id,movie_id', ignoreDuplicates: true })
+    if (linkError) {
+      console.error('seedDemoHeroesAction hero_movies upsert failed:', linkError)
+      return {
+        ok: false as const,
+        error: getSafeErrorMessage(linkError, 'Hero movie links seed failed'),
+        failedStep: 'hero_movies',
+        completedSteps: [...completedSteps],
+        remaining: allSteps.slice(allSteps.indexOf('hero_movies')),
+      }
+    }
   }
+  completedSteps.push('hero_movies')
 
   revalidatePath('/')
   revalidatePath('/admin')
@@ -124,12 +171,15 @@ export async function seedDemoHeroesAction() {
   log(
     `seeded ${heroRows.length} heroes, ${movieRows.length} movies, ${eventRows.length} canon events`,
   )
+  lastSeededAt.heroes = new Date().toISOString()
   return {
     ok: true as const,
     seeded: heroRows.length,
     movies: movieRows.length,
     events: eventRows.length,
     links: links.length,
+    lastSeeded: lastSeededAt.heroes,
+    completedSteps,
   }
 }
 
@@ -214,7 +264,8 @@ export async function syncMoviesAction() {
   revalidatePath('/watch-order')
   revalidatePath('/admin')
   log(`synced ${rows.length} movies (${enriched} enriched from TMDB)`)
-  return { ok: true as const, seeded: rows.length, enriched }
+  lastSeededAt.movies = new Date().toISOString()
+  return { ok: true as const, seeded: rows.length, enriched, lastSeeded: lastSeededAt.movies }
 }
 
 /**
@@ -284,7 +335,8 @@ export async function createCanonEventsAction() {
   revalidatePath('/timeline')
   revalidatePath('/admin')
   log(`created ${rows.length} canon events (skipped ${skipped})`)
-  return { ok: true as const, created: rows.length, skipped }
+  lastSeededAt.events = new Date().toISOString()
+  return { ok: true as const, created: rows.length, skipped, lastSeeded: lastSeededAt.events }
 }
 
 export interface AdminStats {

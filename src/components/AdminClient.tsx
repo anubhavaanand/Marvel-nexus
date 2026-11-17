@@ -33,6 +33,7 @@ import {
 import {
   createCanonEventsAction,
   getAdminStatsAction,
+  getLastSeededStatusAction,
   seedDemoHeroesAction,
   syncMoviesAction,
   type AdminStats,
@@ -66,6 +67,13 @@ export default function AdminPage({
     movies: 'idle',
     events: 'idle',
   })
+  const [lastSeeded, setLastSeeded] = useState<
+    Record<'heroes' | 'movies' | 'events', string | null>
+  >({
+    heroes: null,
+    movies: null,
+    events: null,
+  })
   const [seedConfirm, setSeedConfirm] = useState<'heroes' | 'movies' | 'events' | null>(null)
   const [connectionStatus, setConnectionStatus] = useState<'unknown' | 'connected' | 'error'>(
     'unknown',
@@ -89,6 +97,20 @@ export default function AdminPage({
     requestAnimationFrame(() => {
       checkAuth()
     })
+  }, [])
+
+  // Load last-seeded timestamps on mount so operators see history from
+  // previous sessions too, not just seeds run in this tab (#372).
+  useEffect(() => {
+    const loadLastSeeded = async () => {
+      try {
+        const result = await getLastSeededStatusAction()
+        if (result.ok) setLastSeeded(result.lastSeeded)
+      } catch {
+        // Non-fatal: the admin panel works without seed history.
+      }
+    }
+    loadLastSeeded()
   }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -208,7 +230,7 @@ export default function AdminPage({
 
   const runSeedAction = async (
     key: 'heroes' | 'movies' | 'events',
-    action: () => Promise<{ ok: boolean; error?: string }>,
+    action: () => Promise<{ ok: boolean; error?: string; lastSeeded?: string }>,
   ) => {
     // If not yet confirmed, request confirmation and return
     if (seedConfirm !== key) {
@@ -226,6 +248,9 @@ export default function AdminPage({
         return
       }
       setSeedStatus((prev) => ({ ...prev, [key]: 'success' }))
+      if (result.lastSeeded) {
+        setLastSeeded((prev) => ({ ...prev, [key]: result.lastSeeded }))
+      }
       await refreshStats()
     } catch {
       setSeedStatus((prev) => ({ ...prev, [key]: 'error' }))
@@ -392,9 +417,11 @@ export default function AdminPage({
                 </>
               )}
             </Button>
+            <p className="text-xs text-neutral-500 mt-2 text-center">
+              Last seeded:{' '}
+              {lastSeeded.heroes ? new Date(lastSeeded.heroes).toLocaleString() : 'never'}
+            </p>
           </motion.div>
-
-          {/* Seed Movies */}
           <motion.div
             className="glass-panel rounded-2xl p-6"
             initial={{ opacity: 0, y: 20 }}
@@ -442,6 +469,10 @@ export default function AdminPage({
                 </>
               )}
             </Button>
+            <p className="text-xs text-neutral-500 mt-2 text-center">
+              Last seeded:{' '}
+              {lastSeeded.movies ? new Date(lastSeeded.movies).toLocaleString() : 'never'}
+            </p>
           </motion.div>
 
           {/* Seed Canon Events */}
@@ -492,6 +523,10 @@ export default function AdminPage({
                 </>
               )}
             </Button>
+            <p className="text-xs text-neutral-500 mt-2 text-center">
+              Last seeded:{' '}
+              {lastSeeded.events ? new Date(lastSeeded.events).toLocaleString() : 'never'}
+            </p>
           </motion.div>
         </div>
 

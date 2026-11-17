@@ -3,12 +3,14 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 const store = new Map<string, { token_hash: string; expires_at: string }>()
 
 let shouldError = false
+let probeCount = 0
 
 vi.mock('./service-supabase', () => ({
   getServiceSupabase: () => ({
     from: () => ({
       select: (_cols: string) => ({
         limit: async () => {
+          probeCount += 1
           if (shouldError) return { error: { message: 'transient error' } }
           return { error: null }
         },
@@ -51,6 +53,7 @@ import {
 beforeEach(() => {
   store.clear()
   shouldError = false
+  probeCount = 0
   __resetDbModeForTest()
 })
 
@@ -90,6 +93,7 @@ describe('transient DB error recovery (re-probe)', () => {
   beforeEach(() => {
     store.clear()
     shouldError = false
+    probeCount = 0
     __resetDbModeForTest()
   })
 
@@ -149,5 +153,21 @@ describe('transient DB error recovery (re-probe)', () => {
     shouldError = false
     const token2 = await createSessionToken()
     await expect(validateSessionToken(token2)).resolves.toBe(true)
+  })
+})
+
+describe('probe deduplication (concurrency)', () => {
+  beforeEach(() => {
+    store.clear()
+    shouldError = false
+    probeCount = 0
+    __resetDbModeForTest()
+  })
+
+  it('dedupes concurrent probes into a single DB probe', async () => {
+    const [a, b] = await Promise.all([createSessionToken(), createSessionToken()])
+    expect(typeof a).toBe('string')
+    expect(typeof b).toBe('string')
+    expect(probeCount).toBe(1)
   })
 })
