@@ -250,6 +250,34 @@ export default async function HeroPage({ params }: PageProps) {
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params
 
+  // #779: admins already receive the full row (including is_locked_content), so
+  // skip the service-role visibility query for them and avoid a privileged call
+  // on the public render path.
+  const isAdmin = await checkAdminAuthAction()
+
+  if (isAdmin) {
+    const hero = await getHeroDataForAdmin(slug)
+    if (!hero) {
+      return { title: 'Hero Not Found | Multiverse Archive' }
+    }
+    if (hero.is_locked_content) {
+      return {
+        title: 'Restricted Hero | Multiverse Archive',
+        description: 'This hero profile is available to registered members only.',
+        robots: { index: false },
+      }
+    }
+    return {
+      title: `${hero.alias} (${hero.name}) | Multiverse Archive`,
+      description: `Explore ${hero.alias}'s powers, weaknesses, and canon events. Origin: ${hero.origin_world}. Franchise: ${hero.franchise}.`,
+      openGraph: {
+        title: `${hero.alias} | Multiverse Archive`,
+        description: `${hero.name} from ${hero.origin_world}`,
+        images: hero.image_url ? [hero.image_url] : [],
+      },
+    }
+  }
+
   // Resolve visibility with the same source the page uses so a locked hero is
   // described as restricted instead of "not found" (#424).
   // getHeroVisibility and getHeroData are independent for non-locked heroes,
