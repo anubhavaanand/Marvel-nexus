@@ -1,10 +1,7 @@
-const { createClient } = require('@supabase/supabase-js')
 require('dotenv').config({ path: '.env.local' })
+const { createSupabaseClient } = require('./lib/supabase')
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-)
+const supabase = createSupabaseClient()
 
 // Verified working image URLs from TMDB and MyAnimeList
 // Using original quality TMDB paths
@@ -168,4 +165,7 @@ imageGuard.requireImageUpdateConfirm(
   'verify-and-fix-images.js',
 )
 
-updateImages()
+updateImages().catch(err => {
+  console.error(err)
+  process.exitCode = 1
+})

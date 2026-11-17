@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import TimelineSagaTabs from '@/components/TimelineSagaTabs'
 import { TimelineSkeleton } from '@/components/Skeleton'
-import { getAllMovies, isSupabaseConfigured, type Movie } from '@/lib/supabase'
+import { getAllMovies, isSupabaseConfigured } from '@/lib/supabase'
 import { bucketMoviesByPhase } from '@/lib/movie-phases'
 import { Film } from 'lucide-react'
 import Link from 'next/link'
