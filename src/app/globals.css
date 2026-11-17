@@ -876,3 +876,13 @@
 .border-glow:hover::after {
   opacity: 0.2;
 }
+
+/* #489: hide scrollbars on horizontal scroller strips (Firefox/WebKit/legacy). */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

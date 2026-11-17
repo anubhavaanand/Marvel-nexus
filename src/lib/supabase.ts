@@ -693,8 +693,10 @@ export async function getHeroesCount(): Promise<number> {
     .from('heroes')
     .select('id', { count: 'exact', head: true })
   if (error) {
+    // #481: an empty database and a failed query must stay distinguishable;
+    // returning 0 here made outages render as "0 Heroes".
     console.error('Error counting heroes:', error)
-    return 0
+    throw new Error('Failed to count heroes')
   }
   return count ?? 0
 }
