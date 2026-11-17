@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+  __setMaxKeysForTest,
   getRateLimiterSize,
   isRateLimited,
   parseClientIp,
@@ -82,14 +83,16 @@ describe('memory bounds', () => {
   it('caps tracked keys', () => {
     vi.useFakeTimers()
     resetRateLimiter()
-    for (let i = 0; i < 100_000; i++) {
+    // #465: shrink the cap so coverage no longer needs 100k insertions.
+    __setMaxKeysForTest(8)
+    for (let i = 0; i < 8; i++) {
       isRateLimited(`key-${i}`, 5, 3_600_000)
     }
     vi.advanceTimersByTime(60_001)
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 3; i++) {
       isRateLimited(`overflow-${i}`, 5, 3_600_000)
     }
-    expect(getRateLimiterSize()).toBe(100_000)
+    expect(getRateLimiterSize()).toBe(8)
   })
 })
 
@@ -145,20 +148,21 @@ describe('eviction order and expiry', () => {
   it('keeps recently accessed keys over older ones on overflow', () => {
     vi.useFakeTimers()
     resetRateLimiter()
-    // Create MAX_KEYS entries (simulate near-capacity)
-    for (let i = 0; i < 100_000; i++) {
+    __setMaxKeysForTest(8)
+    // Fill to capacity, then re-touch key-0 so it becomes most-recently-used.
+    for (let i = 0; i < 8; i++) {
       isRateLimited(`key-${i}`, 5, 3_600_000)
     }
-    // Access the first key to make it MRU
     isRateLimited('key-0', 5, 3_600_000)
-    // Advance time and trigger prune
     vi.advanceTimersByTime(60_001)
-    // Force overflow by adding new keys
+    // Force overflow with new keys; LRU must drop the cold front entries first.
     for (let i = 0; i < 5; i++) {
       isRateLimited(`overflow-${i}`, 5, 3_600_000)
     }
-    // The recently accessed key-0 should survive LRU eviction
-    // Size should still be MAX_KEYS
-    expect(getRateLimiterSize()).toBe(100_000)
+    expect(getRateLimiterSize()).toBe(8)
+    // key-0 was refreshed last, so it survives as a tracked bucket; the cold
+    // front entries were the ones evicted instead.
+    expect(isRateLimited('key-0', 1, 3_600_000)).toBe(true)
+    expect(isRateLimited('key-1', 1, 3_600_000)).toBe(false)
   })
 })

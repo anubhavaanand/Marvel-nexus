@@ -1,6 +1,16 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const MOCK_FETCH_RESPONSES = new Map<string, { status: number; body: unknown }>()
+
+// #465: the cache is time-based; pin the clock so the assertions describe state
+// transitions instead of elapsed wall time (the flaky failure mode).
+beforeEach(() => {
+  vi.useFakeTimers()
+})
+
+afterEach(() => {
+  vi.useRealTimers()
+})
 
 function setupFetchMock() {
   vi.stubGlobal(
@@ -69,6 +79,8 @@ describe('client-tmdb', () => {
   })
 
   it('handles 429 with one retry then recovers', async () => {
+    // Real timers here: the backoff is a genuine setTimeout we let elapse.
+    vi.useRealTimers()
     const { getTmdbImageUrl } = await import('./client-tmdb')
     let attempts = 0
     vi.stubGlobal(
@@ -93,6 +105,24 @@ describe('client-tmdb', () => {
       body: { error: 'TMDB API key not configured' },
     })
     expect(await getTmdbImageUrl('Anyone', 'Unconfigured')).toBeNull()
+  })
+
+  it('expires cached entries after the TTL using pinned time (#465)', async () => {
+    const { getTmdbImageUrl } = await import('./client-tmdb')
+    let calls = 0
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        calls += 1
+        return new Response(JSON.stringify({ person: { profile_path: '/ttl.jpg' } }), {
+          status: 200,
+        })
+      }),
+    )
+    expect(await getTmdbImageUrl('TTL Man', 'TTL')).toBe('https://image.tmdb.org/t/p/w500/ttl.jpg')
+    vi.advanceTimersByTime(3_600_001)
+    expect(await getTmdbImageUrl('TTL Man', 'TTL')).toBe('https://image.tmdb.org/t/p/w500/ttl.jpg')
+    expect(calls).toBe(2)
   })
 
   it('uses the movie endpoint and poster_path for film lookups (#419)', async () => {
