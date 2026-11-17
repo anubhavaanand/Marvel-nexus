@@ -113,6 +113,9 @@ CREATE TABLE IF NOT EXISTS hero_movies (
 CREATE INDEX IF NOT EXISTS idx_heroes_franchise ON heroes(franchise);
 CREATE INDEX IF NOT EXISTS idx_heroes_alias ON heroes(alias);
 CREATE INDEX IF NOT EXISTS idx_canon_events_hero ON canon_events(hero_id);
+-- #777: relation queries filter on movie_id.
+CREATE INDEX IF NOT EXISTS idx_canon_events_movie_id ON canon_events(movie_id);
+CREATE INDEX IF NOT EXISTS idx_hero_movies_movie_id ON hero_movies(movie_id);
 CREATE INDEX IF NOT EXISTS idx_movies_phase ON movies(phase);
 -- #480: hot list queries order by these columns.
 CREATE INDEX IF NOT EXISTS idx_heroes_name ON heroes(name);
@@ -154,18 +157,26 @@ END;
 $$;
 
 DROP TRIGGER IF EXISTS heroes_set_slug ON heroes;
-CREATE TRIGGER heroes_set_slug
-  BEFORE INSERT OR UPDATE OF alias, name
+-- #811: TG_OP is not available inside a trigger WHEN clause (Postgres raises
+-- "column tg_op does not exist"), so the guarded trigger is split per event.
+DROP TRIGGER IF EXISTS heroes_set_slug_insert ON heroes;
+CREATE TRIGGER heroes_set_slug_insert
+  BEFORE INSERT
   ON heroes
   FOR EACH ROW
   WHEN (
         NEW.slug IS NULL OR NEW.slug = ''
-        OR (
-          (TG_OP = 'INSERT'
-           OR OLD.alias IS DISTINCT FROM NEW.alias
-           OR OLD.name IS DISTINCT FROM NEW.name)
-          AND public.hero_slugify(NEW.alias) IS DISTINCT FROM NEW.slug
-        )
+        OR public.hero_slugify(NEW.alias) IS DISTINCT FROM NEW.slug
+  )
+  EXECUTE FUNCTION public.heros_set_slug();
+
+DROP TRIGGER IF EXISTS heroes_set_slug_update ON heroes;
+CREATE TRIGGER heroes_set_slug_update
+  BEFORE UPDATE OF alias, name
+  ON heroes
+  FOR EACH ROW
+  WHEN (
+        public.hero_slugify(NEW.alias) IS DISTINCT FROM NEW.slug
   )
   EXECUTE FUNCTION public.heros_set_slug();
 
@@ -212,6 +223,13 @@ END $$;
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'admin_sessions' AND policyname = 'Service role full access') THEN
     CREATE POLICY "Service role full access" ON admin_sessions FOR ALL USING (auth.role() = 'service_role');
+  END IF;
+END $$;
+
+-- #811: match the explicit deny-anon policy applied by migration 011.
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'admin_sessions' AND policyname = 'admin_sessions deny anon') THEN
+    CREATE POLICY "admin_sessions deny anon" ON admin_sessions FOR ALL TO anon USING (false);
   END IF;
 END $$;
 
