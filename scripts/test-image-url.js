@@ -1,10 +1,7 @@
-const { createClient } = require('@supabase/supabase-js')
 require('dotenv').config({ path: '.env.local' })
+const { createSupabaseClient } = require('./lib/supabase')
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-)
+const supabase = createSupabaseClient()
 
 /**
  * VERIFIED IMAGE URL TESTER
@@ -31,11 +28,15 @@ async function testImageURL(url) {
     const headers = {
       'User-Agent': 'Mozilla/5.0 (compatible; Multiverse Archive/1.0)',
     }
-    let response = await fetch(url, { method: 'HEAD', headers })
+    let response = await fetch(url, { method: 'HEAD', headers, signal: AbortSignal.timeout(10000) })
 
     // Some hosts answer HEAD with 405/403 but serve GET fine: retry with a range.
     if (!response.ok && (response.status === 405 || response.status === 403)) {
-      response = await fetch(url, { method: 'GET', headers: { ...headers, Range: 'bytes=0-0' } })
+      response = await fetch(url, {
+        method: 'GET',
+        headers: { ...headers, Range: 'bytes=0-0' },
+        signal: AbortSignal.timeout(10000),
+      })
     }
 
     if (response.ok) {
