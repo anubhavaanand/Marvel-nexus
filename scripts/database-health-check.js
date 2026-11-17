@@ -87,22 +87,30 @@ async function healthCheck() {
   const slowImages = []
   let checked = 0
 
-  for (const hero of heroes) {
-    checked++
-    process.stdout.write(`\rProgress: ${checked}/${heroes.length}`)
-
-    const startTime = Date.now()
-    const result = await checkUrl(hero.image_url)
-    const responseTime = Date.now() - startTime
-
-    if (!result.accessible) {
-      brokenImages.push({
-        ...hero,
-        reason: result.reason || `Status: ${result.statusCode}`,
-      })
-    } else if (responseTime > 3000) {
-      slowImages.push({ ...hero, responseTime })
+  // #486: bound concurrency (5 at a time) instead of one 5s-timeout request per
+  // hero; progress still ticks after each settled batch.
+  const CONCURRENCY = 5
+  for (let i = 0; i < heroes.length; i += CONCURRENCY) {
+    const batch = heroes.slice(i, i + CONCURRENCY)
+    const results = await Promise.all(
+      batch.map(async (hero) => {
+        const startTime = Date.now()
+        const result = await checkUrl(hero.image_url)
+        return { hero, result, responseTime: Date.now() - startTime }
+      }),
+    )
+    for (const { hero, result, responseTime } of results) {
+      checked++
+      if (!result.accessible) {
+        brokenImages.push({
+          ...hero,
+          reason: result.reason || `Status: ${result.statusCode}`,
+        })
+      } else if (responseTime > 3000) {
+        slowImages.push({ ...hero, responseTime })
+      }
     }
+    process.stdout.write(`\rProgress: ${checked}/${heroes.length}`)
   }
 
   console.log('\n')
