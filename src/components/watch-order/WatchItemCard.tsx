@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { Film, Tv, Clock, Star, Calendar } from 'lucide-react'
 import HeroImage from '@/components/HeroImage'
-import { WatchItem, phaseColors } from './data'
+import { type WatchItem, phaseColors } from './meta'
 import { formatReleaseDate } from './date-utils'
 
 interface WatchItemCardProps {
