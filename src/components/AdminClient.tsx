@@ -17,6 +17,7 @@ import {
   Loader2,
   Zap,
   Globe,
+  Lock,
   AlertTriangle,
 } from 'lucide-react'
 import type { Hero } from '@/lib/supabase'
