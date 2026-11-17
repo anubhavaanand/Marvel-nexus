@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS movies (
     release_date DATE,
     phase TEXT CHECK (phase IN ('Phase 1', 'Phase 2', 'Phase 3', 'Phase 4', 'Phase 5', 'Phase 6')),
     poster_url TEXT,
-    imdb_rating DECIMAL(3,1),
+    tmdb_rating DECIMAL(3,1),
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
