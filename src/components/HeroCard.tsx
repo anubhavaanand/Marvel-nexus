@@ -108,10 +108,13 @@ export default function HeroCard({ hero, index = 0 }: HeroCardProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 text-[11px] text-[var(--meta)] mt-2">
-            <Globe className="w-3 h-3" />
-            <span>{hero.origin_world}</span>
-          </div>
+          {/* #679: origin_world is nullable — never render an empty meta row. */}
+          {hero.origin_world ? (
+            <div className="flex items-center gap-1.5 text-[11px] text-[var(--meta)] mt-2">
+              <Globe className="w-3 h-3" />
+              <span>{hero.origin_world}</span>
+            </div>
+          ) : null}
 
           {hero.powers && hero.powers.length > 0 && (
             <div className="mt-2.5 flex flex-wrap gap-1">
