@@ -289,11 +289,12 @@ export default function AdminPage({
                 {key}: {msg}
               </p>
             ))}
+        </div>
+      )}
 
       {statsStale && (
         <div className="mb-6 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
           Stats could not be refreshed — the numbers below may be outdated.
-
         </div>
       )}
 
