@@ -98,10 +98,10 @@ DO $$ BEGIN
     CREATE POLICY "Public read access" ON heroes FOR SELECT USING (NOT is_locked_content);
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'canon_events' AND policyname = 'Public read access') THEN
-    CREATE POLICY "Public read access" ON canon_events FOR SELECT USING (true);
+    CREATE POLICY "Public read access" ON canon_events FOR SELECT USING (EXISTS (SELECT 1 FROM heroes h WHERE h.id = hero_id AND NOT h.is_locked_content));
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'hero_movies' AND policyname = 'Public read access') THEN
-    CREATE POLICY "Public read access" ON hero_movies FOR SELECT USING (true);
+    CREATE POLICY "Public read access" ON hero_movies FOR SELECT USING (EXISTS (SELECT 1 FROM heroes h WHERE h.id = hero_id AND NOT h.is_locked_content));
   END IF;
 END $$;
 
