@@ -31,6 +31,8 @@ interface QueryChain {
   maybeSingle(): Promise<{ data: typeof heroRow | null; error: null }>
   single(): Promise<{ data: typeof heroRow | null; error: null }>
   order(): QueryChain
+  limit(n: number): QueryChain
+  then(resolve: (v: unknown) => void): void
 }
 
 function makeQuery(): QueryChain {
@@ -71,6 +73,13 @@ function makeQuery(): QueryChain {
     order() {
       chain._calls.push('order()')
       return chain
+    },
+    limit(_n: number) {
+      chain._calls.push(`limit(${_n})`)
+      return chain
+    },
+    then(resolve: (v: unknown) => void) {
+      resolve({ data: [], error: null })
     },
   }
   return chain
