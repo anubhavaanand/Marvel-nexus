@@ -206,16 +206,18 @@ DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'admin_sessions' AND policyname = 'Service role full access') THEN
     CREATE POLICY "Service role full access" ON admin_sessions FOR ALL USING (auth.role() = 'service_role');
   END IF;
+END $$;
+
+DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'admin_password_epoch' AND policyname = 'Service role full access') THEN
     CREATE POLICY "Service role full access" ON admin_password_epoch FOR ALL USING (auth.role() = 'service_role');
-
--- #506: same service-only posture for seed run timestamps.
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'seed_runs' AND policyname = 'Service role full access') THEN
-    CREATE POLICY "Service role full access" ON seed_runs FOR ALL USING (auth.role() = 'service_role');
   END IF;
 END $$;
+
+-- #506: same service-only posture for seed run timestamps.
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'seed_runs' AND policyname = 'Service role full access') THEN
+    CREATE POLICY "Service role full access" ON seed_runs FOR ALL USING (auth.role() = 'service_role');
   END IF;
 END $$;
 
