@@ -677,7 +677,12 @@ export async function getHeroBySlug(slug: string): Promise<HeroWithRelations | n
     const hero = resolveMockHeroBySlug(slug)
     if (!hero) return null
     const enriched = await enrichHeroesWithTmdb([hero])
-    return enriched[0] || null
+    if (!enriched[0]) return null
+    return {
+      ...enriched[0],
+      canon_events: [],
+      hero_movies: [],
+    }
   }
 
   // Issue #144: resolve the slug against the indexed `slug` column in a single
@@ -728,7 +733,13 @@ export async function getHeroVisibility(
 ): Promise<{ is_locked_content: boolean } | null> {
   if (!supabase) {
     const hero = resolveMockHeroBySlug(slug)
-    // Ambiguous: missing and locked are indistinguishable to anonymous callers.
+    // INTENTIONAL FAIL-CLOSED BEHAVIOR (do not "fix" to oracle semantics):
+    // In the mock branch we cannot distinguish a truly missing slug from a
+    // locked one, so we report locked=true for BOTH. This masks missing-vs-
+    // locked for anonymous callers, but that is deliberate: we never want to
+    // leak slug existence or accidentally unlock content when the backing
+    // store is unavailable. Do NOT assume oracle semantics here — treat any
+    // `true` result as "not publicly visible", never as "confirmed locked".
     return { is_locked_content: hero ? (hero.is_locked_content ?? true) : true }
   }
   let client: SupabaseClient
@@ -886,15 +897,18 @@ const mockMovies: Movie[] = SEED_MOVIES.map((m): Movie => ({
 
 export async function getAllMovies(options?: { allowEmpty?: boolean }): Promise<Movie[]> {
   if (!supabase)
-    return [...mockMovies].sort((a, b) =>
-      (a.release_date || '').localeCompare(b.release_date || ''),
-    )
+    return [...mockMovies].sort((a, b) => {
+      if (!a.release_date && !b.release_date) return 0
+      if (!a.release_date) return 1
+      if (!b.release_date) return -1
+      return a.release_date.localeCompare(b.release_date)
+    })
 
   try {
     const { data, error } = await supabase
       .from('movies')
       .select('*')
-      .order('release_date', { ascending: true })
+      .order('release_date', { ascending: true, nullsFirst: false })
 
     if (error) {
       // Do not silently serve empty data when the real database fails, unless
