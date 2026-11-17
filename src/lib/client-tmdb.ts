@@ -56,6 +56,7 @@ interface QueueItem<T> {
 const queue: QueueItem<unknown>[] = []
 let activeCount = 0
 const MAX_CONCURRENT = 4 // Bounded concurrency (was 1, fully sequential)
+const MAX_QUEUE_SIZE = 32 // Bound the pending queue; overflow drops oldest.
 
 // How long to pause after a 429 before retrying once.
 const RATE_LIMIT_COOLDOWN_MS = 2000
@@ -79,6 +80,13 @@ function processQueue() {
 
 function enqueue<T>(fn: () => Promise<T>): Promise<T> {
   return new Promise<T>((resolve, reject) => {
+    // Bound the queue: drop the oldest item (FIFO) when full.
+    if (queue.length >= MAX_QUEUE_SIZE) {
+      const oldest = queue.shift()
+      if (oldest) {
+        oldest.reject(new Error('Queue overflow: dropped oldest request'))
+      }
+    }
     queue.push({ fn, resolve, reject } as QueueItem<unknown>)
     processQueue()
   })
@@ -143,6 +151,9 @@ export async function getTmdbImageUrl(
     resolve(value)
   }
 
-  enqueue(run)
+  enqueue(run).catch(() => {
+    inFlight.delete(key)
+    resolve(null)
+  })
   return promise
 }
