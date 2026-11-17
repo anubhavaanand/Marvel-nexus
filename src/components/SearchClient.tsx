@@ -7,6 +7,7 @@ import { Search, X, Loader2, Sparkles, AlertTriangle, RefreshCw } from 'lucide-r
 import HeroCard from '@/components/HeroCard'
 import { Button } from '@/components/ui/button'
 import type { Hero, SearchHero } from '@/lib/supabase'
+import { FRANCHISE_VALUES } from '@/lib/hero-update'
 
 interface SearchClientProps {
   allHeroes: SearchHero[]
@@ -14,7 +15,7 @@ interface SearchClientProps {
   isDemoMode?: boolean
 }
 
-const franchises = ['All', 'MCU', 'X-Men', 'Spider-Verse', 'DC', 'Anime', 'The Boys']
+const franchises = ['All', ...FRANCHISE_VALUES]
 const PAGE_SIZE = 24
 // Bound the rendered DOM: never render more than this many cards at once,
 // even when the result set (or "load more" accumulation) is larger.
