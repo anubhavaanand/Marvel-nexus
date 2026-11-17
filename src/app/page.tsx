@@ -11,8 +11,8 @@ import HomeClient from '@/components/HomeClient'
 import FranchiseTabs from '@/components/FranchiseTabs'
 import { Shield, Zap, Swords, Star, Skull, ArrowRight, Sparkles, Bug } from 'lucide-react'
 
-// Hero data lives in Supabase and changes without a rebuild; render per request.
-export const dynamic = 'force-dynamic'
+// Hero data lives in Supabase and changes without a rebuild; ISR revalidates hourly.
+export const revalidate = 3600
 
 export default async function Home() {
   const isDemoMode = !isSupabaseConfigured
