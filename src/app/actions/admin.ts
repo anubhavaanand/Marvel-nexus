@@ -148,6 +148,14 @@ export async function updateHeroAction(id: string, updates: Partial<Hero>): Prom
     return null
   }
 
+  // Read the current slug before updating so we can revalidate the old URL.
+  const { data: existingRow } = await supabase
+    .from('heroes')
+    .select('slug')
+    .eq('id', id)
+    .maybeSingle()
+  const oldSlug = (existingRow as { slug?: string } | null)?.slug
+
   // Recompute slug when alias changes to keep URLs consistent
   let slug: string | undefined
   if (sanitized.alias) {
@@ -188,6 +196,7 @@ export async function updateHeroAction(id: string, updates: Partial<Hero>): Prom
   revalidatePath('/')
   revalidatePath('/admin')
   if (data?.slug) revalidatePath(`/hero/${data.slug}`)
+  if (oldSlug && oldSlug !== data?.slug) revalidatePath(`/hero/${oldSlug}`)
   revalidatePath('/search')
   revalidatePath('/timeline')
   return data
