@@ -32,7 +32,11 @@ async function testImageURL(url) {
 
     // Some hosts answer HEAD with 405/403 but serve GET fine: retry with a range.
     if (!response.ok && (response.status === 405 || response.status === 403)) {
-      response = await fetch(url, { method: 'GET', headers: { ...headers, Range: 'bytes=0-0' }, signal: AbortSignal.timeout(10000) })
+      response = await fetch(url, {
+        method: 'GET',
+        headers: { ...headers, Range: 'bytes=0-0' },
+        signal: AbortSignal.timeout(10000),
+      })
     }
 
     if (response.ok) {

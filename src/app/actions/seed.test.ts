@@ -50,7 +50,14 @@ beforeEach(() => {
   process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key'
   fetchMock = vi.fn(async () => new Response(JSON.stringify({ results: [] }), { status: 200 }))
   vi.stubGlobal('fetch', fetchMock)
-  for (const m of SEED_MOVIES) db.set(m.id, { id: m.id, title: m.title, release_date: m.release_date, phase: m.phase, poster_url: m.poster_url })
+  for (const m of SEED_MOVIES)
+    db.set(m.id, {
+      id: m.id,
+      title: m.title,
+      release_date: m.release_date,
+      phase: m.phase,
+      poster_url: m.poster_url,
+    })
 })
 
 afterEach(() => {
@@ -60,11 +67,25 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-function tmdbTitleEchoResponse(releaseDate: string | null, id = 1, posterPath: string | null = null) {
+function tmdbTitleEchoResponse(
+  releaseDate: string | null,
+  id = 1,
+  posterPath: string | null = null,
+) {
   return async (url: string) => {
     const query = decodeURIComponent(new URL(url).searchParams.get('query') ?? 'Iron Man')
     return new Response(
-      JSON.stringify({ results: [{ id, release_date: releaseDate, poster_path: posterPath, title: query, original_title: query }] }),
+      JSON.stringify({
+        results: [
+          {
+            id,
+            release_date: releaseDate,
+            poster_path: posterPath,
+            title: query,
+            original_title: query,
+          },
+        ],
+      }),
       { status: 200 },
     )
   }
@@ -107,7 +128,22 @@ describe('syncMoviesAction phase sync', () => {
   })
 
   it('skips TMDB results whose title does not match the queried movie', async () => {
-    fetchMock.mockImplementation(async () => new Response(JSON.stringify({ results: [{ id: 99, release_date: '1999-01-01', title: 'A Completely Different Movie', original_title: 'A Completely Different Movie' }] }), { status: 200 }))
+    fetchMock.mockImplementation(
+      async () =>
+        new Response(
+          JSON.stringify({
+            results: [
+              {
+                id: 99,
+                release_date: '1999-01-01',
+                title: 'A Completely Different Movie',
+                original_title: 'A Completely Different Movie',
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+    )
     const { syncMoviesAction } = await import('./seed')
     const result = await syncMoviesAction()
     expect(result.ok).toBe(true)
