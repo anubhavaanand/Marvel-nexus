@@ -155,10 +155,18 @@ $$;
 
 DROP TRIGGER IF EXISTS heroes_set_slug ON heroes;
 CREATE TRIGGER heroes_set_slug
-  BEFORE INSERT OR UPDATE OF alias
+  BEFORE INSERT OR UPDATE OF alias, name
   ON heroes
   FOR EACH ROW
-  WHEN (NEW.slug IS NULL OR NEW.slug = '')
+  WHEN (
+        NEW.slug IS NULL OR NEW.slug = ''
+        OR (
+          (TG_OP = 'INSERT'
+           OR OLD.alias IS DISTINCT FROM NEW.alias
+           OR OLD.name IS DISTINCT FROM NEW.name)
+          AND public.hero_slugify(NEW.alias) IS DISTINCT FROM NEW.slug
+        )
+  )
   EXECUTE FUNCTION public.heros_set_slug();
 
 -- ============================================
