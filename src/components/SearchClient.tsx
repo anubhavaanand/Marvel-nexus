@@ -129,7 +129,9 @@ export default function SearchPage({
                   <div className="flex-1 relative">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--meta)]" />
                     <input
-                      type="text"
+                      type="search"
+                      name="q"
+                      maxLength={200}
                       placeholder="Search heroes, actors, powers, or worlds..."
                       aria-label="Search heroes, actors, powers, or worlds"
                       value={query}
