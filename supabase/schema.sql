@@ -55,8 +55,7 @@ CREATE TABLE IF NOT EXISTS heroes (
 -- Server-only credential storage; RLS exposes nothing to the public.
 -- ============================================
 CREATE TABLE IF NOT EXISTS admin_sessions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    token_hash TEXT NOT NULL UNIQUE,
+    token_hash TEXT PRIMARY KEY,
     expires_at TIMESTAMPTZ NOT NULL,
     password_epoch INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()

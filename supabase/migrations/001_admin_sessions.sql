@@ -2,6 +2,9 @@
 -- The application stores only SHA-256 hashes of session tokens here, never the
 -- tokens themselves. Run this once per environment; the app falls back to
 -- signed short-lived tokens automatically when the table is missing.
+--
+-- Canonical PK: token_hash (text). This mirrors supabase/schema.sql so fresh
+-- installs and migrated installs converge (#809).
 
 create table if not exists admin_sessions (
   token_hash text primary key,
