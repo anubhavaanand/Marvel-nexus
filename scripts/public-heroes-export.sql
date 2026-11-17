@@ -77,7 +77,7 @@ CREATE TABLE public.movies (
     release_date date,
     phase text,
     poster_url text,
-    imdb_rating numeric(3,1),
+    tmdb_rating numeric(3,1),
     created_at timestamp with time zone DEFAULT now(),
     CONSTRAINT movies_phase_check CHECK ((phase = ANY (ARRAY['Phase 1'::text, 'Phase 2'::text, 'Phase 3'::text, 'Phase 4'::text, 'Phase 5'::text, 'Phase 6'::text])))
 );
