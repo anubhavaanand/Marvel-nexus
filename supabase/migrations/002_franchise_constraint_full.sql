@@ -20,8 +20,15 @@ BEGIN
   END IF;
 END $$;
 
-ALTER TABLE heroes ADD CONSTRAINT heroes_franchise_check
-CHECK (franchise IN (
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+     WHERE conrelid = 'heroes'::regclass
+       AND conname = 'heroes_franchise_check'
+  ) THEN
+    ALTER TABLE heroes ADD CONSTRAINT heroes_franchise_check
+    CHECK (franchise IN (
     'MCU',
     'X-Men',
     'Spider-Verse',
@@ -34,3 +41,5 @@ CHECK (franchise IN (
     'Gaming',
     'Other'
 ));
+  END IF;
+END $$;
