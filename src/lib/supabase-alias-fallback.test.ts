@@ -27,6 +27,7 @@ function makeClient(mode: Mode) {
 
     builder.select = () => builder
     builder.limit = () => builder
+    builder.range = () => builder
     builder.eq = (col: string, val: string) => {
       appliedEq = { col, val }
       return builder

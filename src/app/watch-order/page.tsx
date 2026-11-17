@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import WatchOrderClient from '@/components/watch-order/WatchOrderClient'
+import { watchOrderData } from '@/components/watch-order/data'
 
 export const metadata: Metadata = {
   title: 'Watch Order | Multiverse Archive',
@@ -18,5 +19,5 @@ export const metadata: Metadata = {
 }
 
 export default function WatchOrderPage() {
-  return <WatchOrderClient />
+  return <WatchOrderClient items={watchOrderData} />
 }

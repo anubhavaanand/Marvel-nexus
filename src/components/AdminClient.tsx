@@ -234,6 +234,8 @@ export default function AdminPage({
       router.refresh()
       await refreshStats()
     } catch {
+      // #820: never leave an armed confirmation behind after a failure.
+      setSeedConfirm(null)
       setSeedStatus((prev) => ({ ...prev, [key]: 'error' }))
       setSeedErrors((prev) => ({
         ...prev,
@@ -392,34 +394,48 @@ export default function AdminPage({
               Seed hero data from all franchises - Marvel, DC, Anime, and more.
             </p>
 
-            <Button
-              onClick={seedHeroes}
-              disabled={seedStatus.heroes === 'loading'}
-              className={`w-full font-orbitron disabled:opacity-50 ${
-                seedStatus.heroes === 'loading'
-                  ? 'bg-cyan-600 hover:bg-cyan-700 text-white'
-                  : seedConfirm === 'heroes'
-                    ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
-                    : 'bg-cyan-600 hover:bg-cyan-700 text-white'
-              }`}
-            >
-              {seedStatus.heroes === 'loading' ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Seeding...
-                </>
-              ) : seedConfirm === 'heroes' ? (
-                <>
-                  <AlertTriangle className="w-4 h-4 mr-2" />
-                  Confirm Seed Heroes?
-                </>
-              ) : (
-                <>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Seed Heroes
-                </>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={seedHeroes}
+                disabled={seedStatus.heroes === 'loading'}
+                className={`w-full font-orbitron disabled:opacity-50 ${
+                  seedStatus.heroes === 'loading'
+                    ? 'bg-cyan-600 hover:bg-cyan-700 text-white'
+                    : seedConfirm === 'heroes'
+                      ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                      : 'bg-cyan-600 hover:bg-cyan-700 text-white'
+                }`}
+              >
+                {seedStatus.heroes === 'loading' ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Seeding...
+                  </>
+                ) : seedConfirm === 'heroes' ? (
+                  <>
+                    <AlertTriangle className="w-4 h-4 mr-2" />
+                    Confirm Seed Heroes?
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Seed Heroes
+                  </>
+                )}
+              </Button>
+              {seedConfirm === 'heroes' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSeedConfirm(null)
+                    setSeedStatus((prev) => ({ ...prev, heroes: 'idle' }))
+                  }}
+                  className="text-xs text-neutral-400 hover:text-white underline"
+                >
+                  Cancel
+                </button>
               )}
-            </Button>
+            </div>
             <p className="text-xs text-neutral-500 mt-2 text-center">
               Last seeded:{' '}
               {lastSeeded.heroes ? new Date(lastSeeded.heroes).toLocaleString() : 'never'}
@@ -446,34 +462,48 @@ export default function AdminPage({
               Seed MCU movie data from Phase 1-5 with posters and ratings.
             </p>
 
-            <Button
-              onClick={seedMovies}
-              disabled={seedStatus.movies === 'loading'}
-              className={`w-full font-orbitron disabled:opacity-50 ${
-                seedStatus.movies === 'loading'
-                  ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                  : seedConfirm === 'movies'
-                    ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
-                    : 'bg-purple-600 hover:bg-purple-700 text-white'
-              }`}
-            >
-              {seedStatus.movies === 'loading' ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Syncing...
-                </>
-              ) : seedConfirm === 'movies' ? (
-                <>
-                  <AlertTriangle className="w-4 h-4 mr-2" />
-                  Confirm Sync Movies?
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Sync Movies
-                </>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={seedMovies}
+                disabled={seedStatus.movies === 'loading'}
+                className={`w-full font-orbitron disabled:opacity-50 ${
+                  seedStatus.movies === 'loading'
+                    ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                    : seedConfirm === 'movies'
+                      ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                      : 'bg-purple-600 hover:bg-purple-700 text-white'
+                }`}
+              >
+                {seedStatus.movies === 'loading' ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Syncing...
+                  </>
+                ) : seedConfirm === 'movies' ? (
+                  <>
+                    <AlertTriangle className="w-4 h-4 mr-2" />
+                    Confirm Sync Movies?
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Sync Movies
+                  </>
+                )}
+              </Button>
+              {seedConfirm === 'movies' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSeedConfirm(null)
+                    setSeedStatus((prev) => ({ ...prev, movies: 'idle' }))
+                  }}
+                  className="text-xs text-neutral-400 hover:text-white underline"
+                >
+                  Cancel
+                </button>
               )}
-            </Button>
+            </div>
             <p className="text-xs text-neutral-500 mt-2 text-center">
               Last seeded:{' '}
               {lastSeeded.movies ? new Date(lastSeeded.movies).toLocaleString() : 'never'}
@@ -502,34 +532,48 @@ export default function AdminPage({
               Seed canon events with glitch levels and fixed point markers.
             </p>
 
-            <Button
-              onClick={seedEvents}
-              disabled={seedStatus.events === 'loading'}
-              className={`w-full font-orbitron disabled:opacity-50 ${
-                seedStatus.events === 'loading'
-                  ? 'bg-red-600 hover:bg-red-700 text-white'
-                  : seedConfirm === 'events'
-                    ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
-                    : 'bg-red-600 hover:bg-red-700 text-white'
-              }`}
-            >
-              {seedStatus.events === 'loading' ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Creating...
-                </>
-              ) : seedConfirm === 'events' ? (
-                <>
-                  <AlertTriangle className="w-4 h-4 mr-2" />
-                  Confirm Create Events?
-                </>
-              ) : (
-                <>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Events
-                </>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={seedEvents}
+                disabled={seedStatus.events === 'loading'}
+                className={`w-full font-orbitron disabled:opacity-50 ${
+                  seedStatus.events === 'loading'
+                    ? 'bg-red-600 hover:bg-red-700 text-white'
+                    : seedConfirm === 'events'
+                      ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                      : 'bg-red-600 hover:bg-red-700 text-white'
+                }`}
+              >
+                {seedStatus.events === 'loading' ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Creating...
+                  </>
+                ) : seedConfirm === 'events' ? (
+                  <>
+                    <AlertTriangle className="w-4 h-4 mr-2" />
+                    Confirm Create Events?
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Events
+                  </>
+                )}
+              </Button>
+              {seedConfirm === 'events' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSeedConfirm(null)
+                    setSeedStatus((prev) => ({ ...prev, events: 'idle' }))
+                  }}
+                  className="text-xs text-neutral-400 hover:text-white underline"
+                >
+                  Cancel
+                </button>
               )}
-            </Button>
+            </div>
             <p className="text-xs text-neutral-500 mt-2 text-center">
               Last seeded:{' '}
               {lastSeeded.events ? new Date(lastSeeded.events).toLocaleString() : 'never'}
