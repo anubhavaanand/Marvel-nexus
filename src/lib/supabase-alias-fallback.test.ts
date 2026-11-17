@@ -26,16 +26,20 @@ function makeClient(mode: Mode) {
     let appliedEq: { col: string; val: string } | null = null
 
     builder.select = () => builder
+    builder.limit = () => builder
     builder.eq = (col: string, val: string) => {
       appliedEq = { col, val }
       return builder
     }
     builder.maybeSingle = () =>
       Promise.resolve({
+        // #503: after the alias list picks an id we re-fetch that row by id.
         data:
-          mode.kind === 'slug-miss' && appliedEq?.col === 'slug'
-            ? null
-            : mode.kind === 'miss-then-alias-list'
+          mode.kind === 'miss-then-alias-list'
+            ? appliedEq?.col === 'slug'
+              ? null
+              : HERO_ROW
+            : mode.kind === 'slug-miss' && appliedEq?.col === 'slug'
               ? null
               : HERO_ROW,
         error: null,
