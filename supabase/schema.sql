@@ -21,12 +21,13 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS movies (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tmdb_id INTEGER UNIQUE,
-    title TEXT NOT NULL,
+    title TEXT NOT NULL UNIQUE,
     release_date DATE,
     phase TEXT CHECK (phase IN ('Phase 1', 'Phase 2', 'Phase 3', 'Phase 4', 'Phase 5', 'Phase 6')),
     poster_url TEXT,
     tmdb_rating DECIMAL(3,1),
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- ============================================
@@ -47,7 +48,8 @@ CREATE TABLE IF NOT EXISTS heroes (
     is_locked_content BOOLEAN DEFAULT FALSE,
     slug TEXT,
     first_appearance_movie_id UUID REFERENCES movies(id),
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- ============================================
@@ -92,7 +94,9 @@ CREATE TABLE IF NOT EXISTS canon_events (
     description TEXT NOT NULL,
     is_fixed_point BOOLEAN DEFAULT FALSE,
     glitch_level INTEGER DEFAULT 5 CHECK (glitch_level >= 1 AND glitch_level <= 10),
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE (hero_id, movie_id, description)
 );
 
 -- ============================================
@@ -102,8 +106,9 @@ CREATE TABLE IF NOT EXISTS hero_movies (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     hero_id UUID REFERENCES heroes(id) ON DELETE CASCADE,
     movie_id UUID REFERENCES movies(id) ON DELETE CASCADE,
-    role TEXT DEFAULT 'main',
+    role TEXT DEFAULT 'main' CHECK (role IN ('main', 'lead', 'supporting', 'cameo')),
     created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(hero_id, movie_id)
 );
 
