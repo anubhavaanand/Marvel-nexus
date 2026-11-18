@@ -26,6 +26,10 @@ Ordered SQL migrations for the Multiverse Archive schema. Filenames use a
 | `017_slug_trigger_refresh.sql`                      | Rebuild `heroes_set_slug` for existing installs so aliases keep the fixed trigger (#775).                    |
 | `018_admin_sessions_pk_align.sql`                   | Align `admin_sessions` primary key with fresh schema.sql installs (#809).                                    |
 | `019_canon_events_hero_movies_movie_id_indexes.sql` | Indexes on `canon_events.movie_id` and `hero_movies.movie_id` for relation query performance (#777).         |
+| `020_canon_events_unique.sql`                       | Unique `(hero_id, movie_id, description)` constraint for `canon_events`, with dedupe (#597).                 |
+| `021_movies_title_unique.sql`                       | Unique `movies.title` constraint; duplicate rows are merged and links re-pointed (#598).                     |
+| `022_hero_movies_role_check.sql`                    | Allowlist `hero_movies.role` to `main`/`lead`/`supporting`/`cameo` (#600).                                   |
+| `023_updated_at_columns.sql`                        | Adds `updated_at` + BEFORE UPDATE triggers to heroes/movies/canon_events/hero_movies (#603).                 |
 
 ## How to apply
 
